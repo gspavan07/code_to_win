@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axios from "axios";
 
 const optionList = [
   { label: "Leetcode", key: "leetcode" },
@@ -7,103 +8,94 @@ const optionList = [
   { label: "HackerRank", key: "hackerrank" },
 ];
 
-const UpdateProfile = ({ isOpen, user, onClose, initialLinks = [] }) => {
-  const [links, setLinks] = useState(initialLinks);
-  const [selectedOption, setSelectedOption] = useState(optionList[0].key);
-  const [inputValue, setInputValue] = useState("");
+// Map optionList key to platform_id as per your backend
+const platformIdMap = {
+  leetcode: 1,
+  codechef: 2,
+  geekforgeeks: 3,
+  hackerrank: 4,
+};
 
-  // Reset links when modal opens
-  React.useEffect(() => {
-    if (isOpen) setLinks(initialLinks);
-  }, [isOpen, initialLinks]);
+const UpdateProfile = ({ student_id, profiles = [], onClose }) => {
+  // Map profiles to an object for easy access (case-insensitive)
+  const initialUsernames = optionList.reduce((acc, opt) => {
+    const found = profiles.find(
+      (p) => p.platform?.toLowerCase() === opt.label.toLowerCase()
+    );
+    acc[opt.key] = found ? found.profile_username : "";
+    return acc;
+  }, {});
 
-  const handleAddLink = () => {
-    if (!inputValue.trim()) return;
-    setLinks([
-      ...links,
-      { type: selectedOption, url: inputValue.trim() }
-    ]);
-    setInputValue("");
+  const [usernames, setUsernames] = useState(initialUsernames);
+
+  const handleChange = (key, value) => {
+    setUsernames((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleRemoveLink = (idx) => {
-    setLinks(links.filter((_, i) => i !== idx));
-  };
-
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    if (user) user(links);
+    // For each filled username, call the API
+    const filled = optionList.filter((opt) => usernames[opt.key]?.trim());
+    try {
+      await Promise.all(
+        filled.map((opt) =>
+          axios.post("http://localhost:5000/student/coding-profile", {
+            userId: student_id,
+            platform_id: platformIdMap[opt.key],
+            profile_username: usernames[opt.key].trim(),
+          })
+        )
+      );
+      alert("Profiles submitted for verification!");
+      onClose();
+    } catch (err) {
+      alert("Error submitting profiles.");
+      console.error(err);
+    }
   };
-
-  const handleCancel = (e) => {
-    if (e) e.preventDefault();
-    setLinks(initialLinks);
-    if (onClose) onClose();
-  };
-
-  if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-5 min-h-screen bg-black/50">
-      <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-lg relative">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-5 min-h-screen bg-black/50"
+    >
+      <div
+        className="bg-white rounded-xl p-6 w-full max-w-md shadow-lg relative"
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
-          onClick={handleCancel}
+          onClick={onClose}
           className="absolute top-4 right-4 text-xl font-bold text-gray-400 hover:text-gray-600"
           aria-label="Close"
         >
           &times;
         </button>
-        <h2 className="text-xl font-semibold mb-2 text-center">Profile Links</h2>
+        <h2 className="text-xl font-semibold mb-2 text-center">
+          Profile Links
+        </h2>
         <p className="text-sm text-gray-500 mb-4 text-center">
           Add or update your coding platform links
         </p>
         <form onSubmit={handleSave}>
           <div className="flex flex-col gap-2 mb-4">
-           <label htmlFor="leet"> leetcode</label>
-            <input
-              type="url"
-              placeholder="Enter link"
-              value={inputValue}
-              onChange={e => setInputValue(e.target.value)}
-              className="flex-1 border border-blue-50 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200"
-            />
-                   <label htmlFor="gfg"> GeeksforGeeks</label>
-            <input
-              type="url"
-              placeholder="Enter link"
-              value={inputValue}
-              onChange={e => setInputValue(e.target.value)}
-              className="flex-1 border border-blue-50 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200"
-            />
-                   <label htmlFor="Hr"> Hacker Rank</label>
-            <input
-              type="url"
-              placeholder="Enter link"
-              value={inputValue}
-              onChange={e => setInputValue(e.target.value)}
-              className="flex-1 border border-blue-50 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200"
-            />
-                   <label htmlFor="cc"> CodeChef</label>
-            <input
-              type="url"
-              placeholder="Enter link"
-              value={inputValue}
-              onChange={e => setInputValue(e.target.value)}
-              className="flex-1 border border-blue-50 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200"
-            />
-            <button
-              type="button"
-              onClick={handleAddLink}
-              className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-            >
-              Add
-            </button>
+            {optionList.map((opt) => (
+              <React.Fragment key={opt.key}>
+                <label htmlFor={opt.key}>{opt.label}</label>
+                <input
+                  type="text"
+                  id={opt.key}
+                  placeholder={`Enter ${opt.label} Username`}
+                  value={usernames[opt.key]}
+                  onChange={(e) => handleChange(opt.key, e.target.value)}
+                  className="flex-1 border border-blue-50 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                />
+              </React.Fragment>
+            ))}
           </div>
-          
           <div className="flex justify-between gap-2 mt-4">
             <button
               type="button"
-              onClick={handleCancel}
+              onClick={onClose}
               className="px-4 py-1 rounded border border-gray-300 bg-gray-100 hover:bg-gray-200"
             >
               Cancel

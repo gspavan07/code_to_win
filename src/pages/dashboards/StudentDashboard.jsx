@@ -1,5 +1,5 @@
 import React from "react";
-import { FiCheck, FiCode } from "react-icons/fi";
+import { FiCheck, FiClock, FiCode, FiX } from "react-icons/fi";
 
 import { useAuth } from "../../context/AuthContext";
 import dayjs from "dayjs";
@@ -10,27 +10,26 @@ import PlatformCard from "../../components/ui/PlatformCard";
 import UpdateProfile from "../../components/ui/updateprofile";
 const StudentDashboard = () => {
   const [showModal, setShowModal] = React.useState(false);
-  const [showupdateModal, setShowUpdateModal] = React.useState(false);
+  const [updateProfile, setUpdateProfile] = React.useState(false);
   const { currentUser } = useAuth();
-  const perf = currentUser.performance;
-  const formattedDate = dayjs(perf.last_updated).format("DD/MM/YYYY | hh:mm A");
-  const totalProblems =
-    perf.easy_lc +
-    perf.medium_lc +
-    perf.hard_lc +
-    perf.problems_cf +
-    perf.school_gfg +
-    perf.basic_gfg +
-    perf.easy_gfg +
-    perf.medium_gfg +
-    perf.hard_gfg;
+  const formattedDate = dayjs(
+    currentUser.performance.combined.last_updated
+  ).format("DD/MM/YYYY | hh:mm A");
 
   const easyProblems =
-    perf.easy_lc + perf.school_gfg + perf.basic_gfg + perf.easy_gfg;
+    currentUser.performance.platformWise.leetcode.easy +
+    currentUser.performance.platformWise.gfg.school +
+    currentUser.performance.platformWise.gfg.basic +
+    currentUser.performance.platformWise.gfg.easy;
 
-  const mediumProblems = perf.medium_lc + perf.problems_cf + perf.medium_gfg;
+  const mediumProblems =
+    currentUser.performance.platformWise.leetcode.medium +
+    currentUser.performance.platformWise.codechef.problems +
+    currentUser.performance.platformWise.gfg.medium;
 
-  const hardProblems = perf.hard_lc + perf.hard_gfg;
+  const hardProblems =
+    currentUser.performance.platformWise.leetcode.hard +
+    currentUser.performance.platformWise.gfg.hard;
 
   return (
     <>
@@ -55,15 +54,18 @@ const StudentDashboard = () => {
           <div className="bg-white rounded-xl shadow-lg p-6  lg:w-md h-fit -mt-24 z-20">
             <div className="flex flex-r items-center mb-4">
               <img
-              src="/profile_bg.jpeg"
-              alt="sunil"
-              className="object-cover w-24 h-24 rounded  mb-2"
-            />
-            <div className="ml-3"><h2 className="text-lg font-bold">{currentUser.name}</h2>
-            <p className="text-sm text-gray-500  mt-2">University Rank</p>
-            <p className="text-xl font-semibold text-gray-800">
-              {currentUser.overall_rank}
-            </p></div></div>
+                src="/profile_bg.jpeg"
+                alt="sunil"
+                className="object-cover w-24 h-24 rounded  mb-2"
+              />
+              <div className="ml-3">
+                <h2 className="text-lg font-bold">{currentUser.name}</h2>
+                <p className="text-sm text-gray-500  mt-2">University Rank</p>
+                <p className="text-xl font-semibold text-gray-800">
+                  {currentUser.rank}
+                </p>
+              </div>
+            </div>
             <hr className="my-4" />
             <div className="text-justify space-y-4">
               <button
@@ -86,7 +88,7 @@ const StudentDashboard = () => {
               </p>
               <p className="flex justify-between">
                 <span className="font-semibold text-left">Roll No:</span>{" "}
-                {currentUser.roll_number}
+                {currentUser.student_id}
               </p>
               <p className="flex justify-between">
                 <span className="font-semibold text-left">Email:</span>{" "}
@@ -96,36 +98,48 @@ const StudentDashboard = () => {
             <hr className="my-4" />
             <div className="text-justify space-y-4">
               <button
-                onClick={() => setShowUpdateModal(true)}
+                onClick={() => setUpdateProfile(true)}
                 className="text-blue-600 underline float-end "
               >
                 Update Profiles
               </button>
-              <UpdateProfile
-                isOpen={showupdateModal}
-                user={currentUser}
-                option={"update_profiles"}
-                onClose={() => setShowUpdateModal(false)}
-              />
+              {updateProfile && (
+                <UpdateProfile
+                  student_id={currentUser.student_id}
+                  profiles={currentUser.coding_profiles}
+                  onClose={() => setUpdateProfile(null)}
+                />
+              )}
+
               <p className="font-semibold">Coding Profiles</p>
 
               <div className="flex flex-col gap-2">
                 {currentUser.coding_profiles.map((profile) => (
-                  <p key={profile.platform} className="flex justify-between">
+                  <div key={profile.platform} className="flex justify-between">
                     <span className="font-semibold text-left">
                       {profile.platform}
-                      <FiCheck className="inline ml-1 text-green-500" />
-                    </span>{" "}
-                    <p className="text-gray-500">{profile.profile_username}</p>
-                  </p>
+                    </span>
+                    <p className="text-gray-500">
+                      {profile.profile_username}
+                      {profile.verification_status === "accepted" && (
+                        <FiCheck className="inline ml-1 text-green-500" />
+                      )}
+                      {profile.verification_status === "rejected" && (
+                        <FiX className="inline ml-1 text-red-500" />
+                      )}
+                      {profile.verification_status === "pending" && (
+                        <FiClock className="inline ml-1 text-gray-500" />
+                      )}
+                    </p>
+                  </div>
                 ))}
               </div>
             </div>
           </div>
 
           {/* Main Section */}
-          <div className="w-full rounded-xl bg-white p-2">
-            <div className="flex flex-wrap gap-x-2 gap-y-1 mb-4">
+          <div className="w-full rounded-xl bg-white">
+            <div className="flex flex-wrap gap-1 mb-4">
               <span className="px-4 py-2 bg-white rounded-xl shadow-sm">
                 Campus:{" "}
                 <span className="font-semibold">{currentUser.college}</span>
@@ -134,10 +148,7 @@ const StudentDashboard = () => {
                 Degree:{" "}
                 <span className="font-semibold">{currentUser.degree}</span>
               </span>
-              <span className="px-4 py-2 bg-white rounded-xl shadow-sm">
-                Batch:{" "}
-                <span className="font-semibold">{currentUser.batch}</span>
-              </span>
+
               <span className="px-4 py-2 bg-white rounded-xl shadow-sm">
                 Department:{" "}
                 <span className="font-semibold">{currentUser.dept}</span>
@@ -156,7 +167,7 @@ const StudentDashboard = () => {
               <StatsCard
                 icon={<FiCode />}
                 title="Total Problems"
-                value={totalProblems}
+                value={currentUser?.performance?.combined?.totalSolved || 0}
                 color="blue"
               />
               <StatsCard
@@ -184,41 +195,48 @@ const StudentDashboard = () => {
               <PlatformCard
                 name="LeetCode"
                 color="bg-yellow-400"
-                total={perf.easy_lc + perf.medium_lc + perf.hard_lc}
+                total={
+                  currentUser.performance.platformWise.leetcode.easy +
+                  currentUser.performance.platformWise.leetcode.medium +
+                  currentUser.performance.platformWise.leetcode.hard
+                }
                 breakdown={{
-                  Easy: perf.easy_lc,
-                  Medium: perf.medium_lc,
-                  Hard: perf.hard_lc,
+                  Easy: currentUser.performance.platformWise.leetcode.easy,
+                  Medium: currentUser.performance.platformWise.leetcode.medium,
+                  Hard: currentUser.performance.platformWise.leetcode.hard,
                 }}
               />
               <PlatformCard
                 name="CodeChef"
                 color="bg-orange-600"
-                total={perf.contests_cf}
+                total={currentUser.performance.platformWise.codechef.contests}
                 subtitle="Contests Participated"
+                breakdown={{
+                  Easy: currentUser.performance.platformWise.codechef.problems,
+                }}
               />
               <PlatformCard
                 name="GeeksforGeeks"
                 color="bg-green-600"
                 total={
-                  perf.school_gfg +
-                  perf.basic_gfg +
-                  perf.easy_gfg +
-                  perf.medium_gfg +
-                  perf.hard_gfg
+                  currentUser.performance.platformWise.gfg.school +
+                  currentUser.performance.platformWise.gfg.basic +
+                  currentUser.performance.platformWise.gfg.easy +
+                  currentUser.performance.platformWise.gfg.medium +
+                  currentUser.performance.platformWise.gfg.hard
                 }
                 breakdown={{
-                  School: perf.school_gfg,
-                  Basic: perf.basic_gfg,
-                  Easy: perf.easy_gfg,
-                  Medium: perf.medium_gfg,
-                  Hard: perf.hard_gfg,
+                  School: currentUser.performance.platformWise.gfg.school,
+                  Basic: currentUser.performance.platformWise.gfg.basic,
+                  Easy: currentUser.performance.platformWise.gfg.easy,
+                  Medium: currentUser.performance.platformWise.gfg.medium,
+                  Hard: currentUser.performance.platformWise.gfg.hard,
                 }}
               />
               <PlatformCard
                 name="HackerRank"
                 color="bg-green-900"
-                total={perf.badges_hr}
+                total={currentUser.performance.platformWise.hackerrank.badges}
                 subtitle="Badges Gained"
               />
             </div>

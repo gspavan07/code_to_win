@@ -6,18 +6,21 @@ import axios from "axios";
 
 const ViewProfile = ({ student, onClose }) => {
   // Use student data if available, fallback to defaults
+  const [stdDetails, setStdDetails] = useState({});
   const [perf, setPerf] = useState({});
-  //   console.log("ViewProfile component rendered with student:", student);
+  console.log("setStdDetails:", stdDetails);
   useEffect(() => {
     const fetchPerformance = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:5000/student/performance/${student?.student_id}`
-        );
-        setPerf(res.data || {}); // Adjust according to your backend response
+        const res = await axios.get(`http://localhost:5000/student/profile`, {
+          params: {
+            userId: student.student_id,
+          },
+        });
+        setStdDetails(res.data || {}); // Adjust according to your backend response
       } catch (err) {
         console.error("Error fetching performance data:", err);
-        setPerf({});
+        setStdDetails({});
       }
     };
     console.log("Student Data:", student);
@@ -43,7 +46,7 @@ const ViewProfile = ({ student, onClose }) => {
             <div>
               <h2 className="text-lg font-semibold">{student?.name}</h2>
               <span className="text-xs bg-white text-purple-600 px-2 py-0.5 rounded-full font-medium">
-                {student?.roll_number}
+                {student?.student_id}
               </span>
             </div>
           </div>
@@ -59,8 +62,8 @@ const ViewProfile = ({ student, onClose }) => {
               <div>{student?.section}</div>
             </div>
             <div>
-              <div className="text-white/70">Batch</div>
-              <div>{student?.batch}</div>
+              <div className="text-white/70">Year</div>
+              <div>{student?.year}</div>
             </div>
             <div>
               <div className="text-white/70">Department</div>
@@ -77,13 +80,13 @@ const ViewProfile = ({ student, onClose }) => {
           <StatsCard
             icon={<FiCode />}
             title="Total Problems"
-            value={perf?.combined?.totalSolved || 0}
+            value={stdDetails?.performance?.combined?.totalSolved || 0}
             color="blue"
           />
           <StatsCard
             icon={<FiCheck />}
             title="Total Contests"
-            value={perf?.combined?.totalContests || 0}
+            value={stdDetails?.performance?.combined?.totalContests || 0}
             color="success"
           />
           <StatsCard
@@ -95,43 +98,52 @@ const ViewProfile = ({ student, onClose }) => {
         </div>
 
         {/* Platform-wise Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-6 md:p-4">
+        <div className="grid grid-cols-2 gap-2 md:gap-6 md:p-4">
           <PlatformCard
             name="LeetCode"
             color="bg-yellow-400"
             total={
-              (perf?.platformWise?.leetcode?.easy || 0) +
-              (perf?.platformWise?.leetcode?.medium || 0) +
-              (perf?.platformWise?.leetcode?.hard || 0)
+              stdDetails?.performance?.platformWise?.leetcode?.easy +
+              stdDetails?.performance?.platformWise?.leetcode?.medium +
+              stdDetails?.performance?.platformWise?.leetcode?.hard
             }
             breakdown={{
-              Easy: perf?.platformWise?.leetcode?.easy || 0,
-              Medium: perf?.platformWise?.leetcode?.medium || 0,
-              Hard: perf?.platformWise?.leetcode?.hard || 0,
+              Easy: stdDetails?.performance?.platformWise?.leetcode?.easy,
+              Medium: stdDetails?.performance?.platformWise?.leetcode?.medium,
+              Hard: stdDetails?.performance?.platformWise?.leetcode?.hard,
             }}
           />
           <PlatformCard
             name="CodeChef"
             color="bg-orange-600"
-            total={5}
+            total={stdDetails?.performance?.platformWise?.codechef?.contests}
             subtitle="Contests Participated"
+            breakdown={{
+              Easy: stdDetails?.performance?.platformWise?.codechef?.problems,
+            }}
           />
           <PlatformCard
             name="GeeksforGeeks"
             color="bg-green-600"
-            total={50}
+            total={
+              stdDetails?.performance?.platformWise?.gfg?.school +
+              stdDetails?.performance?.platformWise?.gfg?.basic +
+              stdDetails?.performance?.platformWise?.gfg?.easy +
+              stdDetails?.performance?.platformWise?.gfg?.medium +
+              stdDetails?.performance?.platformWise?.gfg?.hard
+            }
             breakdown={{
-              School: 5,
-              Basic: 10,
-              Easy: 15,
-              Medium: 20,
-              Hard: 25,
+              School: stdDetails?.performance?.platformWise?.gfg?.school,
+              Basic: stdDetails?.performance?.platformWise?.gfg?.basic,
+              Easy: stdDetails?.performance?.platformWise?.gfg?.easy,
+              Medium: stdDetails?.performance?.platformWise?.gfg?.medium,
+              Hard: stdDetails?.performance?.platformWise?.gfg?.hard,
             }}
           />
           <PlatformCard
             name="HackerRank"
             color="bg-green-900"
-            total={20}
+            total={stdDetails?.performance?.platformWise?.hackerrank?.badges}
             subtitle="Badges Gained"
           />
         </div>

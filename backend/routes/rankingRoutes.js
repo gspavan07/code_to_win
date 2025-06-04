@@ -2,42 +2,12 @@ const express = require("express");
 const router = express.Router();
 const db = require("../config/db"); // MySQL connection
 
-// Helper function to calculate score using grading system
-async function computeScoresWithGrading() {
-  // Step 1: Fetch all grading weights
-  const [gradingData] = await db.query("SELECT * FROM grading_rules");
-
-  // Convert to key-value map for easy use
-  const weights = {};
-  gradingData.forEach((row) => {
-    weights[row.metric] = row.points_per_unit;
-  });
-  // Step 2: Fetch student profile and performance data
-  const [students] = await db.query(`
-    SELECT sp.student_id,sp.name,sp.roll_number, sp.dept, sp.year, sp.section, p.*
-    FROM student_profiles sp
-    JOIN student_performance p ON sp.student_id = p.student_id
-  `);
-
-  // Step 3: Calculate dynamic score for each student
-  return students.map((s) => {
-    let score = 0;
-    for (const [metric, weight] of Object.entries(weights)) {
-      score += (s[metric] || 0) * weight;
-    }
-    return {
-      ...s,
-      score: score,
-    };
-  });
-}
-
 // Calculate score expression for ranking
 async function getScoreExpression() {
-  const [gradingData] = await db.query("SELECT * FROM grading_rules");
+  const [gradingData] = await db.query("SELECT * FROM grading_system");
   // Example: (p.badges_hr * 5) + (p.basic_gfg * 1) + ...
   return gradingData
-    .map((row) => `(p.${row.metric} * ${row.points_per_unit})`)
+    .map((row) => `(p.${row.metric} * ${row.points})`)
     .join(" + ");
 }
 
@@ -89,7 +59,7 @@ router.get("/filter", async (req, res) => {
     }
     const limit = Math.max(1, Math.min(parseInt(req.query.limit) || 100, 1000)); // max 1000
     const [rows] = await db.query(
-      `SELECT sp.student_id, sp.name, sp.roll_number, sp.dept, sp.year, sp.section,
+      `SELECT sp.*,
               ${scoreExpr} AS score
        FROM student_profiles sp
        JOIN student_performance p ON sp.student_id = p.student_id

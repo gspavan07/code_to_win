@@ -1,133 +1,38 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { BiDownload, BiSearch } from "react-icons/bi";
 import { FaUpload, FaUser, FaUserPlus } from "react-icons/fa6";
 import { useAuth } from "../../context/AuthContext";
 import { useStudents } from "../../hooks/useStudents";
 import Navbar from "../../components/Navbar";
 import RankingTable from "../../components/Ranking";
+import { TbUserShare } from "react-icons/tb";
+import ViewProfile from "../../components/ViewProfile";
+import axios from "axios";
 
 function FacultyDashboard() {
   const { currentUser } = useAuth();
+  const [selectedStudent, setSelectedStudent] = useState(null);
 
   const {
     data: students,
     isLoading,
     error,
   } = useStudents({
-    dept: currentUser.department,
+    dept: currentUser.dept,
     year: currentUser.year,
     section: currentUser.section,
   });
-
-  const [tab, setTab] = useState("overall");
   const [selectedTab, setSelectedTab] = useState("StudentRanking");
-  const [selectedBranch, setSelectedBranch] = useState("");
-  const [selectedYear, setSelectedYear] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [limit, setLimit] = useState(10);
-  const [selectedSection, setSelectedSection] = useState("");
 
-  const allStudents = [
-    {
-      id: "1",
-      name: "Alice Johnson",
-      email: "alice@example.com",
-      branch: "CSE",
-      year: "3",
-      problems: [
-        { difficulty: "Easy" },
-        { difficulty: "Medium" },
-        { difficulty: "Hard" },
-        { difficulty: "Medium" },
-      ],
-      contestsParticipated: [1, 2],
-    },
-    {
-      id: "2",
-      name: "Bob Smith",
-      email: "bob@example.com",
-      branch: "ECE",
-      year: "2",
-      problems: [{ difficulty: "Easy" }, { difficulty: "Easy" }],
-      contestsParticipated: [1],
-    },
-    {
-      id: "3",
-      name: "Clara Zhang",
-      email: "clara@example.com",
-      branch: "CSE",
-      year: "1",
-      problems: [
-        { difficulty: "Hard" },
-        { difficulty: "Hard" },
-        { difficulty: "Medium" },
-      ],
-      contestsParticipated: [1, 2, 3],
-    },
-    {
-      id: "4",
-      name: "David Lee",
-      email: "david@example.com",
-      branch: "ME",
-      year: "4",
-      problems: [
-        { difficulty: "Easy" },
-        { difficulty: "Medium" },
-        { difficulty: "Easy" },
-      ],
-      contestsParticipated: [],
-    },
-  ];
-
-  const calculateScore = (student) => {
-    const easy = student.problems.filter((p) => p.difficulty === "Easy").length;
-    const medium = student.problems.filter(
-      (p) => p.difficulty === "Medium"
-    ).length;
-    const hard = student.problems.filter((p) => p.difficulty === "Hard").length;
-    const contests = student.contestsParticipated?.length || 0;
-    return easy + medium * 2 + hard * 3 + contests * 5;
-  };
-
-  const studentsWithScores = useMemo(() => {
-    return allStudents
-      .map((s) => ({ ...s, score: calculateScore(s) }))
-      .sort((a, b) => b.score - a.score);
-  }, []);
-
-  const filteredStudents = useMemo(() => {
-    let result = studentsWithScores;
-
-    if (tab === "branch" && selectedBranch) {
-      result = result.filter((s) => s.branch === selectedBranch);
-    }
-
-    if (tab === "year" && selectedYear) {
-      result = result.filter((s) => s.year === selectedYear);
-    }
-
-    if (searchTerm) {
-      result = result.filter((s) =>
-        s.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    return result.slice(0, limit);
-  }, [
-    tab,
-    selectedBranch,
-    selectedYear,
-    searchTerm,
-    limit,
-    studentsWithScores,
-  ]);
-
-  const getRankBadge = (rank) => {
-    const badges = ["🥇", "🥈", "🥉"];
-    return badges[rank] || `${rank + 1}`;
-  };
   return (
     <>
+      {/* Show ViewProfile only if a student is selected */}
+      {selectedStudent && (
+        <ViewProfile
+          student={selectedStudent}
+          onClose={() => setSelectedStudent(null)}
+        />
+      )}
       <Navbar />
       <div className="bg-gray-50 min-h-screen">
         <div className="px-40 space-y-4 mx-auto p-6">
@@ -146,12 +51,12 @@ function FacultyDashboard() {
               <div className="text-base">{currentUser.email}</div>
               <div className="mt-1">
                 <span className="text-base bg-blue-400 font-semibold text-white px-2 py-1 rounded-full">
-                  {currentUser.department}
+                  {currentUser.dept} - {currentUser.year} -{" "}
+                  {currentUser.section}
                 </span>
               </div>
             </div>
           </div>
-
           {/* Section Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 ">
             <div className="bg-white p-4 rounded-lg shadow">
@@ -175,31 +80,35 @@ function FacultyDashboard() {
               <p className="text-sm text-gray-400">Score: 2340</p>
             </div>
           </div>
-
-          <div className="flex justify-around  flex-1/3 shadow-sm gap-4 mb-4 text-base">
+          {/* Tabs */}
+          <div className="flex justify-around rounded bg-gray-100 border-gray-200 border gap-4 p-1 mb-4 text-base">
             <button
               onClick={() => setSelectedTab("StudentRanking")}
-              className={`px-16 py-1 rounded ${
-                selectedTab === "StudentRanking"
-                  ? "bg-white text-black"
-                  : "bg-gray-100"
+              className={`flex-1/4 py-1 rounded ${
+                selectedTab === "StudentRanking" ? "bg-white text-black" : ""
               }`}
             >
               Student Ranking
             </button>
             <button
               onClick={() => setSelectedTab("StudentManagment")}
-              className={`px-16 py-1 rounded ${
-                selectedTab === "StudentManagment"
-                  ? "bg-white text-black"
-                  : "bg-gray-100"
+              className={`flex-1/4 py-1 rounded ${
+                selectedTab === "StudentManagment" ? "bg-white text-black" : ""
               }`}
             >
               Student Managment
             </button>
             <button
+              onClick={() => setSelectedTab("StudentRequests")}
+              className={`flex-1/4 py-1 rounded ${
+                selectedTab === "StudentRequests" ? "bg-white text-black" : ""
+              }`}
+            >
+              Student Requests
+            </button>
+            <button
               onClick={() => setSelectedTab("AddStudent")}
-              className={`px-16 py-1 rounded ${
+              className={`flex-1/4 py-1 rounded ${
                 selectedTab === "AddStudent"
                   ? "bg-white text-black"
                   : "bg-gray-100"
@@ -208,7 +117,9 @@ function FacultyDashboard() {
               Add Student
             </button>
           </div>
+          {/* StudentRanking*/}
           {selectedTab === "StudentRanking" && <RankingTable />}
+          {/* Student Management */}
           {selectedTab === "StudentManagment" && (
             <div className="bg-white p-6 rounded-lg shadow">
               <h2 className="text-xl font-semibold mb-4">Student Management</h2>
@@ -217,47 +128,80 @@ function FacultyDashboard() {
               </p>
 
               {/* Add management features here */}
-              <table className="w-full rounded-lg overflow-hidden">
-                <thead>
-                  <tr className="bg-gray-50 text-left px-4 hover:bg-gray-100 font-medium text-gray-500 border-b-[0.5px] border-gray-200">
-                    <th className="py-3 px-4 font-medium">Rank</th>
-                    <th className="py-3 px-4 font-medium">Name</th>
-                    <th className="py-3 px-4 font-medium">Roll No</th>
-                    <th className="py-3 px-4 font-medium">Branch</th>
-                    <th className="py-3 px-4 font-medium">Year</th>
-                    <th className="py-3 px-4 font-medium">Score</th>
-                    <th className="py-3 px-4 font-medium">Profile</th>
+              <table className="min-w-full bg-white border rounded-lg overflow-hidden shadow">
+                <thead className="bg-gray-100 text-center">
+                  <tr>
+                    <th className="py-3 px-4">Rank</th>
+                    <th className="py-3 px-4 text-left">Student</th>
+                    <th className="py-3 px-4">Roll Number</th>
+                    <th className="py-3 px-4">Branch</th>
+                    <th className="py-3 px-4">Year</th>
+                    <th className="py-3 px-4">Section</th>
+                    <th className="py-3 px-4">Actions</th>
                   </tr>
                 </thead>
                 {isLoading && <p>Loading...</p>}
                 {error && <p>Error fetching data</p>}
                 <tbody>
                   {students?.length > 0 ? (
-                    students.map((student, index) => (
+                    students.map((student, i) => (
                       <tr
-                        key={student.id}
-                        className="text-left border-b-[0.5px] border-gray-200 border:opacity-50"
+                        key={student.student_id}
+                        className="hover:bg-gray-50 text-center"
                       >
-                        <td className="py-3 px-4">{getRankBadge(index)}</td>
-                        <td className="py-3 px-4">{student.name}</td>
-                        <td className="py-3 px-4">{student.roll_number}</td>
+                        <td className="py-3 px-4 ">{i + 1}</td>
+                        <td className="py-3 px-4 text-left flex items-center gap-2">
+                          <div className="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center text-sm justify-center font-bold">
+                            {student.name
+                              ?.split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </div>
+                          {student.name}
+                        </td>
+                        <td className="py-3 px-4">{student.student_id}</td>
                         <td className="py-3 px-4">{student.dept}</td>
                         <td className="py-3 px-4">{student.year}</td>
-                        <td className="py-3 px-4">{student.score}</td>
-                        <td className="py-3 px-4">
-                          <button className="text-blue-500 cursor-pointer hover:underline">
-                            View Profile
-                          </button>
+                        <td className="py-3 px-4">{student.section}</td>
+
+                        <td className="py-3 px-4 ">
+                          <div
+                            onClick={() => setSelectedStudent(student)}
+                            className="text-gray-700 px-2 py-1 justify-center rounded  hover:text-blue-700 flex items-center gap-1 cursor-pointer"
+                          >
+                            <TbUserShare /> Profile
+                          </div>
                         </td>
                       </tr>
                     ))
                   ) : (
-                    <p>No students found</p>
+                    <tr>
+                      <td colSpan="8" className="py-3 px-4 text-center">
+                        No students found
+                      </td>
+                    </tr>
                   )}
                 </tbody>
               </table>
             </div>
           )}
+          {/* Student Requests */}
+          {selectedTab === "StudentRequests" && (
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h2 className="text-xl font-semibold mb-4">Student Requests</h2>
+              <p className="text-gray-500 mb-4">
+                Review and manage student coding profile requests.
+              </p>
+
+              <CodingProfileRequests
+                dept={currentUser.dept}
+                year={currentUser.year}
+                section={currentUser.section}
+                facultyId={currentUser.uid}
+              />
+            </div>
+          )}
+          {/* Add Student */}
           {selectedTab === "AddStudent" && (
             <div className="flex flex-col lg:flex-row gap-6 p-6 bg-gray-50 min-h-screen">
               {/* Add Individual Student Form */}
@@ -424,4 +368,199 @@ function FacultyDashboard() {
     </>
   );
 }
+
+function CodingProfileRequests({ dept, year, section, facultyId }) {
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+
+  const fetchRequests = async () => {
+    setLoading(true);
+    const { data } = await axios.get(
+      "http://localhost:5000/faculty/coding-profile-requests",
+      { params: { dept, year, section } }
+    );
+    setRequests(data);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchRequests();
+  }, [dept, year, section]);
+
+  // Group requests by student_id
+  const grouped = requests.reduce((acc, req) => {
+    if (!acc[req.student_id]) acc[req.student_id] = [];
+    acc[req.student_id].push(req);
+    return acc;
+  }, {});
+
+  if (loading) return <p>Loading...</p>;
+  if (!requests.length) return <p>No pending requests.</p>;
+
+  return (
+    <>
+      <table className="min-w-full bg-white border rounded-lg overflow-hidden shadow">
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Roll Number</th>
+            <th>Requests</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Object.entries(grouped).map(([student_id, reqs]) => (
+            <tr key={student_id}>
+              <td>{reqs[0].name}</td>
+              <td>{student_id}</td>
+              <td>
+                <button
+                  className="bg-blue-600 text-white px-3 py-1 rounded"
+                  onClick={() => setSelectedStudent({ student_id, reqs })}
+                >
+                  View Requests
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Modal for viewing requests */}
+      {selectedStudent && (
+        <StudentRequestsModal
+          student={selectedStudent}
+          onClose={() => setSelectedStudent(null)}
+          onAction={async (platformIdHandled) => {
+            // Fetch latest requests and use the result directly
+            const { data: latestRequests } = await axios.get(
+              "http://localhost:5000/faculty/coding-profile-requests",
+              { params: { dept, year, section } }
+            );
+            setRequests(latestRequests);
+
+            // Group the latest requests
+            const groupedLatest = latestRequests.reduce((acc, req) => {
+              if (!acc[req.student_id]) acc[req.student_id] = [];
+              acc[req.student_id].push(req);
+              return acc;
+            }, {});
+
+            const updated = groupedLatest[selectedStudent.student_id];
+
+            // If no more pending requests for this student, close modal
+            if (!updated || updated.length === 0) {
+              setSelectedStudent(null);
+            } else {
+              // Otherwise, update the modal with the new requests for this student
+              setSelectedStudent({
+                student_id: selectedStudent.student_id,
+                reqs: updated,
+              });
+            }
+          }}
+          facultyId={facultyId}
+        />
+      )}
+    </>
+  );
+}
+
+// Modal component
+function StudentRequestsModal({ student, onClose, onAction, facultyId }) {
+  const handleAction = async (platform_id, action) => {
+    await axios.post("http://localhost:5000/faculty/verify-coding-profile", {
+      student_id: student.student_id,
+      platform_id,
+      action,
+      faculty_id: facultyId,
+    });
+    await onAction(platform_id);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-white rounded-lg p-6 w-full max-w-lg shadow-lg relative">
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-4 text-2xl text-gray-400 hover:text-gray-600"
+        >
+          &times;
+        </button>
+        <h2 className="text-xl font-semibold mb-2">
+          Requests for {student.reqs[0].name} ({student.student_id})
+        </h2>
+        <table className="min-w-full mb-4">
+          <thead>
+            <tr>
+              <th>Platform</th>
+              <th>Username</th>
+              <th>Link</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {student.reqs.map((req) => (
+              <tr key={req.platform_id}>
+                <td>{req.platform_name}</td>
+                <td>{req.profile_username}</td>
+                <td>
+                  {/* You can customize the link format per platform */}
+                  <a
+                    href={getProfileLink(
+                      req.platform_name,
+                      req.profile_username
+                    )}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline"
+                  >
+                    View
+                  </a>
+                </td>
+                <td>
+                  <button
+                    className="bg-green-500 text-white px-2 py-1 rounded mr-2"
+                    onClick={() => handleAction(req.platform_id, "accept")}
+                  >
+                    Accept
+                  </button>
+                  <button
+                    className="bg-red-500 text-white px-2 py-1 rounded"
+                    onClick={() => handleAction(req.platform_id, "reject")}
+                  >
+                    Reject
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <button
+          onClick={onClose}
+          className="mt-2 px-4 py-1 rounded bg-gray-200 hover:bg-gray-300"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Helper to generate profile links (customize as needed)
+function getProfileLink(platform, username) {
+  switch (platform.toLowerCase()) {
+    case "leetcode":
+      return `https://leetcode.com/${username}`;
+    case "geeksforgeeks":
+      return `https://auth.geeksforgeeks.org/user/${username}/`;
+    case "codechef":
+      return `https://www.codechef.com/users/${username}`;
+    case "hackerrank":
+      return `https://www.hackerrank.com/${username}`;
+    default:
+      return "#";
+  }
+}
+
 export default FacultyDashboard;

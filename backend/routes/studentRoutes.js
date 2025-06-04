@@ -2,6 +2,15 @@ const express = require("express");
 const router = express.Router();
 const db = require("../config/db"); // MySQL connection
 
+// Calculate score expression for ranking
+async function getScoreExpression() {
+  const [gradingData] = await db.query("SELECT * FROM grading_system");
+  // Example: (p.badges_hr * 5) + (p.basic_gfg * 1) + ...
+  return gradingData
+    .map((row) => `(p.${row.metric} * ${row.points})`)
+    .join(" + ");
+}
+
 // Profile routes
 router.get("/profile", async (req, res) => {
   const userId = req.query.userId;
@@ -19,7 +28,7 @@ router.get("/profile", async (req, res) => {
 
     // 2. Get coding platform usernames
     const [platforms] = await db.query(
-      `SELECT cp.name AS platform, scp.profile_username, scp.is_verified
+      `SELECT cp.name AS platform, scp.*
        FROM student_coding_profiles scp
        JOIN coding_platforms cp ON scp.platform_id = cp.platform_id
        WHERE scp.student_id = ?`,
@@ -27,122 +36,31 @@ router.get("/profile", async (req, res) => {
     );
 
     // 3. Get performance data
-    const [perfResult] = await db.query(
-      `SELECT * FROM student_performance WHERE student_id = ?`,
-      [userId]
-    );
-    const performance = perfResult.length > 0 ? perfResult[0] : null;
-
-    // 4. Compute score and rank using SQL
-    const [rankRow] = await db.query(
-      `
-  SELECT score, overall_rank, department_rank, year_rank, section_rank
-  FROM student_ranks WHERE student_id = ?`,
-      [userId]
-    );
-    const { score, overall_rank, department_rank, year_rank, section_rank } =
-      rankRow[0];
-
-    res.json({
-      ...profile,
-      coding_profiles: platforms,
-      performance,
-      score,
-      overall_rank,
-      department_rank,
-      year_rank,
-      section_rank,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-router.put("/profile", async (req, res) => {
-  const {
-    userId,
-    name,
-    batch,
-    college,
-    degree,
-    cgpa,
-    skills,
-    experience,
-    achievements,
-  } = req.body;
-
-  try {
-    await db.promise().query(
-      `UPDATE student_profiles 
-             SET name = ?, batch = ?, college = ?, degree = ?, cgpa = ?, skills = ?, experience = ?, achievements = ?
-             WHERE student_id = ?`,
-      [
-        name,
-        batch,
-        college,
-        degree,
-        cgpa,
-        skills,
-        experience,
-        achievements,
-        userId,
-      ]
-    );
-    res.json({ message: "Profile updated" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-// Coding platform profile submission
-router.post("/coding-profile", async (req, res) => {
-  const userId = req.user.userId;
-  const { platform_id, profile_username } = req.body;
-
-  try {
-    const [existing] = await db
-      .promise()
-      .query(
-        `SELECT * FROM student_coding_profiles WHERE student_id = ? AND platform_id = ?`,
-        [userId, platform_id]
-      );
-
-    if (existing.length > 0) {
-      await db.promise().query(
-        `UPDATE student_coding_profiles 
-                 SET profile_username = ?, is_verified = 0 
-                 WHERE student_id = ? AND platform_id = ?`,
-        [profile_username, userId, platform_id]
-      );
-    } else {
-      await db.promise().query(
-        `INSERT INTO student_coding_profiles (student_id, platform_id, profile_username) 
-                 VALUES (?, ?, ?)`,
-        [userId, platform_id, profile_username]
-      );
-    }
-
-    res.json({ message: "Profile submitted for verification" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-// Performance data
-router.get("/performance/:id", async (req, res) => {
-  const userId = req.params.id;
-
-  try {
     const [data] = await db.query(
       `SELECT * FROM student_performance WHERE student_id = ?`,
       [userId]
     );
-
     if (data.length === 0)
       return res.status(404).json({ message: "No performance data found" });
+    const scoreExpr = await getScoreExpression();
+    // Get all students ordered by score
+    const [rows] = await db.query(
+      `SELECT sp.student_id, sp.*,
+              ${scoreExpr} AS score
+       FROM student_profiles sp
+       JOIN student_performance p ON sp.student_id = p.student_id
+       ORDER BY score DESC`
+    );
+    // Find the rank of the requested student
+    let rank = null;
+    let student = null;
+    for (let i = 0; i < rows.length; i++) {
+      if (rows[i].student_id == userId) {
+        rank = i + 1;
+        student = rows[i];
+        break;
+      }
+    }
 
     const p = data[0];
     const totalSolved =
@@ -154,12 +72,12 @@ router.get("/performance/:id", async (req, res) => {
       p.easy_gfg +
       p.medium_gfg +
       p.hard_gfg +
-      p.problems_cf;
+      p.problems_cc;
 
     const combined = {
-      totalSolved,
-      totalContests: p.contests_cf + p.contests_gfg,
-      stars_cf: p.stars_cf,
+      totalSolved: totalSolved,
+      totalContests: p.contests_cc + p.contests_gfg,
+      stars_cc: p.stars_cc,
       badges_hr: p.badges_hr,
       last_updated: p.last_updated,
     };
@@ -178,17 +96,76 @@ router.get("/performance/:id", async (req, res) => {
         hard: p.hard_gfg,
         contests: p.contests_gfg,
       },
-      codeforces: {
-        problems: p.problems_cf,
-        contests: p.contests_cf,
-        stars: p.stars_cf,
+      codechef: {
+        problems: p.problems_cc,
+        contests: p.contests_cc,
+        stars: p.stars_cc,
       },
       hackerrank: {
         badges: p.badges_hr,
       },
     };
 
-    res.json({ combined, platformWise });
+    res.json({
+      ...profile,
+      rank,
+      coding_profiles: platforms,
+      performance: {
+        combined,
+        platformWise,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.put("/profile-update", async (req, res) => {
+  const { userId, name } = req.body;
+
+  try {
+    await db.promise().query(
+      `UPDATE student_profiles 
+             SET name = ?
+             WHERE student_id = ?`,
+      [name, userId]
+    );
+    res.json({ message: "Profile updated" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Coding platform profile submission
+// POST /student/coding-profile
+router.post("/coding-profile", async (req, res) => {
+  const { userId, platform_id, profile_username } = req.body; // get userId from body
+  console.log("Received data:", req.body);
+  try {
+    // Set status to 'pending' on every update
+    const [existing] = await db.query(
+      `SELECT * FROM student_coding_profiles WHERE student_id = ? AND platform_id = ?`,
+      [userId, platform_id]
+    );
+
+    if (existing.length > 0) {
+      await db.query(
+        `UPDATE student_coding_profiles 
+         SET profile_username = ?, is_verified = 0, verification_status = 'pending', verified_by = NULL, verification_comment = NULL
+         WHERE student_id = ? AND platform_id = ?`,
+        [profile_username, userId, platform_id]
+      );
+    } else {
+      await db.query(
+        `INSERT INTO student_coding_profiles (student_id, platform_id, profile_username, is_verified, verification_status) 
+         VALUES (?, ?, ?, 0, 'pending')`,
+        [userId, platform_id, profile_username]
+      );
+    }
+
+    res.json({ message: "Profile submitted for verification" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });

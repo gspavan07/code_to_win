@@ -26,7 +26,7 @@ const RankBadge = ({ rank }) => {
 };
 
 const TOP_X_OPTIONS = [
-  { label: "No Limit", value: "" },
+  { label: "All", value: "" },
   { label: "Top 5", value: 5 },
   { label: "Top 10", value: 10 },
   { label: "Top 50", value: 50 },
@@ -36,7 +36,7 @@ const TOP_X_OPTIONS = [
 const RankingTable = () => {
   const [ranks, setRanks] = useState([]);
   const [filters, setFilters] = useState({
-    department: "",
+    dept: "",
     year: "",
     section: "",
   });
@@ -94,55 +94,91 @@ const RankingTable = () => {
 
         {/* Filters */}
         <div className="flex flex-wrap justify-between gap-4 mb-6">
-          <div className="flex items-center gap-4">
-            <select
-              onChange={(e) => handleChange("department", e.target.value)}
-              className="border px-4 py-2 rounded-xl"
-              value={filters.department}
-            >
-              <option value="">All Branches</option>
-              <option value="CSE">CSE</option>
-              <option value="AIML">AIML</option>
-              <option value="EEE">EEE</option>
-            </select>
-            <select
-              onChange={(e) => handleChange("year", e.target.value)}
-              className="border px-4 py-2 rounded-xl"
-              value={filters.year}
-            >
-              <option value="">All Years</option>
-              <option value="1">1st</option>
-              <option value="2">2nd</option>
-              <option value="3">3rd</option>
-              <option value="4">4th</option>
-            </select>
-            <select
-              onChange={(e) => handleChange("section", e.target.value)}
-              className="border px-4 py-2 rounded-xl"
-              value={filters.section}
-            >
-              <option value="">All Sections</option>
-              <option value="A">A</option>
-              <option value="B">B</option>
-              <option value="C">C</option>
-            </select>
-            <select
-              value={topX}
-              onChange={(e) => setTopX(e.target.value)}
-              className="border px-4 py-2 rounded-xl"
-            >
-              {TOP_X_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+          <div className="flex items-center gap-4 ">
+            <div>
+              <label
+                className="block text-xs font-semibold text-gray-500 mb-1"
+                htmlFor="department"
+              >
+                Branch
+              </label>
+              <select
+                id="department"
+                onChange={(e) => handleChange("department", e.target.value)}
+                className="border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 px-4 py-2 rounded-lg transition outline-none"
+                value={filters.department}
+              >
+                <option value="">All Branches</option>
+                <option value="CSE">CSE</option>
+                <option value="AIML">AIML</option>
+                <option value="EEE">EEE</option>
+              </select>
+            </div>
+            <div>
+              <label
+                className="block text-xs font-semibold text-gray-500 mb-1"
+                htmlFor="year"
+              >
+                Year
+              </label>
+              <select
+                id="year"
+                onChange={(e) => handleChange("year", e.target.value)}
+                className="border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 px-4 py-2 rounded-lg transition outline-none"
+                value={filters.year}
+              >
+                <option value="">All Years</option>
+                <option value="1">1st</option>
+                <option value="2">2nd</option>
+                <option value="3">3rd</option>
+                <option value="4">4th</option>
+              </select>
+            </div>
+            <div>
+              <label
+                className="block text-xs font-semibold text-gray-500 mb-1"
+                htmlFor="section"
+              >
+                Section
+              </label>
+              <select
+                id="section"
+                onChange={(e) => handleChange("section", e.target.value)}
+                className="border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 px-4 py-2 rounded-lg transition outline-none"
+                value={filters.section}
+              >
+                <option value="">All Sections</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+              </select>
+            </div>
+            <div>
+              <label
+                className="block text-xs font-semibold text-gray-500 mb-1"
+                htmlFor="topx"
+              >
+                Top X
+              </label>
+              <select
+                id="topx"
+                value={topX}
+                onChange={(e) => setTopX(e.target.value)}
+                className="border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 px-4 py-2 rounded-lg transition outline-none"
+              >
+                {TOP_X_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="border px-4 py-2 rounded"
+            className="border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 px-4 py-2 rounded-lg transition outline-none"
             placeholder="Search by name or roll number"
           />
         </div>
@@ -176,7 +212,7 @@ const RankingTable = () => {
                   </div>
                   {s.name}
                 </td>
-                <td className="py-3 px-4">{s.roll_number}</td>
+                <td className="py-3 px-4">{s.student_id}</td>
                 <td className="py-3 px-4">{s.dept}</td>
                 <td className="py-3 px-4">{s.year}</td>
                 <td className="py-3 px-4">{s.section}</td>

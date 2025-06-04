@@ -36,7 +36,6 @@ export function AuthProvider({ children }) {
               }
             );
             const userData = { ...response.data.user, ...result.data };
-            console.log("User data:", userData);
             setCurrentUser(userData);
             setUserRole(response.data.user.role);
           } else {

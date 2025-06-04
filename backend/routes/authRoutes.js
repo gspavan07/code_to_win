@@ -47,7 +47,7 @@ router.post("/login", async (req, res) => {
 
     const user = rows[0];
 
-    const validPassword = await bcrypt.compare(password, user.password_hash);
+    const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword)
       return res.status(401).json({ message: "Invalid password" });
 
@@ -56,7 +56,7 @@ router.post("/login", async (req, res) => {
       process.env.JWT_SECRET
     );
 
-    delete user.password_hash;
+    delete user.password;
 
     res.json({
       token,
@@ -79,7 +79,7 @@ router.get("/validate", async (req, res) => {
     if (rows.length === 0) return res.status(401).json({ valid: false });
 
     const user = rows[0];
-    delete user.password_hash;
+    delete user.password;
 
     res.json({
       valid: true,
