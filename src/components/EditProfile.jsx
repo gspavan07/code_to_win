@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 
-const EditProfile = ({ isOpen, user, onClose }) => {
+const EditProfile = ({ option, isOpen, user, onClose }) => {
+  const [profile, setProfile] = useState(null);
   // This is the "saved" form data (simulate initial saved data)
   const savedData = {
     name: user.name || "",
@@ -104,49 +105,53 @@ const EditProfile = ({ isOpen, user, onClose }) => {
               disabled
             />
           </div>
-
-          {/* Year - read-only */}
-          <div className="col-span-2 md:col-span-1">
-            <label htmlFor="year" className="text-sm font-medium flex">
-              Year
-            </label>
-            <input
-              id="year"
-              name="year"
-              value={form.year}
-              onChange={handleChange}
-              className="mt-1 w-full border border-gray-300 rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
-              disabled
-            />
-          </div>
-          {/* Section - read-only */}
-          <div className="col-span-2 md:col-span-1">
-            <label htmlFor="section" className="text-sm font-medium flex">
-              Section
-            </label>
-            <input
-              id="section"
-              name="section"
-              value={form.section}
-              onChange={handleChange}
-              className="mt-1 w-full border border-gray-300 rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
-              disabled
-            />
-          </div>
-          {/* Email - read-only */}
-          <div className="col-span-2">
-            <label htmlFor="email" className="text-sm font-medium flex">
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              className="mt-1 w-full border border-gray-300 rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
-              disabled
-            />
-          </div>
+          {}
+          {option === "edit" && (
+            <div>
+              {/* Year - read-only */}
+              <div className="col-span-2 md:col-span-1">
+                <label htmlFor="year" className="text-sm font-medium flex">
+                  Year
+                </label>
+                <input
+                  id="year"
+                  name="year"
+                  value={form.year}
+                  onChange={handleChange}
+                  className="mt-1 w-full border border-gray-300 rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
+                  disabled
+                />
+              </div>
+              {/* Section - read-only */}
+              <div className="col-span-2 md:col-span-1">
+                <label htmlFor="section" className="text-sm font-medium flex">
+                  Section
+                </label>
+                <input
+                  id="section"
+                  name="section"
+                  value={form.section}
+                  onChange={handleChange}
+                  className="mt-1 w-full border border-gray-300 rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
+                  disabled
+                />
+              </div>
+              {/* Email - read-only */}
+              <div className="col-span-2">
+                <label htmlFor="email" className="text-sm font-medium flex">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  className="mt-1 w-full border border-gray-300 rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
+                  disabled
+                />
+              </div>
+            </div>
+          )}
           {/* Submit button under form */}
           <div className="col-span-2 flex justify-end space-x-3 mt-4">
             <button

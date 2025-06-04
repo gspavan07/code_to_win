@@ -72,6 +72,7 @@ const StudentDashboard = () => {
               <EditProfile
                 isOpen={showModal}
                 user={currentUser}
+                option={"edit"}
                 onClose={() => setShowModal(false)}
               />
               <p className="font-semibold">Personal Information</p>
@@ -88,6 +89,34 @@ const StudentDashboard = () => {
                 <span className="font-semibold text-left">Email:</span>{" "}
                 {currentUser.email}
               </p>
+            </div>
+            <hr className="my-4" />
+            <div className="text-justify space-y-4">
+              <button
+                onClick={() => setShowModal(true)}
+                className="text-blue-600 underline float-end "
+              >
+                Update Profiles
+              </button>
+              <EditProfile
+                isOpen={showModal}
+                user={currentUser}
+                option={"update_profiles"}
+                onClose={() => setShowModal(false)}
+              />
+              <p className="font-semibold">Coding Profiles</p>
+
+              <div className="flex flex-col gap-2">
+                {currentUser.coding_profiles.map((profile) => (
+                  <p key={profile.platform} className="flex justify-between">
+                    <span className="font-semibold text-left">
+                      {profile.platform}
+                      <FiCheck className="inline ml-1 text-green-500" />
+                    </span>{" "}
+                    <p className="text-gray-500">{profile.profile_username}</p>
+                  </p>
+                ))}
+              </div>
             </div>
           </div>
 
