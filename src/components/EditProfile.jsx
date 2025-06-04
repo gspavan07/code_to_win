@@ -52,7 +52,7 @@ const EditProfile = ({ option, isOpen, user, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-5 min-h-screen bg-black/50 ">
-      <div className="bg-white rounded-xl p-6 w-full max-w-3xl shadow-lg relative">
+      <div className="bg-white rounded-xl p-6 w-full max-w-xl shadow-lg relative">
         <button
           onClick={handleCancel}
           className="absolute top-4 right-4 text-xl font-bold"
@@ -66,13 +66,7 @@ const EditProfile = ({ option, isOpen, user, onClose }) => {
           Update your personal details here
         </p>
 
-        <div className="flex items-center space-x-4 mb-6">
-          <img
-            src="/profile_bg.jpeg"
-            alt="Profile"
-            className="w-16 h-16 rounded-full shadow-lg"
-          />
-        </div>
+        
 
         <form
           onSubmit={handleSubmit}
