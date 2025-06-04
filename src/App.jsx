@@ -16,6 +16,7 @@ import { useAuth } from "./context/AuthContext";
 import Dev from "./pages/Dev";
 import ContactUs from "./pages/Contact";
 import RankingTable from "./components/Ranking";
+import Home from "./pages/Home";
 
 const ProtectedRoute = ({ children, role }) => {
   const { currentUser, userRole } = useAuth();
@@ -38,7 +39,7 @@ const App = () => {
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>
             {/* Public routes */}
-            <Route path="/" element={<Login />} />
+            <Route path="/" element={<Home />} />
             <Route path="/dev" element={<Dev />} />
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/rank" element={<RankingTable />} />
