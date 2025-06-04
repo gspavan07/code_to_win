@@ -51,7 +51,7 @@ const EditProfile = ({ option, isOpen, user, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-5 bg-black/50 ">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-5 min-h-screen bg-black/50 ">
       <div className="bg-white rounded-xl p-6 w-full max-w-3xl shadow-lg relative">
         <button
           onClick={handleCancel}
@@ -105,53 +105,50 @@ const EditProfile = ({ option, isOpen, user, onClose }) => {
               disabled
             />
           </div>
-          {}
-          {option === "edit" && (
-            <div>
-              {/* Year - read-only */}
-              <div className="col-span-2 md:col-span-1">
-                <label htmlFor="year" className="text-sm font-medium flex">
-                  Year
-                </label>
-                <input
-                  id="year"
-                  name="year"
-                  value={form.year}
-                  onChange={handleChange}
-                  className="mt-1 w-full border border-gray-300 rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
-                  disabled
-                />
-              </div>
-              {/* Section - read-only */}
-              <div className="col-span-2 md:col-span-1">
-                <label htmlFor="section" className="text-sm font-medium flex">
-                  Section
-                </label>
-                <input
-                  id="section"
-                  name="section"
-                  value={form.section}
-                  onChange={handleChange}
-                  className="mt-1 w-full border border-gray-300 rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
-                  disabled
-                />
-              </div>
-              {/* Email - read-only */}
-              <div className="col-span-2">
-                <label htmlFor="email" className="text-sm font-medium flex">
-                  Email
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  className="mt-1 w-full border border-gray-300 rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
-                  disabled
-                />
-              </div>
-            </div>
-          )}
+
+          {/* Year - read-only */}
+          <div className="col-span-2 md:col-span-1">
+            <label htmlFor="year" className="text-sm font-medium flex">
+              Year
+            </label>
+            <input
+              id="year"
+              name="year"
+              value={form.year}
+              onChange={handleChange}
+              className="mt-1 w-full border border-gray-300 rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
+              disabled
+            />
+          </div>
+          {/* Section - read-only */}
+          <div className="col-span-2 md:col-span-1">
+            <label htmlFor="section" className="text-sm font-medium flex">
+              Section
+            </label>
+            <input
+              id="section"
+              name="section"
+              value={form.section}
+              onChange={handleChange}
+              className="mt-1 w-full border border-gray-300 rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
+              disabled
+            />
+          </div>
+          {/* Email - read-only */}
+          <div className="col-span-2">
+            <label htmlFor="email" className="text-sm font-medium flex">
+              Email
+            </label>
+            <input
+              id="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              className="mt-1 w-full border border-gray-300 rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
+              disabled
+            />
+          </div>
+
           {/* Submit button under form */}
           <div className="col-span-2 flex justify-end space-x-3 mt-4">
             <button
