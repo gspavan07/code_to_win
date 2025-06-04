@@ -7,8 +7,10 @@ import EditProfile from "../../components/EditProfile";
 import Navbar from "../../components/Navbar";
 import StatsCard from "../../components/ui/StatsCard";
 import PlatformCard from "../../components/ui/PlatformCard";
+import UpdateProfile from "../../components/ui/updateprofile";
 const StudentDashboard = () => {
   const [showModal, setShowModal] = React.useState(false);
+  const [showupdateModal, setShowUpdateModal] = React.useState(false);
   const { currentUser } = useAuth();
   const perf = currentUser.performance;
   const formattedDate = dayjs(perf.last_updated).format("DD/MM/YYYY | hh:mm A");
@@ -50,17 +52,18 @@ const StudentDashboard = () => {
         {/* Profile Section */}
         <div className="p-4 flex md:flex-row flex-col gap-4">
           {/* Sidebar */}
-          <div className="bg-white rounded-xl shadow-lg p-6 text-center lg:w-lg h-fit -mt-24 z-20">
-            <img
+          <div className="bg-white rounded-xl shadow-lg p-6  lg:w-md h-fit -mt-24 z-20">
+            <div className="flex flex-r items-center mb-4">
+              <img
               src="/profile_bg.jpeg"
               alt="sunil"
-              className="object-cover w-32 h-32 rounded-full mx-auto mb-2"
+              className="object-cover w-24 h-24 rounded  mb-2"
             />
-            <h2 className="text-lg font-bold">{currentUser.name}</h2>
-            <p className="text-sm text-gray-500 mb-2">University Rank</p>
-            <p className="text-2xl font-semibold text-gray-800">
+            <div className="ml-3"><h2 className="text-lg font-bold">{currentUser.name}</h2>
+            <p className="text-sm text-gray-500  mt-2">University Rank</p>
+            <p className="text-xl font-semibold text-gray-800">
               {currentUser.overall_rank}
-            </p>
+            </p></div></div>
             <hr className="my-4" />
             <div className="text-justify space-y-4">
               <button
@@ -93,16 +96,16 @@ const StudentDashboard = () => {
             <hr className="my-4" />
             <div className="text-justify space-y-4">
               <button
-                onClick={() => setShowModal(true)}
+                onClick={() => setShowUpdateModal(true)}
                 className="text-blue-600 underline float-end "
               >
                 Update Profiles
               </button>
-              <EditProfile
-                isOpen={showModal}
+              <UpdateProfile
+                isOpen={showupdateModal}
                 user={currentUser}
                 option={"update_profiles"}
-                onClose={() => setShowModal(false)}
+                onClose={() => setShowUpdateModal(false)}
               />
               <p className="font-semibold">Coding Profiles</p>
 
@@ -121,8 +124,8 @@ const StudentDashboard = () => {
           </div>
 
           {/* Main Section */}
-          <div className="w-full rounded-xl bg-white">
-            <div className="flex flex-wrap gap-1 mb-4">
+          <div className="w-full rounded-xl bg-white p-2">
+            <div className="flex flex-wrap gap-x-2 gap-y-1 mb-4">
               <span className="px-4 py-2 bg-white rounded-xl shadow-sm">
                 Campus:{" "}
                 <span className="font-semibold">{currentUser.college}</span>
