@@ -6,7 +6,6 @@ import dayjs from "dayjs";
 import Navbar from "../../components/Navbar";
 import StatsCard from "../../components/ui/StatsCard";
 import PlatformCard from "../../components/ui/PlatformCard";
-import UpdateProfile from "../../components/ui/updateprofile";
 import Modals from "../../components/Modals";
 const StudentDashboard = () => {
   const [showModal, setShowModal] = React.useState(false);
@@ -71,7 +70,7 @@ const StudentDashboard = () => {
             <div className="text-justify space-y-4">
               <button
                 onClick={() => setActiveModal("edit")}
-                  className="text-blue-600 underline float-end "
+                  className="text-blue-600 underline float-end cursor-pointer"
               >
                 Edit
               </button>
@@ -94,18 +93,12 @@ const StudentDashboard = () => {
             <hr className="my-4" />
             <div className="text-justify space-y-4">
               <button
-                onClick={() => setUpdateProfile(true)}
-                className="text-blue-600 underline float-end "
+                onClick={() => setActiveModal("updateProfile")}
+                className="text-blue-600 underline float-end cursor-pointer"
               >
                 Update Profiles
               </button>
-              {updateProfile && (
-                <UpdateProfile
-                  student_id={currentUser.student_id}
-                  profiles={currentUser.coding_profiles}
-                  onClose={() => setUpdateProfile(null)}
-                />
-              )}
+             
 
               <p className="font-semibold">Coding Profiles</p>
 
@@ -187,10 +180,10 @@ const StudentDashboard = () => {
             </div>
 
             {/* Platform-wise Stats */}
-            <div className="grid grid-cols-2 gap-2 md:gap-6 md:p-4">
+            <div className="grid grid-cols-2 gap-2 md:gap-6 md:p-4 ">
               <PlatformCard
                 name="LeetCode"
-                color="bg-yellow-400"
+                color=" hover:text-yellow-600 hover:shadow-yellow-600"
                 total={
                   currentUser.performance.platformWise.leetcode.easy +
                   currentUser.performance.platformWise.leetcode.medium +
@@ -204,7 +197,7 @@ const StudentDashboard = () => {
               />
               <PlatformCard
                 name="CodeChef"
-                color="bg-orange-600"
+                color=" hover:text-orange-900 hover:shadow-orange-900"
                 total={currentUser.performance.platformWise.codechef.contests}
                 subtitle="Contests Participated"
                 breakdown={{
@@ -213,7 +206,7 @@ const StudentDashboard = () => {
               />
               <PlatformCard
                 name="GeeksforGeeks"
-                color="bg-green-600"
+                color=" hover:text-green-600 hover:shadow-green-600"
                 total={
                   currentUser.performance.platformWise.gfg.school +
                   currentUser.performance.platformWise.gfg.basic +
@@ -231,7 +224,7 @@ const StudentDashboard = () => {
               />
               <PlatformCard
                 name="HackerRank"
-                color="bg-green-900"
+                color=" hover:text-green-900 hover:shadow-green-900"
                 total={currentUser.performance.platformWise.hackerrank.badges}
                 subtitle="Badges Gained"
               />
@@ -240,8 +233,8 @@ const StudentDashboard = () => {
         </div>
         <Modals
         activeModal={activeModal}
-        user={currentUser}
-         onClose={() => setActiveModal(null)}
+          user={currentUser}
+          onClose={() => setActiveModal(null)}
             />
       </div>
     </>
