@@ -34,11 +34,31 @@ const UpdateProfile = ({ student_id, profiles = [], onClose }) => {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    // For each filled username, call the API
-    const filled = optionList.filter((opt) => usernames[opt.key]?.trim());
+
+    // Create a map of previous usernames for quick lookup
+    const previousUsernames = optionList.reduce((acc, opt) => {
+      const found = profiles.find(
+        (p) => p.platform?.toLowerCase() === opt.label.toLowerCase()
+      );
+      acc[opt.key] = found ? found.profile_username : "";
+      return acc;
+    }, {});
+
+    // Only send if username is filled and changed
+    const changed = optionList.filter(
+      (opt) =>
+        usernames[opt.key]?.trim() &&
+        usernames[opt.key].trim() !== previousUsernames[opt.key]
+    );
+
+    if (changed.length === 0) {
+      alert("No changes to submit.");
+      return;
+    }
+
     try {
       await Promise.all(
-        filled.map((opt) =>
+        changed.map((opt) =>
           axios.post("http://localhost:5000/student/coding-profile", {
             userId: student_id,
             platform_id: platformIdMap[opt.key],
