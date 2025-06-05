@@ -163,7 +163,7 @@ const StudentDashboard = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-2 mb-4 xl:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 mb-4 xl:grid-cols-4 gap-3 p-2 border border-gray-200 rounded-lg">
               <StatsCard
                 icon={<FiCode />}
                 title="Total Problems"
