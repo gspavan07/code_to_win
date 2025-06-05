@@ -40,27 +40,35 @@ const RankingTable = () => {
     year: "",
     section: "",
   });
-  const [topX, setTopX] = useState(""); // "" means no limit
+  const [topX, setTopX] = useState("");
   const [search, setSearch] = useState("");
   const [selectedStudent, setSelectedStudent] = useState(null);
-
+  const [branches, setBranches] = useState([]);
+  const [sections, setSections] = useState([]);
+  console.log(branches, sections, filters);
   const fetchRanks = async () => {
     try {
       let params = { ...filters };
-      if (topX) params.limit = topX; // Only add limit if topX is set
+      if (topX) params.limit = topX;
 
-      if (!filters.department && !filters.year && !filters.section) {
-        const res = await axios.get("http://localhost:5000/ranking/overall", {
+      let res;
+      if (!filters.dept && !filters.year && !filters.section) {
+        res = await axios.get("http://localhost:5000/ranking/overall", {
           params,
         });
-        setRanks(res.data);
+        const uniqueBranches = [...new Set(res.data.map((s) => s.dept))];
+        const uniqueSections = [...new Set(res.data.map((s) => s.section))];
+        setBranches(uniqueBranches);
+        setSections(uniqueSections);
       } else {
-        const res = await axios.get("http://localhost:5000/ranking/filter", {
+        res = await axios.get("http://localhost:5000/ranking/filter", {
           params,
         });
-        setRanks(res.data);
       }
+
+      setRanks(res.data);
     } catch (err) {
+      console.error(err);
       setRanks([]);
     }
   };
@@ -82,7 +90,6 @@ const RankingTable = () => {
 
   return (
     <>
-      {/* Show ViewProfile only if a student is selected */}
       {selectedStudent && (
         <ViewProfile
           student={selectedStudent}
@@ -104,14 +111,16 @@ const RankingTable = () => {
               </label>
               <select
                 id="department"
-                onChange={(e) => handleChange("department", e.target.value)}
+                onChange={(e) => handleChange("dept", e.target.value)}
                 className="border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 px-4 py-2 rounded-lg transition outline-none"
-                value={filters.department}
+                value={filters.dept}
               >
                 <option value="">All Branches</option>
-                <option value="CSE">CSE</option>
-                <option value="AIML">AIML</option>
-                <option value="EEE">EEE</option>
+                {branches.map((b) => (
+                  <option key={b} value={b}>
+                    {b}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
@@ -148,9 +157,11 @@ const RankingTable = () => {
                 value={filters.section}
               >
                 <option value="">All Sections</option>
-                <option value="A">A</option>
-                <option value="B">B</option>
-                <option value="C">C</option>
+                {sections.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
@@ -220,7 +231,7 @@ const RankingTable = () => {
                 <td className="py-3 px-4 ">
                   <div
                     onClick={() => setSelectedStudent(s)}
-                    className="text-gray-700 px-2 py-1 justify-center rounded  hover:text-blue-700 flex items-center gap-1 cursor-pointer"
+                    className="text-gray-700 px-2 py-1 justify-center rounded hover:text-blue-700 flex items-center gap-1 cursor-pointer"
                   >
                     <TbUserShare /> Profile
                   </div>

@@ -10,6 +10,7 @@ app.use(express.json());
 app.use("/auth", require("./routes/authRoutes"));
 app.use("/student", require("./routes/studentRoutes"));
 app.use("/faculty", require("./routes/facultyRoutes"));
+app.use("/hod", require("./routes/hodRoutes"));
 app.use("/ranking", require("./routes/rankingRoutes"));
 // async function recomputeRanks() {
 //   // Step 1: Fetch all grading weights

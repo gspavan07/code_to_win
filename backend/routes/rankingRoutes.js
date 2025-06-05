@@ -36,14 +36,14 @@ router.get("/overall", async (req, res) => {
 
 // GET /ranking/filter?department=CSE&section=A&year=3
 router.get("/filter", async (req, res) => {
-  const { department, section, year } = req.query;
+  const { dept, section, year } = req.query;
   try {
     const scoreExpr = await getScoreExpression();
     let where = "WHERE 1=1";
     const params = [];
-    if (department) {
+    if (dept) {
       where += " AND sp.dept = ?";
-      params.push(department);
+      params.push(dept);
     }
     if (section) {
       where += " AND sp.section = ?";
