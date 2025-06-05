@@ -59,7 +59,7 @@ function FacultyDashboard() {
             </div>
           </div>
           {/* Section Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-white p-4 rounded-lg shadow">
               <h2 className="text-gray-500 text-sm">Total Students</h2>
               <p className="text-2xl font-bold">450</p>
@@ -82,7 +82,7 @@ function FacultyDashboard() {
             </div>
           </div>
           {/* Tabs */}
-          <div className="flex flex-wrap justify-around rounded bg-gray-100 border-gray-200 border gap-2 md:gap-4 p-1 mb-4 text-base">
+          <div className="grid grid-cols-2 md:grid-cols-4 justify-around rounded bg-gray-100 border-gray-200 border gap-2 md:gap-4 p-1 mb-4 text-base">
             <button
               onClick={() => setSelectedTab("StudentRanking")}
               className={`flex-1 min-w-[120px] py-1 rounded ${
@@ -129,17 +129,17 @@ function FacultyDashboard() {
               </p>
 
               {/* Add management features here */}
-              <div className="w-full overflow-x-auto">
+              <div className="w-full">
                 <table className="min-w-full bg-white border rounded-lg overflow-hidden shadow text-sm">
                   <thead className="bg-gray-100 text-center">
                     <tr>
-                      <th className="py-3 px-4">Rank</th>
-                      <th className="py-3 px-4 text-left">Student</th>
-                      <th className="py-3 px-4">Roll Number</th>
-                      <th className="py-3 px-4">Branch</th>
-                      <th className="py-3 px-4">Year</th>
-                      <th className="py-3 px-4">Section</th>
-                      <th className="py-3 px-4">Actions</th>
+                    <th className="py-3 px-4">Rank</th>
+              <th className="py-3 px-4 text-left">Student</th>
+              <th className="py-3 px-4">Roll Number</th>
+              <th className="py-3 px-4 sr-only md:not-sr-only">Branch</th>
+              <th className="py-3 px-4  sr-only md:not-sr-only">Year</th>
+              <th className="py-3 px-4  sr-only md:not-sr-only">Section</th>
+              <th className="py-3 px-4">Actions</th>
                     </tr>
                   </thead>
                   {isLoading && <p>Loading...</p>}
@@ -153,7 +153,7 @@ function FacultyDashboard() {
                         >
                           <td className="py-3 px-4 ">{i + 1}</td>
                           <td className="py-3 px-4 text-left flex items-center gap-2">
-                            <div className="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center text-sm justify-center font-bold">
+                            <div className="hidden bg-blue-100 text-blue-800 rounded-full w-8 h-8 md:flex items-center text-sm justify-center font-bold">
                               {student.name
                                 ?.split(" ")
                                 .map((n) => n[0])
@@ -162,9 +162,9 @@ function FacultyDashboard() {
                             {student.name}
                           </td>
                           <td className="py-3 px-4">{student.student_id}</td>
-                          <td className="py-3 px-4">{student.dept}</td>
-                          <td className="py-3 px-4">{student.year}</td>
-                          <td className="py-3 px-4">{student.section}</td>
+                          <td className="py-3 px-4 sr-only md:not-sr-only">{student.dept}</td>
+                          <td className="py-3 px-4 sr-only md:not-sr-only">{student.year}</td>
+                          <td className="py-3 px-4 sr-only md:not-sr-only">{student.section}</td>
 
                           <td className="py-3 px-4 ">
                             <div

@@ -2,24 +2,25 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { TbUserShare } from "react-icons/tb";
 import ViewProfile from "./ViewProfile";
+import { FaSearch, FaSearchMinus } from "react-icons/fa";
 
 const RankBadge = ({ rank }) => {
   if (rank === 1)
     return (
       <span className="bg-yellow-400 text-white px-2 py-1 rounded-full">
-        1st 🥇
+        🥇
       </span>
     );
   if (rank === 2)
     return (
       <span className="bg-gray-400 text-white px-2 py-1 rounded-full">
-        2nd 🥈
+        🥈
       </span>
     );
   if (rank === 3)
     return (
       <span className="bg-orange-400 text-white px-2 py-1 rounded-full">
-        3rd 🥉
+        🥉
       </span>
     );
   return <span>{rank}th</span>;
@@ -97,11 +98,11 @@ const RankingTable = () => {
         />
       )}
       <div className="p-6">
-        <h1 className="text-2xl font-semibold mb-4">🏆 Student Rankings</h1>
+        <h1 className="md:text-2xl text-xl font-semibold mb-4">🏆 Student Rankings</h1>
 
         {/* Filters */}
-        <div className="flex flex-wrap justify-between gap-4 mb-6">
-          <div className="flex items-center gap-4 ">
+        <div className="flex flex-wrap justify-between gap-2 mb-6">
+          <div className="grid grid-cols-3 md:grid-cols-4  items-center gap-4 text-sm ">
             <div>
               <label
                 className="block text-xs font-semibold text-gray-500 mb-1"
@@ -112,7 +113,7 @@ const RankingTable = () => {
               <select
                 id="department"
                 onChange={(e) => handleChange("dept", e.target.value)}
-                className="border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 px-4 py-2 rounded-lg transition outline-none"
+                className="border border-gray-300  hover:bg-blue-50 p-2 rounded-lg transition outline-none"
                 value={filters.dept}
               >
                 <option value="">All Branches</option>
@@ -133,7 +134,7 @@ const RankingTable = () => {
               <select
                 id="year"
                 onChange={(e) => handleChange("year", e.target.value)}
-                className="border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 px-4 py-2 rounded-lg transition outline-none"
+                className="border border-gray-300 hover:bg-blue-50 p-2 rounded-lg transition outline-none"
                 value={filters.year}
               >
                 <option value="">All Years</option>
@@ -153,12 +154,12 @@ const RankingTable = () => {
               <select
                 id="section"
                 onChange={(e) => handleChange("section", e.target.value)}
-                className="border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 px-4 py-2 rounded-lg transition outline-none"
+                className="border border-gray-300 hover:bg-blue-50 p-2 rounded-lg transition outline-none"
                 value={filters.section}
               >
                 <option value="">All Sections</option>
                 {sections.map((s) => (
-                  <option key={s} value={s}>
+                  <option key={s} value={s} >
                     {s}
                   </option>
                 ))}
@@ -175,7 +176,7 @@ const RankingTable = () => {
                 id="topx"
                 value={topX}
                 onChange={(e) => setTopX(e.target.value)}
-                className="border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 px-4 py-2 rounded-lg transition outline-none"
+                className="border border-gray-300 hover:bg-blue-50 p-2 rounded-lg transition outline-none"
               >
                 {TOP_X_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -184,26 +185,40 @@ const RankingTable = () => {
                 ))}
               </select>
             </div>
+            <div className="relative max-w-xs block md:hidden mt-5">
+  <FaSearch className="absolute left-3 md:top-1/3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 opacity-85 text-blue-800" />
+  <input
+    type="text"
+    placeholder="Search students..."
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+    className="pl-10 pr-3 py-2 border border-gray-300 rounded-lg hover:bg-blue-50  focus:ring-1 focus:border-blue-100 transition focus:outline-none"
+  />
+</div>
           </div>
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 px-4 py-2 rounded-lg transition outline-none"
-            placeholder="Search by name or roll number"
-          />
+          <div className="relative max-w-xs hidden md:block">
+  <FaSearch className="absolute left-3 md:top-1/3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 opacity-85 text-blue-800" />
+  <input
+    type="text"
+    placeholder="Search students..."
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+    className="pl-10 pr-3 py-2 border border-gray-300 rounded-lg hover:bg-blue-50  focus:ring-1 focus:border-blue-100 transition focus:outline-none"
+  />
+</div>
+
         </div>
 
         {/* Table */}
-        <table className="min-w-full bg-white border rounded-lg overflow-hidden shadow">
+        <table className="min-w-full bg-white border rounded-lg overflow-hidden shadow text-sm md:text-base">
           <thead className="bg-gray-100 text-center">
             <tr>
               <th className="py-3 px-4">Rank</th>
               <th className="py-3 px-4 text-left">Student</th>
               <th className="py-3 px-4">Roll Number</th>
-              <th className="py-3 px-4">Branch</th>
-              <th className="py-3 px-4">Year</th>
-              <th className="py-3 px-4">Section</th>
+              <th className="py-3 px-4 sr-only md:not-sr-only">Branch</th>
+              <th className="py-3 px-4  sr-only md:not-sr-only">Year</th>
+              <th className="py-3 px-4  sr-only md:not-sr-only">Section</th>
               <th className="py-3 px-4">Score</th>
               <th className="py-3 px-4">Actions</th>
             </tr>
@@ -215,7 +230,7 @@ const RankingTable = () => {
                   <RankBadge rank={s.rank} />
                 </td>
                 <td className="py-3 px-4 text-left flex items-center gap-2">
-                  <div className="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center text-sm justify-center font-bold">
+                  <div className=" hidden bg-blue-100 text-blue-800 rounded-full w-8 h-8 md:flex items-center text-sm justify-center font-bold">
                     {s.name
                       ?.split(" ")
                       .map((n) => n[0])
@@ -224,9 +239,9 @@ const RankingTable = () => {
                   {s.name}
                 </td>
                 <td className="py-3 px-4">{s.student_id}</td>
-                <td className="py-3 px-4">{s.dept}</td>
-                <td className="py-3 px-4">{s.year}</td>
-                <td className="py-3 px-4">{s.section}</td>
+                <td className="py-3 px-4 sr-only md:not-sr-only">{s.dept}</td>
+                <td className="py-3 px-4 sr-only md:not-sr-only">{s.year}</td>
+                <td className="py-3 px-4 sr-only md:not-sr-only">{s.section}</td>
                 <td className="py-3 px-4 font-semibold">{s.score}</td>
                 <td className="py-3 px-4 ">
                   <div
