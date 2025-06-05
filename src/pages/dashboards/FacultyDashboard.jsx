@@ -133,13 +133,19 @@ function FacultyDashboard() {
                 <table className="min-w-full bg-white border rounded-lg overflow-hidden shadow text-sm">
                   <thead className="bg-gray-100 text-center">
                     <tr>
-                    <th className="py-3 px-4">Rank</th>
-              <th className="py-3 px-4 text-left">Student</th>
-              <th className="py-3 px-4">Roll Number</th>
-              <th className="py-3 px-4 sr-only md:not-sr-only">Branch</th>
-              <th className="py-3 px-4  sr-only md:not-sr-only">Year</th>
-              <th className="py-3 px-4  sr-only md:not-sr-only">Section</th>
-              <th className="py-3 px-4">Actions</th>
+                      <th className="py-3 px-4">Rank</th>
+                      <th className="py-3 px-4 text-left">Student</th>
+                      <th className="py-3 px-4">Roll Number</th>
+                      <th className="py-3 px-4 sr-only md:not-sr-only">
+                        Branch
+                      </th>
+                      <th className="py-3 px-4  sr-only md:not-sr-only">
+                        Year
+                      </th>
+                      <th className="py-3 px-4  sr-only md:not-sr-only">
+                        Section
+                      </th>
+                      <th className="py-3 px-4">Actions</th>
                     </tr>
                   </thead>
                   {isLoading && <p>Loading...</p>}
@@ -162,9 +168,15 @@ function FacultyDashboard() {
                             {student.name}
                           </td>
                           <td className="py-3 px-4">{student.student_id}</td>
-                          <td className="py-3 px-4 sr-only md:not-sr-only">{student.dept}</td>
-                          <td className="py-3 px-4 sr-only md:not-sr-only">{student.year}</td>
-                          <td className="py-3 px-4 sr-only md:not-sr-only">{student.section}</td>
+                          <td className="py-3 px-4 sr-only md:not-sr-only">
+                            {student.dept}
+                          </td>
+                          <td className="py-3 px-4 sr-only md:not-sr-only">
+                            {student.year}
+                          </td>
+                          <td className="py-3 px-4 sr-only md:not-sr-only">
+                            {student.section}
+                          </td>
 
                           <td className="py-3 px-4 ">
                             <div
@@ -206,15 +218,15 @@ function FacultyDashboard() {
           )}
           {/* Add Student */}
           {selectedTab === "AddStudent" && (
-           <div className="flex flex-col lg:flex-row gap-6 p-0 md:p-6 bg-gray-50 min-h-screen">
-           {/* Add Individual Student Form */}
-           <div className="w-full lg:w-1/2 bg-white p-4 md:p-6 rounded shadow">
-             <h2 className="text-xl px-4 font-bold text-gray-900 mb-1">
-               Add Individual Student
-             </h2>
-             <p className="text-sm text-gray-500 mb-6">
-               Add a single student to your section
-             </p>
+            <div className="flex flex-col lg:flex-row gap-6 p-0 md:p-6 bg-gray-50 min-h-screen">
+              {/* Add Individual Student Form */}
+              <div className="w-full lg:w-1/2 bg-white p-4 md:p-6 rounded shadow">
+                <h2 className="text-xl px-4 font-bold text-gray-900 mb-1">
+                  Add Individual Student
+                </h2>
+                <p className="text-sm text-gray-500 mb-6">
+                  Add a single student to your section
+                </p>
 
                 <form className="space-y-4">
                   <div>
