@@ -7,19 +7,19 @@ import { FaSearch, FaSearchMinus } from "react-icons/fa";
 const RankBadge = ({ rank }) => {
   if (rank === 1)
     return (
-      <span className="bg-yellow-400 text-white px-2 py-1 rounded-full">
+      <span className=" text-white px-2 py-1 rounded-full">
         🥇
       </span>
     );
   if (rank === 2)
     return (
-      <span className="bg-gray-400 text-white px-2 py-1 rounded-full">
+      <span className=" text-white px-2 py-1 rounded-full">
         🥈
       </span>
     );
   if (rank === 3)
     return (
-      <span className="bg-orange-400 text-white px-2 py-1 rounded-full">
+      <span className=" text-white px-2 py-1 rounded-full">
         🥉
       </span>
     );
@@ -46,7 +46,6 @@ const RankingTable = () => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [branches, setBranches] = useState([]);
   const [sections, setSections] = useState([]);
-  console.log(branches, sections, filters);
   const fetchRanks = async () => {
     try {
       let params = { ...filters };
@@ -203,7 +202,7 @@ const RankingTable = () => {
     placeholder="Search students..."
     value={search}
     onChange={(e) => setSearch(e.target.value)}
-    className="pl-10 pr-3 py-2 border border-gray-300 rounded-lg hover:bg-blue-50  focus:ring-1 focus:border-blue-100 transition focus:outline-none"
+    className="pl-10 pr-3 py-2 border border-gray-300 rounded-lg hover:bg-blue-50  focus:ring-1   transition outline-none "
   />
 </div>
 

@@ -1,13 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { FiCheck, FiClock, FiCode, FiX } from "react-icons/fi";
 
 import { useAuth } from "../../context/AuthContext";
 import dayjs from "dayjs";
-import EditProfile from "../../components/EditProfile";
 import Navbar from "../../components/Navbar";
 import StatsCard from "../../components/ui/StatsCard";
 import PlatformCard from "../../components/ui/PlatformCard";
 import UpdateProfile from "../../components/ui/updateprofile";
+import Modals from "../../components/Modals";
 const StudentDashboard = () => {
   const [showModal, setShowModal] = React.useState(false);
   const [updateProfile, setUpdateProfile] = React.useState(false);
@@ -15,6 +15,7 @@ const StudentDashboard = () => {
   const formattedDate = dayjs(
     currentUser.performance.combined.last_updated
   ).format("DD/MM/YYYY | hh:mm A");
+  const [activeModal, setActiveModal] = useState(null);
 
   const easyProblems =
     currentUser.performance.platformWise.leetcode.easy +
@@ -69,17 +70,12 @@ const StudentDashboard = () => {
             <hr className="my-4" />
             <div className="text-justify space-y-4">
               <button
-                onClick={() => setShowModal(true)}
-                className="text-blue-600 underline float-end "
+                onClick={() => setActiveModal("edit")}
+                  className="text-blue-600 underline float-end "
               >
                 Edit
               </button>
-              <EditProfile
-                isOpen={showModal}
-                user={currentUser}
-                option={"edit"}
-                onClose={() => setShowModal(false)}
-              />
+             
               <p className="font-semibold">Personal Information</p>
 
               <p className="flex justify-between">
@@ -242,6 +238,11 @@ const StudentDashboard = () => {
             </div>
           </div>
         </div>
+        <Modals
+        activeModal={activeModal}
+        user={currentUser}
+         onClose={() => setActiveModal(null)}
+            />
       </div>
     </>
   );

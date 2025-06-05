@@ -8,6 +8,7 @@ import { TbUserShare } from "react-icons/tb";
 import ViewProfile from "../../components/ViewProfile";
 import axios from "axios";
 import CodingProfileRequests from "../../components/ui/CodingProfileRequests";
+import { FaSearch } from "react-icons/fa";
 
 function HeadDashboard() {
   const { currentUser } = useAuth();
@@ -17,7 +18,7 @@ function HeadDashboard() {
   const [filterYear, setFilterYear] = useState("");
   const [filterSection, setFilterSection] = useState("");
   // Add search state
-  const [searchTerm, setSearchTerm] = useState("");
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     // Fetch students when the component mounts or filters change
@@ -44,8 +45,8 @@ function HeadDashboard() {
     (student) =>
       (filterYear === "" || student.year === filterYear) &&
       (filterSection === "" || student.section === filterSection) &&
-      (student.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.student_id?.toLowerCase().includes(searchTerm.toLowerCase()))
+      (student.name?.toLowerCase().includes(search.toLowerCase()) ||
+        student.student_id?.toLowerCase().includes(search.toLowerCase()))
   );
 
   return (
@@ -59,29 +60,29 @@ function HeadDashboard() {
       )}
       <Navbar />
       <div className="bg-gray-50 min-h-screen">
-        <div className="px-40 space-y-4 mx-auto p-6">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-8 space-y-4 p-2 md:p-6">
           <h1 className="text-2xl font-semibold">HOD Dashboard</h1>
 
           {/* Faculty Info */}
-          <div className="bg-blue-600 rounded-md p-6 text-white flex items-center w-full shadow-md">
+          <div className="bg-blue-600 rounded-md p-4 md:p-6 text-white flex flex-col md:flex-row items-center w-full shadow-md gap-4">
             {/* Avatar Circle */}
-            <div className="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center mr-4">
+            <div className="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center mb-2 md:mb-0 md:mr-4">
               <FaUser className="text-white text-2xl" />
             </div>
 
             {/* Text Info */}
-            <div className="flex flex-col">
+            <div className="flex flex-col items-center md:items-start">
               <div className="text-xl font-semibold">{currentUser.name}</div>
               <div className="text-base">{currentUser.email}</div>
               <div className="mt-1">
                 <span className="text-base bg-blue-400 font-semibold text-white px-2 py-1 rounded-full">
-                  {currentUser.dept}
+                  {currentUser.dept} 
                 </span>
               </div>
             </div>
           </div>
           {/* Section Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 ">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div className="bg-white p-4 rounded-lg shadow">
               <h2 className="text-gray-500 text-sm">Total Students</h2>
               <p className="text-2xl font-bold">{currentUser.total_students}</p>
@@ -97,12 +98,13 @@ function HeadDashboard() {
               <p className="text-2xl font-bold">{currentUser.total_sections}</p>
               <p className="text-sm text-gray-400">Department wide</p>
             </div>
+           
           </div>
           {/* Tabs */}
-          <div className="flex justify-around rounded bg-gray-100 border-gray-200 border gap-4 p-1 mb-4 text-base">
+          <div className="grid grid-cols-2 md:grid-cols-4 justify-around rounded bg-gray-100 border-gray-200 border gap-2 md:gap-4 p-1 mb-4 text-base">
             <button
               onClick={() => setSelectedTab("StudentRanking")}
-              className={`flex-1/4 py-1 rounded ${
+              className={`flex-1 min-w-[120px] py-1 rounded ${
                 selectedTab === "StudentRanking" ? "bg-white text-black" : ""
               }`}
             >
@@ -110,7 +112,7 @@ function HeadDashboard() {
             </button>
             <button
               onClick={() => setSelectedTab("StudentManagment")}
-              className={`flex-1/4 py-1 rounded ${
+              className={`flex-1 min-w-[120px] py-1 rounded ${
                 selectedTab === "StudentManagment" ? "bg-white text-black" : ""
               }`}
             >
@@ -118,7 +120,7 @@ function HeadDashboard() {
             </button>
             <button
               onClick={() => setSelectedTab("FacultyManagment")}
-              className={`flex-1/4 py-1 rounded ${
+              className={`flex-1 min-w-[120px] py-1 rounded ${
                 selectedTab === "FacultyManagment" ? "bg-white text-black" : ""
               }`}
             >
@@ -126,7 +128,7 @@ function HeadDashboard() {
             </button>
             <button
               onClick={() => setSelectedTab("AddStudent")}
-              className={`flex-1/4 py-1 rounded ${
+              className={`flex-1 min-w-[120px] py-1 rounded ${
                 selectedTab === "AddStudent"
                   ? "bg-white text-black"
                   : "bg-gray-100"
@@ -176,16 +178,14 @@ function HeadDashboard() {
                     <option value="C">C</option>
                   </select>
                 </div>
-                <div className="flex-1">
-                  <label className="block text-sm font-medium mb-1">
-                    Search
-                  </label>
+                <div className="relative max-w-xs  mt-5">
+                  <FaSearch className="absolute left-3  top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 opacity-85 text-blue-800" />
                   <input
                     type="text"
-                    placeholder="Search by name or roll number"
-                    className="border rounded px-2 py-1 w-full"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search students..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-10 pr-3 py-2 border border-gray-300 rounded-lg hover:bg-blue-50  focus:ring-1 focus:border-blue-100 transition focus:outline-none"
                   />
                 </div>
               </div>
@@ -197,9 +197,9 @@ function HeadDashboard() {
                     <th className="py-3 px-4">Rank</th>
                     <th className="py-3 px-4 text-left">Student</th>
                     <th className="py-3 px-4">Roll Number</th>
-                    <th className="py-3 px-4">Branch</th>
-                    <th className="py-3 px-4">Year</th>
-                    <th className="py-3 px-4">Section</th>
+                    <th className="py-3 px-4 sr-only md:not-sr-only">Branch</th>
+                    <th className="py-3 px-4 sr-only md:not-sr-only">Year</th>
+                    <th className="py-3 px-4 sr-only md:not-sr-only">Section</th>
                     <th className="py-3 px-4">Actions</th>
                   </tr>
                 </thead>
@@ -223,9 +223,9 @@ function HeadDashboard() {
                           {student.name}
                         </td>
                         <td className="py-3 px-4">{student.student_id}</td>
-                        <td className="py-3 px-4">{student.dept}</td>
-                        <td className="py-3 px-4">{student.year}</td>
-                        <td className="py-3 px-4">{student.section}</td>
+                        <td className="py-3 px-4 sr-only md:not-sr-only">{student.dept}</td>
+                        <td className="py-3 px-4 sr-only md:not-sr-only">{student.year}</td>
+                        <td className="py-3 px-4 sr-only md:not-sr-only">{student.section}</td>
 
                         <td className="py-3 px-4 ">
                           <div
@@ -262,19 +262,19 @@ function HeadDashboard() {
                   {[
                     {
                       name: "Dr. Jane Smith",
-                      sections: "A, B",
+                      sections: "A",
                       students: 60,
                       status: "Active",
                     },
                     {
                       name: "Prof. Mike Johnson",
-                      sections: "C",
+                      sections: "B",
                       students: 30,
                       status: "Active",
                     },
                     {
                       name: "Dr. Sarah Wilson",
-                      sections: "D",
+                      sections: "C",
                       students: 28,
                       status: "Active",
                     },
@@ -292,7 +292,7 @@ function HeadDashboard() {
                           students
                         </div>
                       </div>
-                      <span className="px-2 text-xs rounded-2xl border border-gray-400 text-gray-700 bg-white font-semibold">
+                      <span className="px-2 text-xs rounded-2xl border border-green-600 text-green-600 bg-white font-semibold">
                         {faculty.status}
                       </span>
                     </div>
@@ -357,17 +357,19 @@ function HeadDashboard() {
               </div>
             </div>
           )}
+
+
           {/* Add Student */}
           {selectedTab === "AddStudent" && (
-            <div className="flex flex-col lg:flex-row gap-6 p-6 bg-gray-50 min-h-screen">
-              {/* Add Individual Student Form */}
-              <div className="w-full lg:w-1/2 bg-white p-6 rounded shadow">
-                <h2 className="text-xl px-4 font-bold text-gray-900 mb-1">
-                  Add Individual Student
-                </h2>
-                <p className="text-sm text-gray-500 mb-6">
-                  Add a single student to your section
-                </p>
+           <div className="flex flex-col lg:flex-row gap-6 p-0 md:p-6 bg-gray-50 min-h-screen">
+           {/* Add Individual Student Form */}
+           <div className="w-full lg:w-1/2 bg-white p-4 md:p-6 rounded shadow">
+             <h2 className="text-xl px-4 font-bold text-gray-900 mb-1">
+               Add Individual Student
+             </h2>
+             <p className="text-sm text-gray-500 mb-6">
+               Add a single student to your section
+             </p>
 
                 <form className="space-y-4">
                   <div>
@@ -451,7 +453,7 @@ function HeadDashboard() {
               </div>
 
               {/* Bulk Import Students Form */}
-              <div className="w-full lg:w-1/2 bg-white p-6 rounded shadow">
+              <div className="w-full lg:w-1/2 bg-white p-4 md:p-6 rounded shadow">
                 <h2 className="text-xl font-bold text-gray-900 mb-1">
                   Bulk Import Students
                 </h2>

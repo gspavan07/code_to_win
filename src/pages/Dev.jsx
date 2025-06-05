@@ -45,13 +45,13 @@ const Dev = () => {
   return (
     <>
       <Navbar />
-      <section className="flex flex-col items-center justify-center text-center h-[88vh]">
+      <section className="flex flex-col items-center justify-center text-center mt-10">
         <h1 className="text-3xl font-bold mb-2">Meet Our Developers</h1>
         <p className="text-gray-600 mb-10">
           The talented team behind the Student Coding Profile Dashboard
         </p>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {developers.map((dev, index) => (
             <div
               key={index}
