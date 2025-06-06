@@ -64,7 +64,7 @@ const Login = () => {
 
   return (
     <>
-      <Navbar />
+      {/* <Navbar /> */}
       <div className="min-h-[90vh] pt-16 flex items-center justify-center px-4 py-12 bg-gray-50">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
