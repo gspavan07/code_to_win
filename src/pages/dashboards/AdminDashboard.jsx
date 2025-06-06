@@ -184,7 +184,7 @@ function AdminDashboard() {
             </button>
           </div>
           {/* Student Ranking */}
-          {selectedTab === "StudentRanking" && <RankingTable />}
+          {selectedTab === "StudentRanking" && <RankingTable filter={true} />}
           {/* Grading System */}
           {selectedTab === "GradingSystem" && (
             <div className="bg-white px-4 py-8">
@@ -323,6 +323,7 @@ function AdminDashboard() {
 
               {/* Modals */}
               <Modals
+                user={currentUser}
                 activeModal={activeModal}
                 onClose={() => setActiveModal(null)}
               />

@@ -119,7 +119,7 @@ function FacultyDashboard() {
             </button>
           </div>
           {/* StudentRanking*/}
-          {selectedTab === "StudentRanking" && <RankingTable />}
+          {selectedTab === "StudentRanking" && <RankingTable filter={true} />}
           {/* Student Management */}
           {selectedTab === "StudentManagment" && (
             <div className="bg-white p-2 md:p-6 rounded-lg shadow overflow-x-auto">

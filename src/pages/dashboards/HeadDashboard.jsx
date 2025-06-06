@@ -76,7 +76,7 @@ function HeadDashboard() {
               <div className="text-base">{currentUser.email}</div>
               <div className="mt-1">
                 <span className="text-base bg-blue-400 font-semibold text-white px-2 py-1 rounded-full">
-                  {currentUser.dept} 
+                  {currentUser.dept}
                 </span>
               </div>
             </div>
@@ -98,7 +98,6 @@ function HeadDashboard() {
               <p className="text-2xl font-bold">{currentUser.total_sections}</p>
               <p className="text-sm text-gray-400">Department wide</p>
             </div>
-           
           </div>
           {/* Tabs */}
           <div className="grid grid-cols-2 md:grid-cols-4 justify-around rounded bg-gray-100 border-gray-200 border gap-2 md:gap-4 p-1 mb-4 text-base">
@@ -138,7 +137,7 @@ function HeadDashboard() {
             </button>
           </div>
           {/* StudentRanking*/}
-          {selectedTab === "StudentRanking" && <RankingTable />}
+          {selectedTab === "StudentRanking" && <RankingTable filter={true} />}
           {/* Student Management */}
           {selectedTab === "StudentManagment" && (
             <div className="bg-white p-6 rounded-lg shadow">
@@ -199,7 +198,9 @@ function HeadDashboard() {
                     <th className="py-3 px-4">Roll Number</th>
                     <th className="py-3 px-4 sr-only md:not-sr-only">Branch</th>
                     <th className="py-3 px-4 sr-only md:not-sr-only">Year</th>
-                    <th className="py-3 px-4 sr-only md:not-sr-only">Section</th>
+                    <th className="py-3 px-4 sr-only md:not-sr-only">
+                      Section
+                    </th>
                     <th className="py-3 px-4">Actions</th>
                   </tr>
                 </thead>
@@ -223,9 +224,15 @@ function HeadDashboard() {
                           {student.name}
                         </td>
                         <td className="py-3 px-4">{student.student_id}</td>
-                        <td className="py-3 px-4 sr-only md:not-sr-only">{student.dept}</td>
-                        <td className="py-3 px-4 sr-only md:not-sr-only">{student.year}</td>
-                        <td className="py-3 px-4 sr-only md:not-sr-only">{student.section}</td>
+                        <td className="py-3 px-4 sr-only md:not-sr-only">
+                          {student.dept}
+                        </td>
+                        <td className="py-3 px-4 sr-only md:not-sr-only">
+                          {student.year}
+                        </td>
+                        <td className="py-3 px-4 sr-only md:not-sr-only">
+                          {student.section}
+                        </td>
 
                         <td className="py-3 px-4 ">
                           <div
@@ -358,18 +365,17 @@ function HeadDashboard() {
             </div>
           )}
 
-
           {/* Add Student */}
           {selectedTab === "AddStudent" && (
-           <div className="flex flex-col lg:flex-row gap-6 p-0 md:p-6 bg-gray-50 min-h-screen">
-           {/* Add Individual Student Form */}
-           <div className="w-full lg:w-1/2 bg-white p-4 md:p-6 rounded shadow">
-             <h2 className="text-xl px-4 font-bold text-gray-900 mb-1">
-               Add Individual Student
-             </h2>
-             <p className="text-sm text-gray-500 mb-6">
-               Add a single student to your section
-             </p>
+            <div className="flex flex-col lg:flex-row gap-6 p-0 md:p-6 bg-gray-50 min-h-screen">
+              {/* Add Individual Student Form */}
+              <div className="w-full lg:w-1/2 bg-white p-4 md:p-6 rounded shadow">
+                <h2 className="text-xl px-4 font-bold text-gray-900 mb-1">
+                  Add Individual Student
+                </h2>
+                <p className="text-sm text-gray-500 mb-6">
+                  Add a single student to your section
+                </p>
 
                 <form className="space-y-4">
                   <div>
