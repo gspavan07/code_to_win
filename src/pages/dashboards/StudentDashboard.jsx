@@ -70,11 +70,11 @@ const StudentDashboard = () => {
             <div className="text-justify space-y-4">
               <button
                 onClick={() => setActiveModal("edit")}
-                  className="text-blue-600 underline float-end cursor-pointer"
+                className="text-blue-600 underline float-end cursor-pointer"
               >
                 Edit
               </button>
-             
+
               <p className="font-semibold">Personal Information</p>
 
               <p className="flex justify-between">
@@ -98,7 +98,7 @@ const StudentDashboard = () => {
               >
                 Update Profiles
               </button>
-             
+
 
               <p className="font-semibold">Coding Profiles</p>
 
@@ -224,7 +224,7 @@ const StudentDashboard = () => {
               />
               <PlatformCard
                 name="HackerRank"
-                color=" hover:text-green-900 hover:shadow-green-900"
+                color=" hover:text-gray-900 hover:shadow-gray-900"
                 total={currentUser.performance.platformWise.hackerrank.badges}
                 subtitle="Badges Gained"
               />
@@ -232,10 +232,10 @@ const StudentDashboard = () => {
           </div>
         </div>
         <Modals
-        activeModal={activeModal}
+          activeModal={activeModal}
           user={currentUser}
           onClose={() => setActiveModal(null)}
-            />
+        />
       </div>
     </>
   );

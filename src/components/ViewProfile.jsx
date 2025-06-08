@@ -101,7 +101,7 @@ const ViewProfile = ({ student, onClose }) => {
         <div className="grid grid-cols-2 gap-2 md:gap-6 md:p-4">
           <PlatformCard
             name="LeetCode"
-            color="bg-yellow-400"
+            color=" hover:text-yellow-600  hover:shadow-yellow-600 "
             total={
               stdDetails?.performance?.platformWise?.leetcode?.easy +
               stdDetails?.performance?.platformWise?.leetcode?.medium +
@@ -115,7 +115,7 @@ const ViewProfile = ({ student, onClose }) => {
           />
           <PlatformCard
             name="CodeChef"
-            color="bg-orange-600"
+            color=" hover:text-orange-900 hover:shadow-orange-900"
             total={stdDetails?.performance?.platformWise?.codechef?.contests}
             subtitle="Contests Participated"
             breakdown={{
@@ -124,7 +124,7 @@ const ViewProfile = ({ student, onClose }) => {
           />
           <PlatformCard
             name="GeeksforGeeks"
-            color="bg-green-600"
+            color=" hover:text-green-700 hover:shadow-green-700"
             total={
               stdDetails?.performance?.platformWise?.gfg?.school +
               stdDetails?.performance?.platformWise?.gfg?.basic +
@@ -142,7 +142,7 @@ const ViewProfile = ({ student, onClose }) => {
           />
           <PlatformCard
             name="HackerRank"
-            color="bg-green-900"
+            color=" hover:text-gray-900 hover:shadow-gray-900"
             total={stdDetails?.performance?.platformWise?.hackerrank?.badges}
             subtitle="Badges Gained"
           />
