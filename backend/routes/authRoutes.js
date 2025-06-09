@@ -8,6 +8,12 @@ require("dotenv").config();
 // Login a user
 router.post("/login", async (req, res) => {
   const { email, password, role } = req.body;
+  // Input validation
+  if (!email || !password || !role) {
+    return res.status(400).json({
+      message: "Email, password and role are required",
+    });
+  }
   try {
     const [rows] = await db.query(
       "SELECT * FROM users WHERE email = ? AND role = ?",
@@ -15,7 +21,9 @@ router.post("/login", async (req, res) => {
     );
 
     if (rows.length === 0)
-      return res.status(401).json({ message: "User not found" });
+      return res
+        .status(401)
+        .json({ message: "User not found or Check the role." });
 
     const user = rows[0];
 
@@ -23,6 +31,12 @@ router.post("/login", async (req, res) => {
     if (!validPassword)
       return res.status(401).json({ message: "Invalid password" });
 
+    // Check if account is active
+    if (!user.is_active) {
+      return res.status(403).json({
+        message: "Account not active. Please contact support.",
+      });
+    }
     const token = jwt.sign(
       { id: user.user_id, role: user.role },
       process.env.JWT_SECRET

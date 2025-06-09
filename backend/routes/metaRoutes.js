@@ -32,4 +32,14 @@ router.put("/grading/:metric", async (req, res) => {
   }
 });
 
+router.get("/depts", async (req, res) => {
+  try {
+    const [depts] = await db.query("SELECT * FROM dept");
+    res.json(depts);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 module.exports = router;

@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { useDepts } from "../context/MetaContext";
+import BulkImportForm from "./ui/BulkImportStudent";
+import BulkImportStudent from "./ui/BulkImportStudent";
+import BulkImportFaculty from "./ui/BulkImportFaculty";
 
 const optionList = [
   { label: "Leetcode", key: "leetcode" },
@@ -8,18 +11,238 @@ const optionList = [
   { label: "HackerRank", key: "hackerrank" },
 ];
 
-// Map optionList key to platform_id as per your backend
 const platformIdMap = {
   leetcode: 1,
   codechef: 2,
   geekforgeeks: 3,
   hackerrank: 4,
 };
-function Modals({ activeModal, onClose,user }) {
-  if (!activeModal) return null;
-  
-  const [profiles,setProfiles] = useState(user.coding_profiles)
-  // This is the "saved" form data (simulate initial saved data)
+
+// Add Faculty Modal
+export function AddFacultyModal() {
+  const { depts } = useDepts();
+  const [form, setForm] = useState({
+    name: "",
+    employee_id: "",
+    email: "",
+    phone: "",
+    dept_code: "",
+    specialization: "",
+    qualification: "",
+    experience: "",
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await fetch("/api/faculty", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+    // Optionally handle response and close modal
+  };
+
+  return (
+    <div className="w-full">
+      <form className="space-y-4" onSubmit={handleSubmit}>
+        <h3>Add New Faculty</h3>
+        <input
+          name="name"
+          value={form.name}
+          onChange={handleChange}
+          type="text"
+          className="w-full px-3 py-2 border border-gray-200 rounded"
+          placeholder="Faculty Name *"
+        />
+        <input
+          name="employee_id"
+          value={form.employee_id}
+          onChange={handleChange}
+          type="text"
+          className="w-full px-3 py-2 border border-gray-200 rounded"
+          placeholder="Employee ID *"
+        />
+        <input
+          name="email"
+          value={form.email}
+          onChange={handleChange}
+          type="email"
+          className="w-full px-3 py-2 border border-gray-200 rounded"
+          placeholder="Email *"
+        />
+        <select
+          name="dept_code"
+          value={form.dept_code}
+          onChange={handleChange}
+          className="w-full px-3 py-2 border border-gray-200 rounded"
+          required
+        >
+          <option value="">Select department</option>
+          {depts?.map((dept) => (
+            <option key={dept.dept_code} value={dept.dept_code}>
+              {dept.dept_name}
+            </option>
+          ))}
+        </select>
+
+        <div className="flex justify-between mt-4">
+          <button
+            type="submit"
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+          >
+            Add Faculty
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+// Add HOD Modal
+export function AddHODModal() {
+  const { depts } = useDepts();
+  return (
+    <div className=" w-full">
+      <div className="space-y-4">
+        <h3>Add New HOD</h3>
+        <input
+          type="text"
+          className="w-full px-3 py-2 border border-gray-200 rounded"
+          placeholder="HOD Name *"
+        />
+        <input
+          type="text"
+          className="w-full px-3 py-2 border border-gray-200 rounded"
+          placeholder="Employee ID *"
+        />
+        <input
+          type="email"
+          className="w-full px-3 py-2 border border-gray-200 rounded"
+          placeholder="Email *"
+        />
+
+        <select
+          className="w-full px-3 py-2 border border-gray-200 rounded"
+          required
+        >
+          <option>Select department</option>
+          {depts?.map((dept) => (
+            <option key={dept.dept_code} value={dept.dept_code}>
+              {dept.dept_name}
+            </option>
+          ))}
+        </select>
+        <div className="flex justify-between mt-4">
+          <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+            Add HOD
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Reset Password Modal
+export function ResetPasswordModal() {
+  return (
+    <div className="w-full">
+      <h2 className="text-lg font-semibold mb-4">Reset Password</h2>
+      <form className="space-y-4">
+        <select
+          className="w-1/2 px-3 py-2 border border-gray-200 rounded"
+          required
+          // value={importType}
+          // onChange={(e) => setImportType(e.target.value)}
+        >
+          <option value="">Select Role</option>
+          <option value="hod">HOD</option>
+          <option value="faculty">Faculty</option>
+          <option value="student">Student</option>
+        </select>
+        <input
+          type="text"
+          className="w-full border rounded px-3 py-2"
+          placeholder="Employee ID *"
+          required
+        />
+        <input
+          type="email"
+          className="w-full border rounded px-3 py-2"
+          placeholder="Email *"
+          required
+        />
+        <input
+          type="password"
+          className="w-full border rounded px-3 py-2"
+          placeholder="New Password *"
+          required
+        />
+        <input
+          type="password"
+          className="w-full border rounded px-3 py-2"
+          placeholder="Confirm Password *"
+          required
+        />
+        <div className="flex justify-between mt-4">
+          <button className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded">
+            Reset Password
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+// Bulk Import Modal
+export function BulkImportModal() {
+  const [importType, setImportType] = useState("");
+
+  return (
+    <div className="w-full">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-lg font-semibold">Bulk Import Users</h2>
+        <form className="space-y-4">
+          <select
+            className=" px-3 py-2 border border-gray-200 rounded"
+            required
+            value={importType}
+            onChange={(e) => setImportType(e.target.value)}
+          >
+            <option value="">Select Import Type</option>
+            <option value="student">Student</option>
+            <option value="faculty">Faculty</option>
+          </select>
+        </form>
+      </div>
+      {importType === "" && (
+        <div className="p-10 border border-gray-200 flex justify-center items-center rounded-2xl">
+          <p className="text-gray-600">Please Select the type of import</p>
+        </div>
+      )}
+      {/* Render different components based on import type */}
+      {importType === "student" && (
+        <div className="p-10 border border-gray-200 felx flex-col rounded-2xl">
+          <p className="text-2xl text-gray-800">Student Bulk Import</p>
+          <BulkImportStudent />
+        </div>
+      )}
+      {importType === "faculty" && (
+        <div className="p-10 border border-gray-200 felx flex-col rounded-2xl">
+          <p className="text-2xl text-gray-800">Faculty Bulk Import</p>
+          <BulkImportFaculty />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Edit Modal (student info)
+export function EditModal({ onClose, user }) {
   const savedData = {
     name: user.name || "",
     roll: user.student_id || "",
@@ -27,21 +250,12 @@ function Modals({ activeModal, onClose,user }) {
     year: user.year || "",
     section: user.section || "",
   };
-
-  // State for the form inputs (changes as user types)
   const [form, setForm] = useState(savedData);
 
-  // State to keep the last saved form data
-  const [savedForm, setSavedForm] = useState(savedData);
-
-  // Reset form state to saved data when modal opens or closes
   useEffect(() => {
-    {
-      setForm(savedForm);
-    }
-  }, [ savedForm]);
+    setForm(savedData);
+  }, [user]);
 
-  // Handle input changes locally, do NOT save yet
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({
@@ -50,79 +264,18 @@ function Modals({ activeModal, onClose,user }) {
     }));
   };
 
-  // Handle form submission - Save changes
   const handleSubmit = (e) => {
     e.preventDefault();
-    setSavedForm(form); // Save the current form state
-    console.log("Saved form data:", form);
-    onClose(); // Close modal after saving
-  };
-
-  // Handle Cancel - reset form to last saved state and close modal
-  const handleCancel = () => {
-    setForm(savedForm); // Reset form fields to saved data
-    console.log("Cancelled changes, form reset.");
+    // Save logic here
     onClose();
   };
 
-  const initialUsernames = optionList.reduce((acc, opt) => {
-    const found = user.coding_profiles?.find(
-      (p) => p.platform?.toLowerCase() === opt.label.toLowerCase()
-    );
-    acc[opt.key] = found ? found.profile_username : "";
-    return acc;
-  }, {});
-
-  const [usernames, setUsernames] = useState(initialUsernames);
-
-  const handleChange2 = (key, value) => {
-    setUsernames((prev) => ({ ...prev, [key]: value }));
+  const handleCancel = () => {
+    setForm(savedData);
+    onClose();
   };
 
-  const handleSave = async (e) => {
-    e.preventDefault();
-
-    // Create a map of previous usernames for quick lookup
-    const previousUsernames = optionList.reduce((acc, opt) => {
-      const found = user.coding_profiles?.find(
-        (p) => p.platform?.toLowerCase() === opt.label.toLowerCase()
-      );
-      acc[opt.key] = found ? found.profile_username : "";
-      return acc;
-    }, {});
-
-    // Only send if username is filled and changed
-    const changed = optionList.filter(
-      (opt) =>
-        usernames[opt.key]?.trim() &&
-        usernames[opt.key].trim() !== previousUsernames[opt.key]
-    );
-
-    if (changed.length === 0) {
-      alert("No changes to submit.");
-      return;
-    }
-
-    try {
-      await Promise.all(
-        changed.map((opt) =>
-          axios.post("http://localhost:5000/student/coding-profile", {
-            userId: student_id,
-            platform_id: platformIdMap[opt.key],
-            profile_username: usernames[opt.key].trim(),
-          })
-        )
-      );
-      alert("Profiles submitted for verification!");
-      onClose();
-    } catch (err) {
-      alert("Error submitting profiles.");
-      console.error(err);
-    }
-  };
-
-  
-  const ModalWrapper = ({ children }) => (
+  return (
     <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
       <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
         <button
@@ -131,562 +284,44 @@ function Modals({ activeModal, onClose,user }) {
         >
           ×
         </button>
-        {children}
-      </div>
-    </div>
-  );
-
-  switch (activeModal) {
-    case "addFaculty":
-      return (
-        <ModalWrapper>
-          <div className="space-y-4">
-            {/* Faculty Name */}
-            <div className="space-y-1">
-              <h3>Add New Faculty</h3>
-              <label
-                htmlFor="hodName"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Faculty Name *
-              </label>
-              <input
-                type="text"
-                id="facultyName"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter faculty name"
-              />
-            </div>
-
-            {/* Employee ID */}
-            <div className="space-y-1">
-              <label
-                htmlFor="employeeId"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Employee ID *
-              </label>
-              <input
-                type="text"
-                id="employeeId"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter employee ID"
-              />
-            </div>
-
-            {/* Email */}
-            <div className="space-y-1">
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Email *
-              </label>
-              <input
-                type="email"
-                id="email"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter email address"
-              />
-            </div>
-
-            {/* Phone Number */}
-            <div className="space-y-1">
-              <label
-                htmlFor="phone"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Phone Number
-              </label>
-              <input
-                type="text"
-                id="phone"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter phone number"
-              />
-            </div>
-            <div>
-              {/* Department */}
-              <label
-                htmlFor="Department"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Department
-              </label>
-              <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                required
-              >
-                <option>Select department</option>
-                <option>CSE</option>
-                <option>ECE</option>
-              </select>
-            </div>
-            {/* Specialization */}
-            <div className="space-y-1">
-              <label
-                htmlFor="specialization"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Specialization
-              </label>
-              <input
-                type="text"
-                id="specialization"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter specialization"
-              />
-            </div>
-
-            {/* Qualification */}
-            <div className="space-y-1">
-              <label
-                htmlFor="qualification"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Qualification
-              </label>
-              <input
-                type="text"
-                id="qualification"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter qualification"
-              />
-            </div>
-
-            {/* Experience */}
-            <div className="space-y-1">
-              <label
-                htmlFor="experience"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Experience (Years)
-              </label>
-              <input
-                type="number"
-                id="experience"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter years of experience"
-              />
-            </div>
-            <div className="flex justify-between mt-4">
-              <button
-                type="submit"
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
-              >
-                Add Faculty
-              </button>
-              <button
-                type="button"
-                onClick={onClose}
-                className="border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-100"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </ModalWrapper>
-      );
-
-    case "addHOD":
-      return (
-        <ModalWrapper>
-          <div className="space-y-4">
-            {/* Faculty Name */}
-            <div className="space-y-1">
-              <h3>Add New HOD</h3>
-              <label
-                htmlFor="hodName"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Faculty Name *
-              </label>
-              <input
-                type="text"
-                id="hodName"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter faculty name"
-              />
-            </div>
-
-            {/* Employee ID */}
-            <div className="space-y-1">
-              <label
-                htmlFor="employeeId"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Employee ID *
-              </label>
-              <input
-                type="text"
-                id="employeeId"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter employee ID"
-              />
-            </div>
-
-            {/* Email */}
-            <div className="space-y-1">
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Email *
-              </label>
-              <input
-                type="email"
-                id="email"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter email address"
-              />
-            </div>
-
-            {/* Phone Number */}
-            <div className="space-y-1">
-              <label
-                htmlFor="phone"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Phone Number
-              </label>
-              <input
-                type="text"
-                id="phone"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter phone number"
-              />
-            </div>
-            <div>
-              {/* Department */}
-              <label
-                htmlFor="Department"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Department
-              </label>
-              <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                required
-              >
-                <option>Select department</option>
-                <option>CSE</option>
-                <option>ECE</option>
-              </select>
-            </div>
-            {/* Specialization */}
-            <div className="space-y-1">
-              <label
-                htmlFor="specialization"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Specialization
-              </label>
-              <input
-                type="text"
-                id="specialization"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter specialization"
-              />
-            </div>
-
-            {/* Qualification */}
-            <div className="space-y-1">
-              <label
-                htmlFor="qualification"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Qualification
-              </label>
-              <input
-                type="text"
-                id="qualification"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter qualification"
-              />
-            </div>
-
-            {/* Experience */}
-            <div className="space-y-1">
-              <label
-                htmlFor="experience"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Experience (Years)
-              </label>
-              <input
-                type="number"
-                id="experience"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter years of experience"
-              />
-            </div>
-            <div className="flex justify-between mt-4">
-              <button
-                type="submit"
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
-              >
-                Add HOD
-              </button>
-              <button
-                type="button"
-                onClick={onClose}
-                className="border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-100"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </ModalWrapper>
-      );
-
-    case "resetPassword":
-      return (
-        <ModalWrapper>
-          <h2 className="text-lg font-semibold mb-4">Reset Password</h2>
-          <form className="space-y-4">
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="usertype" className="block mb-1 font-medium">
-                  User Type *
-                </label>
-                <input
-                  type="text"
-                  id="usertype"
-                  className="w-full border rounded px-3 py-2"
-                  placeholder="Enter user type"
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="employeeId" className="block mb-1 font-medium">
-                  Employee ID *
-                </label>
-                <input
-                  type="text"
-                  id="employeeId"
-                  className="w-full border rounded px-3 py-2"
-                  placeholder="Enter Employee ID"
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="email" className="block mb-1 font-medium">
-                  Email *
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  className="w-full border rounded px-3 py-2"
-                  placeholder="Enter Email"
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="newPassword" className="block mb-1 font-medium">
-                  New Password *
-                </label>
-                <input
-                  type="password"
-                  id="newPassword"
-                  className="w-full border rounded px-3 py-2"
-                  placeholder="Enter New Password"
-                  required
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="confirmPassword"
-                  className="block mb-1 font-medium"
-                >
-                  Confirm Password *
-                </label>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  className="w-full border rounded px-3 py-2"
-                  placeholder="Confirm Password"
-                  required
-                />
-              </div>
-            </div>
-            <div className="flex justify-between mt-4">
-              <button
-                type="submit"
-                className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded"
-              >
-                Reset Password
-              </button>
-              <button
-                type="button"
-                onClick={onClose}
-                className="border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-100"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </ModalWrapper>
-      );
-
-    case "bulkImport":
-      return (
-        <ModalWrapper>
-          <h2 className="text-lg font-semibold mb-4">Bulk Import Users</h2>
-          <form className="space-y-4">
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="importType" className="block mb-1 font-medium">
-                  Import Type *
-                </label>
-                <select
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  required
-                >
-                  <option>Select department</option>
-                  <option>student</option>
-                  <option>faculty</option>
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="department" className="block mb-1 font-medium">
-                  Department *
-                </label>
-                <select
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  required
-                >
-                  <option>Select department</option>
-                  <option>CSE</option>
-                  <option>ECE</option>
-                  <option>AIML</option>
-                  <option>IT</option>
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="fileUpload" className="block mb-1 font-medium">
-                  Upload File (.csv, .xlsx) *
-                </label>
-                <input
-                  type="file"
-                  id="fileUpload"
-                  accept=".csv, .xlsx"
-                  className="w-full border rounded px-3 py-2"
-                  required
-                />
-              </div>
-            </div>
-
-            <p className="text-sm text-gray-500">
-              Upload a CSV or Excel file containing user data.
-            </p>
-            <div className="flex justify-between mt-4">
-              <button
-                type="submit"
-                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded"
-              >
-                Upload File
-              </button>
-              <button
-                type="button"
-                onClick={onClose}
-                className="border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-100"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </ModalWrapper>
-      );
-    case "edit":
-      return (
-        <ModalWrapper>
         <h2 className="text-xl font-semibold mb-2">Personal Information</h2>
-        <p className="text-sm text-gray-500 mb-4">
-          Update your personal details here
-        </p>
-        <form
-          onSubmit={handleSubmit}
-          className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4"
-        >
-          <div className="col-span-2 md:col-span-1">
-            <label htmlFor="name" className="text-sm font-semibold flex">
-              Name
-            </label>
-            <input
-              id="name"
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              className="mt-1 w-full border border-gray-300 rounded px-3 py-2"
-            />
-          </div>
-
-          {/* Registration Number - read-only */}
-          <div className="col-span-2 md:col-span-1">
-            <label htmlFor="roll" className="text-sm font-medium flex">
-              Registration Number
-            </label>
-            <input
-              id="roll"
-              name="roll"
-              value={form.roll}
-              onChange={handleChange}
-              className="mt-1 w-full border border-gray-300 rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
-              disabled
-            />
-          </div>
-
-          {/* Year - read-only */}
-          <div className="col-span-2 md:col-span-1">
-            <label htmlFor="year" className="text-sm font-medium flex">
-              Year
-            </label>
-            <input
-              id="year"
-              name="year"
-              value={form.year}
-              onChange={handleChange}
-              className="mt-1 w-full border border-gray-300 rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
-              disabled
-            />
-          </div>
-          {/* Section - read-only */}
-          <div className="col-span-2 md:col-span-1">
-            <label htmlFor="section" className="text-sm font-medium flex">
-              Section
-            </label>
-            <input
-              id="section"
-              name="section"
-              value={form.section}
-              onChange={handleChange}
-              className="mt-1 w-full border border-gray-300 rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
-              disabled
-            />
-          </div>
-          {/* Email - read-only */}
-          <div className="col-span-2">
-            <label htmlFor="email" className="text-sm font-medium flex">
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              className="mt-1 w-full border border-gray-300 rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
-              disabled
-            />
-          </div>
-
-          {/* Submit button under form */}
-          <div className="col-span-2 flex justify-end space-x-3 mt-4">
+        <form onSubmit={handleSubmit} className="space-y-2">
+          <input
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            className="w-full border rounded px-3 py-2"
+            placeholder="Name"
+          />
+          <input
+            name="roll"
+            value={form.roll}
+            disabled
+            className="w-full border rounded px-3 py-2 bg-gray-100"
+            placeholder="Registration Number"
+          />
+          <input
+            name="year"
+            value={form.year}
+            disabled
+            className="w-full border rounded px-3 py-2 bg-gray-100"
+            placeholder="Year"
+          />
+          <input
+            name="section"
+            value={form.section}
+            disabled
+            className="w-full border rounded px-3 py-2 bg-gray-100"
+            placeholder="Section"
+          />
+          <input
+            name="email"
+            value={form.email}
+            disabled
+            className="w-full border rounded px-3 py-2 bg-gray-100"
+            placeholder="Email"
+          />
+          <div className="flex justify-end gap-2 mt-4">
             <button
               type="button"
               onClick={handleCancel}
@@ -702,18 +337,40 @@ function Modals({ activeModal, onClose,user }) {
             </button>
           </div>
         </form>
-        </ModalWrapper>
-      )
-    case "updateProfile":
-      return (
- <div
-      onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center p-5 min-h-screen bg-black/50"
-    >
-      <div
-        className="bg-white rounded-xl p-6 w-full max-w-md shadow-lg relative"
-        onClick={(e) => e.stopPropagation()}
-      >
+      </div>
+    </div>
+  );
+}
+
+// Update Profile Modal (coding profiles)
+export function UpdateProfileModal({ onClose, user }) {
+  const initialUsernames = optionList.reduce((acc, opt) => {
+    const found = user.coding_profiles?.find(
+      (p) => p.platform?.toLowerCase() === opt.label.toLowerCase()
+    );
+    acc[opt.key] = found ? found.profile_username : "";
+    return acc;
+  }, {});
+  const [usernames, setUsernames] = useState(initialUsernames);
+
+  useEffect(() => {
+    setUsernames(initialUsernames);
+    // eslint-disable-next-line
+  }, [user]);
+
+  const handleChange = (key, value) => {
+    setUsernames((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSave = (e) => {
+    e.preventDefault();
+    // Save logic here
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+      <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-lg relative">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-xl font-bold text-gray-400 hover:text-gray-600"
@@ -737,7 +394,7 @@ function Modals({ activeModal, onClose,user }) {
                   id={opt.key}
                   placeholder={`Enter ${opt.label} Username`}
                   value={usernames[opt.key]}
-                  onChange={(e) => handleChange2(opt.key, e.target.value)}
+                  onChange={(e) => handleChange(opt.key, e.target.value)}
                   className="flex-1 border border-blue-50 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200"
                 />
               </React.Fragment>
@@ -761,10 +418,5 @@ function Modals({ activeModal, onClose,user }) {
         </form>
       </div>
     </div>
-      )
-    default:
-      return null;
-  }
+  );
 }
-
-export default Modals;

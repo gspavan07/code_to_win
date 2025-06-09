@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { TbUserShare } from "react-icons/tb";
+import StudentTable from "./StudentTable";
 
 function CodingProfileRequests({ dept, year, section, facultyId }) {
   const [requests, setRequests] = useState([]);
@@ -33,44 +34,41 @@ function CodingProfileRequests({ dept, year, section, facultyId }) {
 
   return (
     <>
-  <table className="min-w-full bg-white border rounded-lg overflow-hidden shadow">
-            <thead className="bg-gray-100 text-center">
-              <tr>
-                <th className="py-3 px-4">Rank</th>
-                <th className="py-3 px-4 text-left">Student</th>
-                <th className="py-3 px-4">Roll Number</th>
-                <th className="py-3 px-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(grouped).map(([student_id, reqs],index) => (
-                <tr key={student_id} className="hover:bg-gray-50 text-center">
-                  <td className="py-3 px-4 ">
-                    {index + 1}
-                  </td>
-                  <td className="py-3 px-4 text-left flex items-center gap-2">
-                    <div className="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center text-sm justify-center font-bold">
-                      {reqs[0].name
-                        ?.split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </div>
-                    {reqs[0].name}
-                  </td>
-                  <td className="py-3 px-4">{student_id}</td>
-                  <td className="py-3 px-4 ">
-                    <div
-                      onClick={() => setSelectedStudent({ student_id, reqs })}
-                      className="text-gray-700 px-2 py-1 justify-center rounded  hover:text-blue-700 flex items-center gap-1 cursor-pointer"
-                    >
-                      <TbUserShare /> View Request
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-      
+      <table className="min-w-full bg-white border rounded-lg overflow-hidden shadow text-sm">
+        <thead className="bg-gray-100 text-center">
+          <tr>
+            <th className="py-3 px-2 md:px-4">S. NO</th>
+            <th className="py-3 px-4 text-left">Student</th>
+            <th className="py-3 px-4">Roll Number</th>
+            <th className="py-3 px-4">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Object.entries(grouped).map(([student_id, reqs], index) => (
+            <tr key={student_id} className="hover:bg-gray-50 text-center">
+              <td className="py-3 md:px-4">{index + 1}</td>
+              <td className="py-3 px-4 text-left flex items-center gap-2">
+                <div className="bg-blue-100 text-blue-800 rounded-full w-8 h-8 hidden md:flex items-center text-sm justify-center font-bold">
+                  {reqs[0].name
+                    ?.split(" ")
+                    .map((n) => n[0])
+                    .join("")}
+                </div>
+                {reqs[0].name}
+              </td>
+              <td className="py-3 px-4">{student_id}</td>
+              <td className="py-3 px-4 ">
+                <div
+                  onClick={() => setSelectedStudent({ student_id, reqs })}
+                  className="text-gray-700 px-2 py-1 justify-center rounded  hover:text-blue-700 flex items-center gap-1 cursor-pointer"
+                >
+                  <TbUserShare /> View
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
       {/* Modal for viewing requests */}
       {selectedStudent && (

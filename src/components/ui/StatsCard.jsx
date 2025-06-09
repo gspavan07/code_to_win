@@ -2,11 +2,11 @@ import React from "react";
 import { motion } from "framer-motion";
 const StatsCard = ({ icon, title, value, color }) => {
   const colorMap = {
-    blue: "bg-blue-50 text-blue-700",
-    purple: "bg-purple-50 text-purple-700",
-    success: "bg-green-50 text-green-700",
-    warning: "bg-yellow-50 text-yellow-700",
-    error: "bg-red-50 text-red-700",
+    blue: "bg-[#eff6ff] text-[#1447e6] ",
+    purple: "bg-[#faf5ff] text-[#9810fa]",
+    success: "bg-[#f0fdf4] text-[#1c7800]",
+    warning: "bg-[#fefce8] text-[#a96b00]",
+    error: "bg-r[#fef2f2] text-[#bc0000]",
   };
 
   return (

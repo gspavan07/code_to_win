@@ -7,7 +7,9 @@ const PlatformCard = ({
   breakdown,
   subtitle = "Problems Solved",
 }) => (
-  <div className={`bg-white p-4 rounded-xl shadow-sm hover:shadow-md  duration-300 trasition-all w-full ${color}`}>
+  <div
+    className={`bg-[#ffffff] p-4 rounded-xl shadow-sm hover:shadow-md duration-300 trasition-all w-full ${color}`}
+  >
     <div className="flex justify-between items-center mb-2">
       <h2 className="font-semibold text-base md:text-lg">{name}</h2>
       <div className={`w-4 h-4 rounded-full `} />

@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, lazy, Suspense } from "react";
 import axios from "axios";
 import { TbUserShare } from "react-icons/tb";
-import ViewProfile from "./ViewProfile";
+const ViewProfile = lazy(() => import("../components/ViewProfile"));
 import { FaSearch } from "react-icons/fa";
+import { useDepts } from "../context/MetaContext";
+import LoadingSpinner from "../common/LoadingSpinner";
 
 const RankBadge = ({ rank }) => {
   if (rank === 1)
@@ -32,7 +34,8 @@ const RankingTable = ({ filter }) => {
   const [topX, setTopX] = useState("");
   const [search, setSearch] = useState("");
   const [selectedStudent, setSelectedStudent] = useState(null);
-  const [branches, setBranches] = useState([]);
+  const [years, setYears] = useState([]);
+  const { depts, loading } = useDepts();
   const [sections, setSections] = useState([]);
   const fetchRanks = async () => {
     try {
@@ -44,16 +47,17 @@ const RankingTable = ({ filter }) => {
         res = await axios.get("http://localhost:5000/ranking/overall", {
           params,
         });
-        const uniqueBranches = [...new Set(res.data.map((s) => s.dept))];
-        const uniqueSections = [...new Set(res.data.map((s) => s.section))];
-        setBranches(uniqueBranches);
-        setSections(uniqueSections);
       } else {
         res = await axios.get("http://localhost:5000/ranking/filter", {
           params,
         });
       }
-
+      const uniqueYears = [...new Set(res.data.map((s) => s.year))].sort(
+        (a, b) => a - b
+      );
+      setYears(uniqueYears);
+      const uniqueSections = [...new Set(res.data.map((s) => s.section))];
+      setSections(uniqueSections);
       setRanks(res.data);
     } catch (err) {
       console.error(err);
@@ -63,7 +67,7 @@ const RankingTable = ({ filter }) => {
 
   useEffect(() => {
     fetchRanks();
-  }, [filters, topX]);
+  }, [JSON.stringify(filters), topX]);
 
   const handleChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -77,12 +81,14 @@ const RankingTable = ({ filter }) => {
 
   return (
     <>
-      {selectedStudent && (
-        <ViewProfile
-          student={selectedStudent}
-          onClose={() => setSelectedStudent(null)}
-        />
-      )}
+      <Suspense fallback={<LoadingSpinner />}>
+        {selectedStudent && (
+          <ViewProfile
+            student={selectedStudent}
+            onClose={() => setSelectedStudent(null)}
+          />
+        )}
+      </Suspense>
       <div className="p-6">
         <h1 className="md:text-2xl text-xl font-semibold mb-4">
           🏆 Student Rankings
@@ -107,9 +113,9 @@ const RankingTable = ({ filter }) => {
                     value={filters.dept}
                   >
                     <option value="">All Branches</option>
-                    {branches.map((b) => (
-                      <option key={b} value={b}>
-                        {b}
+                    {depts.map((dept) => (
+                      <option key={dept.dept_code} value={dept.dept_code}>
+                        {dept.dept_name}
                       </option>
                     ))}
                   </select>
@@ -128,10 +134,11 @@ const RankingTable = ({ filter }) => {
                     value={filters.year}
                   >
                     <option value="">All Years</option>
-                    <option value="1">1st</option>
-                    <option value="2">2nd</option>
-                    <option value="3">3rd</option>
-                    <option value="4">4th</option>
+                    {years.map((year) => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div>
@@ -230,7 +237,9 @@ const RankingTable = ({ filter }) => {
                   {s.name}
                 </td>
                 <td className="py-3 px-4">{s.student_id}</td>
-                <td className="py-3 px-4 sr-only md:not-sr-only">{s.dept}</td>
+                <td className="py-3 px-4 sr-only md:not-sr-only">
+                  {s.dept_name}
+                </td>
                 <td className="py-3 px-4 sr-only md:not-sr-only">{s.year}</td>
                 <td className="py-3 px-4 sr-only md:not-sr-only">
                   {s.section}

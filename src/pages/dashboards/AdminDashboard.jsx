@@ -1,13 +1,19 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { BiDownload, BiSearch } from "react-icons/bi";
+import React, { useState, lazy, useMemo, useEffect, Suspense } from "react";
 import { FaUserPlus, FaKey, FaUpload, FaCog } from "react-icons/fa";
-import Modals from "../../components/Modals";
-import ViewProfile from "../../components/ViewProfile";
 import { FaUser } from "react-icons/fa6";
-import Navbar from "../../components/Navbar";
 import { useAuth } from "../../context/AuthContext";
-import RankingTable from "../../components/Ranking";
-
+import {
+  AddFacultyModal,
+  AddHODModal,
+  ResetPasswordModal,
+  BulkImportModal,
+} from "../../components/Modals";
+import Navbar from "../../components/Navbar";
+import LoadingSpinner from "../../common/LoadingSpinner";
+// Lazy-loaded components
+const RankingTable = lazy(() => import("../../components/Ranking"));
+const ViewProfile = lazy(() => import("../../components/ViewProfile"));
+const Modals = lazy(() => import("../../components/Modals"));
 const metricToPlatform = {
   badges_hr: "HackerRank",
   contests_cc: "CodeChef",
@@ -28,11 +34,11 @@ const metricToPlatform = {
 function AdminDashboard() {
   const { currentUser } = useAuth();
   const [selectedStudent, setSelectedStudent] = useState(null);
-  const [activeModal, setActiveModal] = useState(null);
   const [selectedTab, setSelectedTab] = useState("StudentRanking");
   const [grading, setGrading] = useState([]);
   const [platformOrder, setPlatform] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [userMgmtTab, setUserMgmtTab] = useState("addFaculty");
   const [changedMetrics, setChangedMetrics] = useState(new Set());
 
   // Helper to make metric names readable
@@ -118,12 +124,14 @@ function AdminDashboard() {
   return (
     <>
       {/* Show ViewProfile only if a student is selected */}
-      {selectedStudent && (
-        <ViewProfile
-          student={selectedStudent}
-          onClose={() => setSelectedStudent(null)}
-        />
-      )}
+      <Suspense fallback={<LoadingSpinner />}>
+        {selectedStudent && (
+          <ViewProfile
+            student={selectedStudent}
+            onClose={() => setSelectedStudent(null)}
+          />
+        )}
+      </Suspense>
       <Navbar />
       <div className="bg-gray-50 min-h-screen">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-8 space-y-4 p-2 md:p-6">
@@ -184,7 +192,11 @@ function AdminDashboard() {
             </button>
           </div>
           {/* Student Ranking */}
-          {selectedTab === "StudentRanking" && <RankingTable filter={true} />}
+          {selectedTab === "StudentRanking" && (
+            <Suspense fallback={<LoadingSpinner />}>
+              <RankingTable filter={true} />
+            </Suspense>
+          )}
           {/* Grading System */}
           {selectedTab === "GradingSystem" && (
             <div className="bg-white px-4 py-8">
@@ -254,79 +266,42 @@ function AdminDashboard() {
           {selectedTab === "UserManagment" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 max-w-6xl mx-auto">
               {/* User Management */}
-              <div className="bg-white shadow rounded-lg p-6">
-                <h2 className="text-xl font-semibold mb-1">User Management</h2>
-                <p className="text-sm text-gray-500 mb-4">
-                  Manage faculty, HODs, and student accounts
-                </p>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <button
-                    onClick={() => setActiveModal("addFaculty")}
-                    className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
-                  >
-                    <FaUserPlus /> Add Faculty
-                  </button>
-                  <button
-                    onClick={() => setActiveModal("addHOD")}
-                    className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded"
-                  >
-                    <FaUserPlus /> Add HOD
-                  </button>
-                  <button
-                    onClick={() => setActiveModal("resetPassword")}
-                    className="flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-700 text-white py-2 px-4 rounded"
-                  >
-                    <FaKey /> Reset Password
-                  </button>
-                  <button
-                    onClick={() => setActiveModal("bulkImport")}
-                    className="flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded"
-                  >
-                    <FaUpload /> Bulk Import
-                  </button>
+              <div className="bg-white shadow rounded-lg p-0 flex flex-col md:flex-row min-h-[340px] col-span-2">
+                {/* Left Menu */}
+                <div className="md:w-1/4 border-r bg-gray-50 p-4">
+                  <h2 className="text-xl font-semibold mb-4">
+                    User Management
+                  </h2>
+                  <ul className="space-y-2">
+                    {[
+                      { key: "addFaculty", label: "Add Faculty" },
+                      { key: "addHOD", label: "Add HOD" },
+                      { key: "resetPassword", label: "Reset Password" },
+                      { key: "bulkImport", label: "Bulk Import" },
+                    ].map((item) => (
+                      <li key={item.key}>
+                        <button
+                          className={`w-full text-left px-3 py-2 rounded transition ${
+                            userMgmtTab === item.key
+                              ? "bg-blue-600 text-white"
+                              : "hover:bg-blue-100"
+                          }`}
+                          onClick={() => setUserMgmtTab(item.key)}
+                        >
+                          {item.label}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                {/* Right Content */}
+                <div className="flex-1 p-6">
+                  {userMgmtTab === "addFaculty" && <AddFacultyModal />}
+                  {userMgmtTab === "addHOD" && <AddHODModal />}
+                  {userMgmtTab === "resetPassword" && <ResetPasswordModal />}
+                  {userMgmtTab === "bulkImport" && <BulkImportModal />}
                 </div>
               </div>
-
-              {/* System Settings */}
-              <div className="bg-white shadow rounded-lg p-6">
-                <h2 className="text-xl font-semibold mb-1">System Settings</h2>
-                <p className="text-sm text-gray-500 mb-4">
-                  Configure system-wide preferences
-                </p>
-
-                <div className="space-y-3 mb-6">
-                  <div className="flex justify-between items-center">
-                    <span>Auto-approve profiles</span>
-                    <span className="bg-gray-200 text-gray-700 text-sm px-3 py-1 rounded-full">
-                      Disabled
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Email notifications</span>
-                    <span className="bg-gray-200 text-gray-700 text-sm px-3 py-1 rounded-full">
-                      Enabled
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Data backup</span>
-                    <span className="bg-gray-200 text-gray-700 text-sm px-3 py-1 rounded-full">
-                      Daily
-                    </span>
-                  </div>
-                </div>
-
-                <button className="w-full flex items-center justify-center gap-2 bg-gray-800 text-white py-2 rounded hover:bg-gray-900">
-                  <FaCog /> Advanced Settings
-                </button>
-              </div>
-
-              {/* Modals */}
-              <Modals
-                user={currentUser}
-                activeModal={activeModal}
-                onClose={() => setActiveModal(null)}
-              />
             </div>
           )}
         </div>

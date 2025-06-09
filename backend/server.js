@@ -14,6 +14,7 @@ app.use("/hod", require("./routes/hodRoutes"));
 app.use("/admin", require("./routes/adminRoutes"));
 app.use("/ranking", require("./routes/rankingRoutes"));
 app.use("/meta", require("./routes/metaRoutes"));
+app.use("/api", require("./routes/managementRoutes"));
 // async function recomputeRanks() {
 //   // Step 1: Fetch all grading weights
 //   const [gradingData] = await db.query("SELECT * FROM grading_rules");

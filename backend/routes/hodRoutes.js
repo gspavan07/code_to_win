@@ -9,32 +9,34 @@ router.get("/profile", async (req, res) => {
   try {
     // Get HOD profile
     const [profileResult] = await db.query(
-      "SELECT * FROM hod_profiles WHERE hod_id = ?",
+      `SELECT hp.*, d.dept_name
+        FROM hod_profiles hp
+        JOIN dept d ON hp.dept_code = d.dept_code
+        WHERE hp.hod_id = ?`,
       [userId]
     );
     if (profileResult.length === 0) {
       return res.status(404).json({ message: "HOD profile not found" });
     }
     const profile = profileResult[0];
-
     // Get department from profile
-    const dept = profile.dept;
+    const dept = profile.dept_code;
 
     // Get total students in dept
     const [[{ total_students }]] = await db.query(
-      "SELECT COUNT(*) AS total_students FROM student_profiles WHERE dept = ?",
+      "SELECT COUNT(*) AS total_students FROM student_profiles WHERE dept_code = ?",
       [dept]
     );
 
     // Get total faculty in dept
     const [[{ total_faculty }]] = await db.query(
-      "SELECT COUNT(*) AS total_faculty FROM faculty_profiles WHERE dept = ?",
+      "SELECT COUNT(*) AS total_faculty FROM faculty_profiles WHERE dept_code = ?",
       [dept]
     );
 
     // Get total unique sections in dept (across all years)
     const [[{ total_sections }]] = await db.query(
-      "SELECT COUNT(DISTINCT section) AS total_sections FROM student_profiles WHERE dept = ?",
+      "SELECT COUNT(DISTINCT section) AS total_sections FROM student_profiles WHERE dept_code = ?",
       [dept]
     );
 
@@ -77,7 +79,7 @@ router.get("/students", async (req, res) => {
     `;
     const params = [];
     if (dept) {
-      query += " AND sp.dept = ?";
+      query += " AND sp.dept_code = ?";
       params.push(dept);
     }
     if (year) {

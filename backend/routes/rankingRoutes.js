@@ -17,12 +17,16 @@ router.get("/overall", async (req, res) => {
     const scoreExpr = await getScoreExpression();
     const limit = Math.max(1, Math.min(parseInt(req.query.limit) || 100, 1000)); // max 1000
     const [rows] = await db.query(
-      `SELECT sp.student_id, sp.*,
-              ${scoreExpr} AS score
-       FROM student_profiles sp
-       JOIN student_performance p ON sp.student_id = p.student_id
-       ORDER BY score DESC
-       LIMIT ?`,
+      `SELECT 
+  sp.student_id, 
+  sp.*, 
+  d.dept_name, 
+  ${scoreExpr} AS score
+FROM student_profiles sp
+JOIN student_performance p ON sp.student_id = p.student_id
+JOIN dept d ON sp.dept_code = d.dept_code
+ORDER BY score DESC
+LIMIT ?`,
       [limit]
     );
     // Add rank field
@@ -42,7 +46,7 @@ router.get("/filter", async (req, res) => {
     let where = "WHERE 1=1";
     const params = [];
     if (dept) {
-      where += " AND sp.dept = ?";
+      where += " AND sp.dept_code = ?";
       params.push(dept);
     }
     if (section) {
@@ -59,13 +63,16 @@ router.get("/filter", async (req, res) => {
     }
     const limit = Math.max(1, Math.min(parseInt(req.query.limit) || 100, 1000)); // max 1000
     const [rows] = await db.query(
-      `SELECT sp.*,
-              ${scoreExpr} AS score
-       FROM student_profiles sp
-       JOIN student_performance p ON sp.student_id = p.student_id
-       ${where}
-       ORDER BY score DESC
-       LIMIT ?`,
+      `SELECT 
+  sp.*, 
+  d.dept_name, 
+  ${scoreExpr} AS score
+FROM student_profiles sp
+JOIN student_performance p ON sp.student_id = p.student_id
+JOIN dept d ON sp.dept_code = d.dept_code
+${where}
+ORDER BY score DESC
+LIMIT ?`,
       [...params, limit]
     );
     rows.forEach((s, i) => (s.rank = i + 1));

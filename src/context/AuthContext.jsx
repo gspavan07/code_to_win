@@ -79,7 +79,6 @@ export function AuthProvider({ children }) {
       localStorage.setItem("authToken", token);
       setCurrentUser(userData);
       setUserRole(user.role);
-
       return { success: true, role: user.role };
     } catch (error) {
       return {
