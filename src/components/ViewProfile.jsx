@@ -40,9 +40,8 @@ const ViewProfile = ({ student, onClose }) => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `${
-        student?.name + "_" + student?.student_id || "profile"
-      }.pdf`;
+      link.download = `${student?.name + "_" + student?.student_id || "profile"
+        }.pdf`;
       link.click();
       URL.revokeObjectURL(url);
     } catch (error) {
@@ -169,7 +168,7 @@ const ViewProfile = ({ student, onClose }) => {
             />
             <PlatformCard
               name="HackerRank"
-              color=" hover:text-[#1ed602] hover:shadow-[#1ed602]"
+              color=" hover:text-black hover:shadow-black"
               total={
                 stdDetails?.performance?.platformWise?.hackerrank?.badges ||
                 "NaN"
