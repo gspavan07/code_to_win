@@ -6,10 +6,10 @@ import dayjs from "dayjs";
 import Navbar from "../../components/Navbar";
 import StatsCard from "../../components/ui/StatsCard";
 import PlatformCard from "../../components/ui/PlatformCard";
-import Modals from "../../components/Modals";
+import { EditModal, UpdateProfileModal } from "../../components/Modals";
 const StudentDashboard = () => {
-  const [showModal, setShowModal] = React.useState(false);
-  const [updateProfile, setUpdateProfile] = React.useState(false);
+  const [editProfile, setEditprofile] = useState(false);
+  const [updateProfile, setUpdateProfile] = useState(false);
   const { currentUser } = useAuth();
   const formattedDate = dayjs(
     currentUser.performance.combined.last_updated
@@ -33,6 +33,10 @@ const StudentDashboard = () => {
 
   return (
     <>
+      {editProfile &&
+        <EditModal user={currentUser} onClose={() => setEditprofile(false)} />}
+      {updateProfile &&
+        <UpdateProfileModal user={currentUser} onClose={() => setUpdateProfile(false)} />}
       <Navbar />
 
       <div className=" bg-gray-50 p-6 lg:px-10 xl:px-40">
@@ -69,7 +73,7 @@ const StudentDashboard = () => {
             <hr className="my-4" />
             <div className="text-justify space-y-4">
               <button
-                onClick={() => setActiveModal("edit")}
+                onClick={() => setEditprofile(true)}
                 className="text-blue-600 underline float-end cursor-pointer"
               >
                 Edit
@@ -93,7 +97,7 @@ const StudentDashboard = () => {
             <hr className="my-4" />
             <div className="text-justify space-y-4">
               <button
-                onClick={() => setActiveModal("updateProfile")}
+                onClick={() => setUpdateProfile(true)}
                 className="text-blue-600 underline float-end cursor-pointer"
               >
                 Update Profiles
@@ -231,11 +235,7 @@ const StudentDashboard = () => {
             </div>
           </div>
         </div>
-        <Modals
-          activeModal={activeModal}
-          user={currentUser}
-          onClose={() => setActiveModal(null)}
-        />
+
       </div>
     </>
   );

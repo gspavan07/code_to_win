@@ -5,6 +5,8 @@ const ViewProfile = lazy(() => import("../components/ViewProfile"));
 import { FaSearch } from "react-icons/fa";
 import { useDepts } from "../context/MetaContext";
 import LoadingSpinner from "../common/LoadingSpinner";
+import { FaDownload } from "react-icons/fa6";
+import * as XLSX from "xlsx";
 
 const RankBadge = ({ rank }) => {
   if (rank === 1)
@@ -79,6 +81,55 @@ const RankingTable = ({ filter }) => {
       s.roll_number?.toLowerCase().includes(search.toLowerCase())
   );
 
+  const SAMPLE_CSV_DATA = `Faculty Id,Faculty Name
+  0104,Lalu Prasad
+  0142,Kumar`;
+
+  const downloadSampleXLSX = () => {
+    // 1. Simulate a large dataset
+    const largeData = [];
+    largeData.push(["Student Id", "Student Name", "Branch", "year", "Section", "score"]);
+
+    ranks.forEach((rank) => {
+      largeData.push([
+        rank.student_id,
+        rank.name,
+        rank.dept_name,
+        rank.year,
+        rank.section,
+        rank.score
+      ]);
+    });
+
+    // 2. Convert array of arrays to worksheet
+    const worksheet = XLSX.utils.aoa_to_sheet(largeData);
+
+    // 3. Create a new workbook and append the worksheet
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Faculty");
+
+    // 4. Write workbook to binary array buffer
+    const arrayBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+
+    // 5. Convert to Blob and trigger download
+    const blob = new Blob([arrayBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "faculty_bulk_template.xlsx";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+
+
+
   return (
     <>
       <Suspense fallback={<LoadingSpinner />}>
@@ -90,10 +141,12 @@ const RankingTable = ({ filter }) => {
         )}
       </Suspense>
       <div className="p-6">
-        <h1 className="md:text-2xl text-xl font-semibold mb-4">
-          🏆 Student Rankings
-        </h1>
+        <div className="flex flex-row justify-between ">
+          <h1 className="md:text-2xl text-xl font-semibold mb-4">
+            🏆 Student Rankings
+          </h1>
 
+        </div>
         {/* Filters */}
         {filter && (
           <>
@@ -167,7 +220,7 @@ const RankingTable = ({ filter }) => {
                     className="block text-xs font-semibold text-gray-500 mb-1"
                     htmlFor="topx"
                   >
-                    Top X
+                    Top
                   </label>
                   <select
                     id="topx"
@@ -182,19 +235,10 @@ const RankingTable = ({ filter }) => {
                     ))}
                   </select>
                 </div>
-                <div className="relative max-w-xs block md:hidden mt-5">
-                  <FaSearch className="absolute left-3 md:top-1/3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 opacity-85 text-blue-800" />
-                  <input
-                    type="text"
-                    placeholder="Search students..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="pl-10 pr-3 py-2 border border-gray-300 rounded-lg hover:bg-blue-50  focus:ring-1 focus:border-blue-100 transition focus:outline-none"
-                  />
-                </div>
+
               </div>
-              <div className="relative max-w-xs hidden md:block">
-                <FaSearch className="absolute left-3 md:top-1/3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 opacity-85 text-blue-800" />
+              <div className="relative max-w-xs flex  gap-x-5 mr-15 py-3">
+                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 opacity-85 text-blue-800" />
                 <input
                   type="text"
                   placeholder="Search students..."
@@ -202,6 +246,7 @@ const RankingTable = ({ filter }) => {
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-10 pr-3 py-2 border border-gray-300 rounded-lg hover:bg-blue-50  focus:ring-1   transition outline-none "
                 />
+                <button className="px-2 items-center rounded-lg bg-blue-600 flex gap-2 text-white " onClick={downloadSampleXLSX}><FaDownload /> Export</button>
               </div>
             </div>
           </>
