@@ -27,13 +27,19 @@ router.get("/profile", async (req, res) => {
     const profile = profileResult[0];
 
     // 2. Get coding platform usernames
-    const [platforms] = await db.query(
-      `SELECT cp.name AS platform, scp.*
-       FROM student_coding_profiles scp
-       JOIN coding_platforms cp ON scp.platform_id = cp.platform_id
-       WHERE scp.student_id = ?`,
+    const [codingProfileRows] = await db.query(
+      `SELECT 
+    leetcode_id, leetcode_status, leetcode_verified,
+    codechef_id, codechef_status, codechef_verified,
+    geekforgeeks_id, geekforgeeks_status, geekforgeeks_verified,
+    hackerrank_id, hackerrank_status, hackerrank_verified,
+    verified_by
+   FROM student_coding_profiles
+   WHERE student_id = ?`,
       [userId]
     );
+    const coding_profiles =
+      codingProfileRows.length > 0 ? codingProfileRows[0] : null;
 
     // 3. Get performance data
     const [data] = await db.query(
@@ -102,14 +108,14 @@ router.get("/profile", async (req, res) => {
         stars: p.stars_cc,
       },
       hackerrank: {
-        badges: p.badges_hr,
+        badges: p.stars_hr,
       },
     };
 
     res.json({
       ...profile,
       rank,
-      coding_profiles: platforms,
+      coding_profiles,
       performance: {
         combined,
         platformWise,
@@ -141,35 +147,84 @@ router.put("/profile-update", async (req, res) => {
 // Coding platform profile submission
 // POST /student/coding-profile
 router.post("/coding-profile", async (req, res) => {
-  const { userId, platform_id, profile_username } = req.body; // get userId from body
-  console.log("Received data:", req.body);
+  const { userId, leetcode_id, codechef_id, geekforgeeks_id, hackerrank_id } =
+    req.body;
   try {
-    // Set status to 'pending' on every update
+    // Check if the student already has a coding profile row
     const [existing] = await db.query(
-      `SELECT * FROM student_coding_profiles WHERE student_id = ? AND platform_id = ?`,
-      [userId, platform_id]
+      `SELECT * FROM student_coding_profiles WHERE student_id = ?`,
+      [userId]
     );
 
-    if (existing.length > 0) {
-      await db.query(
-        `UPDATE student_coding_profiles 
-         SET profile_username = ?, is_verified = 0, verification_status = 'pending', verified_by = NULL, verification_comment = NULL
-         WHERE student_id = ? AND platform_id = ?`,
-        [profile_username, userId, platform_id]
+    // Build dynamic update fields
+    const fields = [];
+    const values = [];
+
+    if (leetcode_id !== undefined) {
+      fields.push(
+        "leetcode_id = ?",
+        "leetcode_status = 'pending'",
+        "leetcode_verified = 0"
       );
+      values.push(leetcode_id);
+    }
+    if (codechef_id !== undefined) {
+      fields.push(
+        "codechef_id = ?",
+        "codechef_status = 'pending'",
+        "codechef_verified = 0"
+      );
+      values.push(codechef_id);
+    }
+    if (geekforgeeks_id !== undefined) {
+      fields.push(
+        "geekforgeeks_id = ?",
+        "geekforgeeks_status = 'pending'",
+        "geekforgeeks_verified = 0"
+      );
+      values.push(geekforgeeks_id);
+    }
+    if (hackerrank_id !== undefined) {
+      fields.push(
+        "hackerrank_id = ?",
+        "hackerrank_status = 'pending'",
+        "hackerrank_verified = 0"
+      );
+      values.push(hackerrank_id);
+    }
+
+    if (existing.length > 0) {
+      if (fields.length > 0) {
+        await db.query(
+          `UPDATE student_coding_profiles SET ${fields.join(
+            ", "
+          )} WHERE student_id = ?`,
+          [...values, userId]
+        );
+      }
     } else {
+      // Insert all fields, missing ones as null
       await db.query(
-        `INSERT INTO student_coding_profiles (student_id, platform_id, profile_username, is_verified, verification_status) 
-         VALUES (?, ?, ?, 0, 'pending')`,
-        [userId, platform_id, profile_username]
+        `INSERT INTO student_coding_profiles 
+         (student_id, leetcode_id, leetcode_status, leetcode_verified,
+          codechef_id, codechef_status, codechef_verified,
+          geekforgeeks_id, geekforgeeks_status, geekforgeeks_verified,
+          hackerrank_id, hackerrank_status, hackerrank_verified)
+         VALUES (?, ?, 'pending', 0, ?, 'pending', 0, ?, 'pending', 0, ?, 'pending', 0)`,
+        [
+          userId,
+          leetcode_id || null,
+          codechef_id || null,
+          geekforgeeks_id || null,
+          hackerrank_id || null,
+        ]
       );
     }
 
-    res.json({ message: "Profile submitted for verification" });
+    res.json({ message: "Coding profiles submitted for verification" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 });
-
 module.exports = router;

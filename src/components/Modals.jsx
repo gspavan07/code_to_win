@@ -866,13 +866,13 @@ export function EditModal({ onClose, user }) {
 // Update Profile Modal (coding profiles)
 export function UpdateProfileModal({ onClose, user }) {
   const initialUsernames = optionList.reduce((acc, opt) => {
-    const found = user.coding_profiles?.find(
-      (p) => p.platform?.toLowerCase() === opt.label.toLowerCase()
-    );
-    acc[opt.key] = found ? found.profile_username : "";
+    acc[opt.key] = user.coding_profiles?.[`${opt.key}_id`] || "";
     return acc;
   }, {});
   const [usernames, setUsernames] = useState(initialUsernames);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     setUsernames(initialUsernames);
@@ -883,10 +883,54 @@ export function UpdateProfileModal({ onClose, user }) {
     setUsernames((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    // Save logic here
-    onClose();
+    setLoading(true);
+    setError(null);
+    setSuccess(false);
+
+    // Build payload with only changed usernames
+    const payload = { userId: user.student_id };
+    optionList.forEach((opt) => {
+      const prev = user.coding_profiles?.[`${opt.key}_id`] || "";
+      const curr = usernames[opt.key] || "";
+      if (prev !== curr) {
+        payload[`${opt.key}_id`] = curr;
+      }
+    });
+
+    // If nothing changed, just close
+    if (Object.keys(payload).length === 1) {
+      setLoading(false);
+      setSuccess(true);
+      setTimeout(() => {
+        onClose();
+      }, 500);
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/student/coding-profile`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to update coding profiles");
+      }
+
+      setSuccess(true);
+      setTimeout(() => {
+        setLoading(false);
+        onClose();
+      }, 1000);
+    } catch (err) {
+      setLoading(false);
+      setError(err.message);
+    }
   };
 
   return (
@@ -921,19 +965,27 @@ export function UpdateProfileModal({ onClose, user }) {
               </React.Fragment>
             ))}
           </div>
+          {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
+          {success && (
+            <div className="text-green-500 text-sm mb-2">
+              Coding profiles updated!
+            </div>
+          )}
           <div className="flex justify-between gap-2 mt-4">
             <button
               type="button"
               onClick={onClose}
               className="px-4 py-1 rounded border border-gray-300 bg-gray-100 hover:bg-gray-200"
+              disabled={loading}
             >
               Cancel
             </button>
             <button
               type="submit"
               className="px-4 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
+              disabled={loading}
             >
-              Save
+              {loading ? "Saving..." : "Save"}
             </button>
           </div>
         </form>

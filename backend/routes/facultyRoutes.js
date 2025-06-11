@@ -8,6 +8,11 @@ const csv = require("csv-parse");
 const fs = require("fs");
 const path = require("path");
 
+const scrapeHackerRankProfile = require("../scrapers/hackerrank");
+const scrapeCodeChefProfile = require("../scrapers/codechef");
+const scrapeGeeksForGeeksProfile = require("../scrapers/geeksforgeeks");
+const scrapeLeetCodeProfile = require("../scrapers/leetcode");
+
 // Configure multer for CSV uploads
 const upload = multer({
   dest: "uploads/",
@@ -18,6 +23,86 @@ const upload = multer({
     cb(null, true);
   },
 });
+
+// Helper function to scrape and update performance
+async function scrapeAndUpdatePerformance(student_id, platform, username) {
+  let performanceData = null;
+  if (platform === "leetcode") {
+    performanceData = await scrapeLeetCodeProfile(
+      `https://leetcode.com/u/${username}`
+    );
+    if (performanceData) {
+      await db
+        .query(
+          `UPDATE student_performance SET easy_lc = ?,medium_lc=?,hard_lc=?,contests_lc=? WHERE student_id = ?`,
+          [
+            performanceData?.Problems?.Easy,
+            performanceData?.Problems?.Medium,
+            performanceData?.Problems?.Hard,
+            performanceData?.Contests_Attended,
+            student_id,
+          ]
+        )
+        .then(() => {
+          console.log("performance updated: ", performanceData);
+        });
+    }
+  } else if (platform === "codechef") {
+    performanceData = await scrapeCodeChefProfile(
+      `https://www.codechef.com/users/${username}`
+    );
+    if (performanceData) {
+      await db
+        .query(
+          `UPDATE student_performance SET contests_cc = ?,stars_cc=?,problems_cc=? WHERE student_id = ?`,
+          [
+            performanceData?.Contests_Participated,
+            performanceData?.Star,
+            performanceData?.problemsSolved,
+            student_id,
+          ]
+        )
+        .then(() => {
+          console.log("performance updated: ", performanceData);
+        });
+    }
+  } else if (platform === "geekforgeeks") {
+    performanceData = await scrapeGeeksForGeeksProfile(
+      `https://www.geeksforgeeks.org/user/${username}`
+    );
+    if (performanceData) {
+      await db
+        .query(
+          `UPDATE student_performance SET school_gfg = ?,basic_gfg=?,easy_gfg=?,medium_gfg=?,hard_gfg=? WHERE student_id = ?`,
+          [
+            performanceData?.School,
+            performanceData?.Basic,
+            performanceData?.Easy,
+            performanceData?.Medium,
+            performanceData?.Hard,
+            student_id,
+          ]
+        )
+        .then(() => {
+          console.log("performance updated: ", performanceData);
+        });
+    }
+  } else if (platform === "hackerrank") {
+    performanceData = await scrapeHackerRankProfile(
+      `https://www.hackerrank.com/profile/${username}`
+    );
+    if (performanceData) {
+      await db
+        .query(
+          `UPDATE student_performance SET stars_hr = ? WHERE student_id = ?`,
+          [performanceData?.Total_stars, student_id]
+        )
+        .then(() => {
+          console.log("performance updated: ", performanceData);
+        });
+    }
+  }
+}
 
 // GET /faculty/profile
 router.get("/profile", async (req, res) => {
@@ -237,23 +322,80 @@ router.post("/bulk-import", upload.single("file"), async (req, res) => {
 });
 
 // GET /faculty/coding-profile-requests?dept=CSE&year=3&section=A
+// router.get("/coding-profile-requests", async (req, res) => {
+//   const { dept, year, section } = req.query;
+//   try {
+//     const [requests] = await db.query(
+//       `SELECT
+//   scp.*,
+//   sp.name,
+//   sp.year,
+//   sp.section,
+//   d.dept_name,
+//   cp.name AS platform_name
+// FROM student_coding_profiles scp
+// JOIN student_profiles sp ON scp.student_id = sp.student_id
+// JOIN coding_platforms cp ON scp.platform_id = cp.platform_id
+// JOIN dept d ON sp.dept_code = d.dept_code
+// WHERE sp.dept_code = ? AND sp.year = ? AND sp.section = ?
+//   AND scp.verification_status = 'pending'`,
+//       [dept, year, section]
+//     );
+//     res.json(requests);
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// });
+
+// // POST /faculty/verify-coding-profile
+// router.post("/verify-coding-profile", async (req, res) => {
+//   const { student_id, platform_id, action, faculty_id, comment } = req.body;
+//   // action: 'accept' or 'reject'
+//   try {
+//     let status = action === "accept" ? "accepted" : "rejected";
+//     let is_verified = action === "accept" ? 1 : 0;
+//     await db.query(
+//       `UPDATE student_coding_profiles
+//        SET is_verified = ?, verification_status = ?, verified_by = ?, verification_comment = ?
+//        WHERE student_id = ? AND platform_id = ?`,
+//       [
+//         is_verified,
+//         status,
+//         faculty_id,
+//         comment || null,
+//         student_id,
+//         platform_id,
+//       ]
+//     );
+//     res.json({ message: `Profile ${status}` });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// });
+
+// GET /faculty/coding-profile-requests?dept=CSE&year=3&section=A
 router.get("/coding-profile-requests", async (req, res) => {
   const { dept, year, section } = req.query;
   try {
     const [requests] = await db.query(
       `SELECT 
-  scp.*, 
-  sp.name, 
-  sp.year, 
-  sp.section, 
-  d.dept_name, 
-  cp.name AS platform_name
-FROM student_coding_profiles scp
-JOIN student_profiles sp ON scp.student_id = sp.student_id
-JOIN coding_platforms cp ON scp.platform_id = cp.platform_id
-JOIN dept d ON sp.dept_code = d.dept_code
-WHERE sp.dept_code = ? AND sp.year = ? AND sp.section = ? 
-  AND scp.verification_status = 'pending'`,
+        scp.*, 
+        sp.name, 
+        sp.year, 
+        sp.section, 
+        d.dept_name
+      FROM student_coding_profiles scp
+      JOIN student_profiles sp ON scp.student_id = sp.student_id
+      JOIN dept d ON sp.dept_code = d.dept_code
+      WHERE sp.dept_code = ? AND sp.year = ? AND sp.section = ?
+        AND (
+          scp.leetcode_status = 'pending'
+          OR scp.codechef_status = 'pending'
+          OR scp.geekforgeeks_status = 'pending'
+          OR scp.hackerrank_status = 'pending'
+        )`,
       [dept, year, section]
     );
     res.json(requests);
@@ -265,29 +407,41 @@ WHERE sp.dept_code = ? AND sp.year = ? AND sp.section = ?
 
 // POST /faculty/verify-coding-profile
 router.post("/verify-coding-profile", async (req, res) => {
-  const { student_id, platform_id, action, faculty_id, comment } = req.body;
-  // action: 'accept' or 'reject'
+  const { student_id, platform, action, faculty_id, comment } = req.body;
   try {
     let status = action === "accept" ? "accepted" : "rejected";
     let is_verified = action === "accept" ? 1 : 0;
+    const statusField = `${platform}_status`;
+    const verifiedField = `${platform}_verified`;
+
+    // Update verification status
     await db.query(
-      `UPDATE student_coding_profiles 
-       SET is_verified = ?, verification_status = ?, verified_by = ?, verification_comment = ?
-       WHERE student_id = ? AND platform_id = ?`,
-      [
-        is_verified,
-        status,
-        faculty_id,
-        comment || null,
-        student_id,
-        platform_id,
-      ]
+      `UPDATE student_coding_profiles
+       SET ${statusField} = ?, ${verifiedField} = ?, verified_by = ?
+       WHERE student_id = ?`,
+      [status, is_verified, faculty_id, student_id]
     );
-    res.json({ message: `Profile ${status}` });
+
+    // Respond immediately
+    res.json({ message: `Profile ${platform} ${status}` });
+
+    // If accepted, scrape and update performance in background
+    if (action === "accept") {
+      const [rows] = await db.query(
+        `SELECT ${platform}_id FROM student_coding_profiles WHERE student_id = ?`,
+        [student_id]
+      );
+      const username = rows[0] && rows[0][`${platform}_id`];
+      if (username) {
+        // Run in background, don't await
+        scrapeAndUpdatePerformance(student_id, platform, username).catch(
+          (err) => console.error("Scraping error:", err)
+        );
+      }
+    }
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 });
-
 module.exports = router;

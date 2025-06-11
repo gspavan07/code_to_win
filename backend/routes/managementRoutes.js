@@ -343,6 +343,7 @@ router.post("/bulk-import-faculty", upload.single("file"), async (req, res) => {
   }
 });
 
+//P0ST /api/reset-password
 router.post("/reset-password", async (req, res) => {
   const { userId, role, password } = req.body;
   if (!userId || !role || !password) {

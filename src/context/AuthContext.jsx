@@ -18,28 +18,41 @@ export function AuthProvider({ children }) {
       try {
         const token = localStorage.getItem("authToken");
         if (token) {
-          // Validate token on backend
-          const response = await axios.get(`${API_URL}/auth/validate`, {
+          const response = await fetch(`${API_URL}/auth/validate`, {
+            method: "GET",
             headers: {
-              Authorization: `${token}`,
+              Authorization: token,
+              "Content-Type": "application/json",
             },
+            mode: "cors",
           });
 
-          if (response.data.valid) {
-            const userId = response.data.user.user_id;
-            const result = await axios.get(
-              `${API_URL}/${response.data.user.role}/profile`,
-              {
-                params: {
-                  userId,
-                },
-              }
+          if (!response.ok) {
+            throw new Error("Token validation failed");
+          }
+
+          const validationData = await response.json();
+
+          if (validationData.valid) {
+            const user = validationData.user;
+            const userId = user.user_id;
+            const role = user.role;
+
+            // Construct query string manually
+            const profileRes = await fetch(
+              `${API_URL}/${role}/profile?userId=${encodeURIComponent(userId)}`
             );
-            const userData = { ...response.data.user, ...result.data };
+
+            if (!profileRes.ok) {
+              throw new Error("Failed to fetch user profile");
+            }
+
+            const profileData = await profileRes.json();
+
+            const userData = { ...user, ...profileData };
             setCurrentUser(userData);
-            setUserRole(response.data.user.role);
+            setUserRole(role);
           } else {
-            // Invalid token, clear it
             localStorage.removeItem("authToken");
             setCurrentUser(null);
             setUserRole(null);
@@ -61,29 +74,43 @@ export function AuthProvider({ children }) {
   // Login function
   const login = async (email, password, role) => {
     try {
-      const response = await axios.post(`${API_URL}/auth/login`, {
-        email,
-        password,
-        role,
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password, role }),
       });
 
-      const { token, user } = response.data;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Login failed");
+      }
+
+      const { token, user } = await response.json();
 
       const userId = user.user_id;
-      const result = await axios.get(`${API_URL}/${user.role}/profile`, {
-        params: {
-          userId,
-        },
-      });
-      const userData = { ...user, ...result.data };
+
+      const profileRes = await fetch(
+        `${API_URL}/${user.role}/profile?userId=${encodeURIComponent(userId)}`
+      );
+
+      if (!profileRes.ok) {
+        throw new Error("Failed to fetch user profile");
+      }
+
+      const profileData = await profileRes.json();
+
+      const userData = { ...user, ...profileData };
       localStorage.setItem("authToken", token);
       setCurrentUser(userData);
       setUserRole(user.role);
+
       return { success: true, role: user.role };
     } catch (error) {
       return {
         success: false,
-        message: error.response?.data?.message || "Login failed",
+        message: error.message || "Login failed",
       };
     }
   };

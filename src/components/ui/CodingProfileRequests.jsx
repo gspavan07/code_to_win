@@ -112,14 +112,14 @@ function CodingProfileRequests({ dept, year, section, facultyId }) {
 
 // Modal component
 function StudentRequestsModal({ student, onClose, onAction, facultyId }) {
-  const handleAction = async (platform_id, action) => {
+  const handleAction = async (platform, action) => {
     await axios.post("http://localhost:5000/faculty/verify-coding-profile", {
       student_id: student.student_id,
-      platform_id,
+      platform, // send platform name
       action,
       faculty_id: facultyId,
     });
-    await onAction(platform_id);
+    await onAction(platform);
   };
 
   return (
@@ -144,40 +144,48 @@ function StudentRequestsModal({ student, onClose, onAction, facultyId }) {
             </tr>
           </thead>
           <tbody>
-            {student.reqs.map((req) => (
-              <tr key={req.platform_id} className="text-sm p-4">
-                <td>{req.platform_name}</td>
-                <td>{req.profile_username}</td>
-                <td>
-                  {/* You can customize the link format per platform */}
-                  <a
-                    href={getProfileLink(
-                      req.platform_name,
-                      req.profile_username
-                    )}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 underline"
-                  >
-                    View
-                  </a>
-                </td>
-                <td className="flex justify-center gap-2 mb-2 mt-1">
-                  <button
-                    className="bg-green-500 text-white px-2 py-1 rounded mr-2 text-xs hover:bg-green-600"
-                    onClick={() => handleAction(req.platform_id, "accept")}
-                  >
-                    Accept
-                  </button>
-                  <button
-                    className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-xs"
-                    onClick={() => handleAction(req.platform_id, "reject")}
-                  >
-                    Reject
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {["leetcode", "codechef", "geekforgeeks", "hackerrank"].map(
+              (platform) => {
+                const idKey = `${platform}_id`;
+                const statusKey = `${platform}_status`;
+                const username = student.reqs[0][idKey];
+                const status = student.reqs[0][statusKey];
+                // Only show if status is pending and username exists
+                if (!username || status !== "pending") return null;
+                return (
+                  <tr key={platform} className="text-sm p-4">
+                    <td>
+                      {platform.charAt(0).toUpperCase() + platform.slice(1)}
+                    </td>
+                    <td>{username}</td>
+                    <td>
+                      <a
+                        href={getProfileLink(platform, username)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline"
+                      >
+                        View
+                      </a>
+                    </td>
+                    <td className="flex justify-center gap-2 mb-2 mt-1">
+                      <button
+                        className="bg-green-500 text-white px-2 py-1 rounded mr-2 text-xs hover:bg-green-600"
+                        onClick={() => handleAction(platform, "accept")}
+                      >
+                        Accept
+                      </button>
+                      <button
+                        className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-xs"
+                        onClick={() => handleAction(platform, "reject")}
+                      >
+                        Reject
+                      </button>
+                    </td>
+                  </tr>
+                );
+              }
+            )}
           </tbody>
         </table>
         <button

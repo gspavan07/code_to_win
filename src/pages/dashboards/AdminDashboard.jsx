@@ -10,6 +10,7 @@ import {
 } from "../../components/Modals";
 import Navbar from "../../components/Navbar";
 import LoadingSpinner from "../../common/LoadingSpinner";
+import ProfileScraper from "../../components/ProfileScraper";
 // Lazy-loaded components
 const RankingTable = lazy(() => import("../../components/Ranking"));
 const ViewProfile = lazy(() => import("../../components/ViewProfile"));
@@ -119,6 +120,11 @@ function AdminDashboard() {
     });
     return grouped;
   }, [grading]);
+
+  const handleComplete = (result) => {
+    console.log("Processing complete:", result);
+    // You can do something with the result here
+  };
 
   return (
     <>
@@ -310,6 +316,12 @@ function AdminDashboard() {
               </div>
             </div>
           )}
+
+          <ProfileScraper
+            apiEndpoint="http://localhost:5000/api/profile-scraper"
+            socketEndpoint="http://localhost:5000/profile-scraper"
+            onComplete={handleComplete}
+          />
         </div>
       </div>
     </>

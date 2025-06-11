@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import axios from "axios";
 
 const DeptContext = createContext();
 
@@ -12,11 +11,23 @@ export function DeptProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:5000/meta/depts")
-      .then((res) => setDepts(res.data))
-      .catch(() => setDepts([]))
-      .finally(() => setLoading(false));
+    const fetchDepts = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/meta/depts");
+        if (!response.ok) {
+          throw new Error("Failed to fetch departments");
+        }
+        const data = await response.json();
+        setDepts(data);
+      } catch (error) {
+        console.error("Error fetching departments:", error);
+        setDepts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDepts();
   }, []);
 
   return (

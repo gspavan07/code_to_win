@@ -33,10 +33,15 @@ const StudentDashboard = () => {
 
   return (
     <>
-      {editProfile &&
-        <EditModal user={currentUser} onClose={() => setEditprofile(false)} />}
-      {updateProfile &&
-        <UpdateProfileModal user={currentUser} onClose={() => setUpdateProfile(false)} />}
+      {editProfile && (
+        <EditModal user={currentUser} onClose={() => setEditprofile(false)} />
+      )}
+      {updateProfile && (
+        <UpdateProfileModal
+          user={currentUser}
+          onClose={() => setUpdateProfile(false)}
+        />
+      )}
       <Navbar />
 
       <div className=" bg-gray-50 p-6 lg:px-10 xl:px-40">
@@ -103,29 +108,37 @@ const StudentDashboard = () => {
                 Update Profiles
               </button>
 
-
               <p className="font-semibold">Coding Profiles</p>
 
               <div className="flex flex-col gap-2">
-                {currentUser.coding_profiles.map((profile) => (
-                  <div key={profile.platform} className="flex justify-between">
-                    <span className="font-semibold text-left">
-                      {profile.platform}
-                    </span>
-                    <p className="text-gray-500">
-                      {profile.profile_username}
-                      {profile.verification_status === "accepted" && (
-                        <FiCheck className="inline ml-1 text-green-500" />
-                      )}
-                      {profile.verification_status === "rejected" && (
-                        <FiX className="inline ml-1 text-red-500" />
-                      )}
-                      {profile.verification_status === "pending" && (
-                        <FiClock className="inline ml-1 text-gray-500" />
-                      )}
-                    </p>
-                  </div>
-                ))}
+                {["leetcode", "codechef", "geekforgeeks", "hackerrank"].map(
+                  (platform) => {
+                    const idKey = `${platform}_id`;
+                    const statusKey = `${platform}_status`;
+                    const username =
+                      currentUser.coding_profiles?.[idKey] || "Not Provided";
+                    const status = currentUser.coding_profiles?.[statusKey];
+                    return (
+                      <div key={platform} className="flex justify-between">
+                        <span className="font-semibold text-left">
+                          {platform.charAt(0).toUpperCase() + platform.slice(1)}
+                        </span>
+                        <p className="text-gray-500">
+                          {username}
+                          {status === "accepted" && (
+                            <FiCheck className="inline ml-1 text-green-500" />
+                          )}
+                          {status === "rejected" && (
+                            <FiX className="inline ml-1 text-red-500" />
+                          )}
+                          {status === "pending" && (
+                            <FiClock className="inline ml-1 text-gray-500" />
+                          )}
+                        </p>
+                      </div>
+                    );
+                  }
+                )}
               </div>
             </div>
           </div>
@@ -235,7 +248,6 @@ const StudentDashboard = () => {
             </div>
           </div>
         </div>
-
       </div>
     </>
   );
