@@ -9,10 +9,9 @@ import React, {
 import { FaUser } from "react-icons/fa6";
 import { useAuth } from "../../context/AuthContext";
 import Navbar from "../../components/Navbar";
-import { useDepts } from "../../context/MetaContext";
 import axios from "axios";
 import LoadingSpinner from "../../common/LoadingSpinner";
-import AddIndividualStudentForm from "../../components/ui/AddIndividualStudent";
+import { AddIndividualStudentModel } from "../../components/Modals";
 
 // Lazy-loaded components
 const RankingTable = lazy(() => import("../../components/Ranking"));
@@ -21,7 +20,9 @@ const CodingProfileRequests = lazy(() =>
   import("../../components/ui/CodingProfileRequests")
 );
 const StudentTable = lazy(() => import("../../components/ui/StudentTable"));
-const BulkImportForm = lazy(() => import("../../components/ui/BulkImportForm"));
+const BulkImportStudent = lazy(() =>
+  import("../../components/ui/BulkImportStudent")
+);
 
 const API_BASE = "http://localhost:5000";
 
@@ -232,7 +233,9 @@ function FacultyDashboard() {
                   {/* Dynamic Content Area */}
                   <div className="w-full lg:w-3/4">
                     {addStudentMenu === "individual" && (
-                      <AddIndividualStudentForm onSuccess={fetchStudents} />
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <AddIndividualStudentModel onSuccess={fetchStudents} />
+                      </Suspense>
                     )}
                     {addStudentMenu === "bulk" && (
                       <div className="bg-white p-4 md:p-6 h-fit rounded shadow">
@@ -243,7 +246,7 @@ function FacultyDashboard() {
                           Import multiple students from CSV file
                         </p>
                         <Suspense fallback={<LoadingSpinner />}>
-                          <BulkImportForm onSuccess={fetchStudents} />
+                          <BulkImportStudent onSuccess={fetchStudents} />
                         </Suspense>
                       </div>
                     )}
@@ -258,4 +261,4 @@ function FacultyDashboard() {
   );
 }
 
-export default React.memo(FacultyDashboard);
+export default FacultyDashboard;

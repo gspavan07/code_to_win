@@ -1,5 +1,4 @@
 import React, { useState, lazy, useMemo, useEffect, Suspense } from "react";
-import { FaUserPlus, FaKey, FaUpload, FaCog } from "react-icons/fa";
 import { FaUser } from "react-icons/fa6";
 import { useAuth } from "../../context/AuthContext";
 import {
@@ -7,13 +6,13 @@ import {
   AddHODModal,
   ResetPasswordModal,
   BulkImportModal,
+  AddIndividualStudentModel,
 } from "../../components/Modals";
 import Navbar from "../../components/Navbar";
 import LoadingSpinner from "../../common/LoadingSpinner";
 // Lazy-loaded components
 const RankingTable = lazy(() => import("../../components/Ranking"));
 const ViewProfile = lazy(() => import("../../components/ViewProfile"));
-const Modals = lazy(() => import("../../components/Modals"));
 const metricToPlatform = {
   badges_hr: "HackerRank",
   contests_cc: "CodeChef",
@@ -38,7 +37,7 @@ function AdminDashboard() {
   const [grading, setGrading] = useState([]);
   const [platformOrder, setPlatform] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [userMgmtTab, setUserMgmtTab] = useState("addFaculty");
+  const [userMgmtTab, setUserMgmtTab] = useState("addStudent");
   const [changedMetrics, setChangedMetrics] = useState(new Set());
 
   // Helper to make metric names readable
@@ -268,12 +267,16 @@ function AdminDashboard() {
               {/* User Management */}
               <div className="bg-white shadow rounded-lg p-0 flex flex-col md:flex-row min-h-[340px] col-span-2">
                 {/* Left Menu */}
-                <div className="md:w-1/4 border-r bg-gray-50 p-4">
+                <div
+                  className="md:w-1/4
+                 bg-gray-50 p-4"
+                >
                   <h2 className="text-xl font-semibold mb-4">
                     User Management
                   </h2>
                   <ul className="space-y-2">
                     {[
+                      { key: "addStudent", label: "Add Student" },
                       { key: "addFaculty", label: "Add Faculty" },
                       { key: "addHOD", label: "Add HOD" },
                       { key: "resetPassword", label: "Reset Password" },
@@ -296,6 +299,9 @@ function AdminDashboard() {
                 </div>
                 {/* Right Content */}
                 <div className="flex-1 p-6">
+                  {userMgmtTab === "addStudent" && (
+                    <AddIndividualStudentModel />
+                  )}
                   {userMgmtTab === "addFaculty" && <AddFacultyModal />}
                   {userMgmtTab === "addHOD" && <AddHODModal />}
                   {userMgmtTab === "resetPassword" && <ResetPasswordModal />}

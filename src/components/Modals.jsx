@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useDepts } from "../context/MetaContext";
-import BulkImportForm from "./ui/BulkImportStudent";
 import BulkImportStudent from "./ui/BulkImportStudent";
 import BulkImportFaculty from "./ui/BulkImportFaculty";
+import { FaUserPlus } from "react-icons/fa6";
+
+const API_BASE = "http://localhost:5000";
 
 const optionList = [
   { label: "Leetcode", key: "leetcode" },
@@ -11,27 +13,277 @@ const optionList = [
   { label: "HackerRank", key: "hackerrank" },
 ];
 
-const platformIdMap = {
-  leetcode: 1,
-  codechef: 2,
-  geekforgeeks: 3,
-  hackerrank: 4,
-};
+export function AddIndividualStudentModel({ onSuccess }) {
+  const { depts } = useDepts();
+  const [formData, setFormData] = useState({
+    name: "",
+    stdId: "",
+    dept: "",
+    year: "",
+    section: "",
+    degree: "",
+    cgpa: "",
+  });
+
+  const [submitStatus, setSubmitStatus] = useState({
+    loading: false,
+    error: null,
+    success: false,
+  });
+
+  const handleChange = (key, value) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitStatus({ loading: true, error: null, success: false });
+
+    // Basic validation
+    if (
+      !formData.name ||
+      !formData.stdId ||
+      !formData.dept ||
+      !formData.year ||
+      !formData.section ||
+      !formData.degree ||
+      !formData.cgpa
+    ) {
+      setSubmitStatus({
+        loading: false,
+        error: "Please fill all required fields",
+        success: false,
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/faculty/add-student`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to add student");
+      }
+
+      setSubmitStatus({ loading: false, error: null, success: true });
+
+      // Reset form after successful submission
+      setFormData({
+        name: "",
+        stdId: "",
+        dept: "",
+        year: "",
+        section: "",
+        degree: "",
+        cgpa: "",
+      });
+
+      // Notify parent to refresh student list
+      if (onSuccess) onSuccess();
+    } catch (error) {
+      setSubmitStatus({ loading: false, error: error.message, success: false });
+    }
+  };
+
+  return (
+    <div className="bg-white p-4 md:p-6 rounded shadow">
+      <h2 className="text-xl font-bold text-gray-900 mb-1">
+        Add Individual Student
+      </h2>
+      <p className="text-sm text-gray-500 mb-6">
+        Add a single student to your section
+      </p>
+      <form className="space-y-4" onSubmit={handleSubmit}>
+        {/* Student Name */}
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Student Name *
+          </label>
+          <input
+            id="name"
+            value={formData.name}
+            onChange={(e) => handleChange("name", e.target.value)}
+            type="text"
+            placeholder="Enter student name"
+            className="w-full border border-gray-50 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        {/* Roll Number */}
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Roll Number *
+          </label>
+          <input
+            id="stdId"
+            value={formData.stdId}
+            onChange={(e) => handleChange("stdId", e.target.value)}
+            type="text"
+            placeholder="Enter roll number"
+            className="w-full border border-gray-50 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        {/* CGPA */}
+        <div>
+          <label className="block text-sm font-medium mb-1">CGPA *</label>
+          <input
+            id="cgpa"
+            value={formData.cgpa}
+            onChange={(e) => handleChange("cgpa", e.target.value)}
+            type="text"
+            placeholder="Enter CGPA"
+            className="w-full border border-gray-50 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        {/* Degree */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Degree *</label>
+          <select
+            id="degree"
+            value={formData.degree}
+            onChange={(e) => handleChange("degree", e.target.value)}
+            className="w-full border border-gray-50 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Select degree</option>
+            <option value="B.Tech">B.Tech</option>
+            <option value="MCA">MCA</option>
+          </select>
+        </div>
+
+        {/* Department */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Branch *</label>
+          <select
+            id="dept"
+            value={formData.dept}
+            onChange={(e) => handleChange("dept", e.target.value)}
+            className="w-full border border-gray-50 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Select branch</option>
+            {depts?.map((dept) => (
+              <option key={dept.dept_code} value={dept.dept_code}>
+                {dept.dept_name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Year */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Year *</label>
+          <select
+            id="year"
+            value={formData.year}
+            onChange={(e) => handleChange("year", e.target.value)}
+            className="w-full border border-gray-50 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Select year</option>
+            {[1, 2, 3, 4].map((year) => (
+              <option key={year} value={year}>
+                {year}
+                {year === 1
+                  ? "st"
+                  : year === 2
+                  ? "nd"
+                  : year === 3
+                  ? "rd"
+                  : "th"}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Section */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Section *</label>
+          <select
+            id="section"
+            value={formData.section}
+            onChange={(e) => handleChange("section", e.target.value)}
+            className="w-full border border-gray-50 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Select section</option>
+            {["A", "B", "C", "D"].map((section) => (
+              <option key={section} value={section}>
+                {section}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <button
+          type="submit"
+          disabled={submitStatus.loading}
+          className={`w-full mt-4 flex justify-center items-center gap-2 ${
+            submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
+          } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
+        >
+          {submitStatus.loading ? (
+            <>
+              <svg
+                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              Processing...
+            </>
+          ) : (
+            <>
+              <FaUserPlus className="w-4 h-4" />
+              Add Student
+            </>
+          )}
+        </button>
+
+        {submitStatus.error && (
+          <div className="text-red-500 text-sm mt-2">{submitStatus.error}</div>
+        )}
+        {submitStatus.success && (
+          <div className="text-green-500 text-sm mt-2">
+            Student added successfully!
+          </div>
+        )}
+      </form>
+    </div>
+  );
+}
 
 // Add Faculty Modal
 export function AddFacultyModal() {
   const { depts } = useDepts();
   const [form, setForm] = useState({
     name: "",
-    employee_id: "",
+    facultyId: "",
     email: "",
-    phone: "",
-    dept_code: "",
-    specialization: "",
-    qualification: "",
-    experience: "",
+    dept: "",
   });
-
+  const [submitStatus, setSubmitStatus] = useState({
+    loading: false,
+    error: null,
+    success: false,
+  });
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -39,12 +291,46 @@ export function AddFacultyModal() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await fetch("/api/faculty", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    // Optionally handle response and close modal
+    setSubmitStatus({ loading: true, error: null, success: false });
+
+    // Basic validation
+    if (!form.name || !form.facultyId || !form.email || !form.dept) {
+      setSubmitStatus({
+        loading: false,
+        error: "Please fill all required fields",
+        success: false,
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/api/add-faculty`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to add faculty");
+      }
+
+      setSubmitStatus({ loading: false, error: null, success: true });
+
+      // Reset form after successful submission
+      setForm({
+        name: "",
+        facultyId: "",
+        email: "",
+        dept: "",
+      });
+
+      // // Notify parent to refresh student list
+      // if (onSuccess) onSuccess();
+    } catch (error) {
+      setSubmitStatus({ loading: false, error: error.message, success: false });
+    }
   };
 
   return (
@@ -60,8 +346,8 @@ export function AddFacultyModal() {
           placeholder="Faculty Name *"
         />
         <input
-          name="employee_id"
-          value={form.employee_id}
+          name="facultyId"
+          value={form.facultyId}
           onChange={handleChange}
           type="text"
           className="w-full px-3 py-2 border border-gray-200 rounded"
@@ -76,8 +362,8 @@ export function AddFacultyModal() {
           placeholder="Email *"
         />
         <select
-          name="dept_code"
-          value={form.dept_code}
+          name="dept"
+          value={form.dept}
           onChange={handleChange}
           className="w-full px-3 py-2 border border-gray-200 rounded"
           required
@@ -90,14 +376,53 @@ export function AddFacultyModal() {
           ))}
         </select>
 
-        <div className="flex justify-between mt-4">
-          <button
-            type="submit"
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
-          >
-            Add Faculty
-          </button>
-        </div>
+        <button
+          type="submit"
+          disabled={submitStatus.loading}
+          className={`w-full mt-4 flex justify-center items-center gap-2 ${
+            submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
+          } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
+        >
+          {submitStatus.loading ? (
+            <>
+              <svg
+                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              Processing...
+            </>
+          ) : (
+            <>
+              <FaUserPlus className="w-4 h-4" />
+              Add Faculty
+            </>
+          )}
+        </button>
+
+        {submitStatus.error && (
+          <div className="text-red-500 text-sm mt-2">{submitStatus.error}</div>
+        )}
+        {submitStatus.success && (
+          <div className="text-green-500 text-sm mt-2">
+            Faculty added successfully!
+          </div>
+        )}
       </form>
     </div>
   );
@@ -106,58 +431,238 @@ export function AddFacultyModal() {
 // Add HOD Modal
 export function AddHODModal() {
   const { depts } = useDepts();
+  const [form, setForm] = useState({
+    name: "",
+    hodId: "",
+    email: "",
+    dept: "",
+  });
+  const [submitStatus, setSubmitStatus] = useState({
+    loading: false,
+    error: null,
+    success: false,
+  });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitStatus({ loading: true, error: null, success: false });
+
+    // Basic validation
+    if (!form.name || !form.hodId || !form.email || !form.dept) {
+      setSubmitStatus({
+        loading: false,
+        error: "Please fill all required fields",
+        success: false,
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/api/add-hod`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to add hod");
+      }
+
+      setSubmitStatus({ loading: false, error: null, success: true });
+
+      // Reset form after successful submission
+      setForm({
+        name: "",
+        hodId: "",
+        email: "",
+        dept: "",
+      });
+
+      // // Notify parent to refresh student list
+      // if (onSuccess) onSuccess();
+    } catch (error) {
+      setSubmitStatus({ loading: false, error: error.message, success: false });
+    }
+  };
+
   return (
-    <div className=" w-full">
-      <div className="space-y-4">
-        <h3>Add New HOD</h3>
+    <div className="w-full">
+      <form className="space-y-4" onSubmit={handleSubmit}>
+        <h3>Add New Faculty</h3>
         <input
+          name="name"
+          value={form.name}
+          onChange={handleChange}
           type="text"
           className="w-full px-3 py-2 border border-gray-200 rounded"
           placeholder="HOD Name *"
         />
         <input
+          name="hodId"
+          value={form.hodId}
+          onChange={handleChange}
           type="text"
           className="w-full px-3 py-2 border border-gray-200 rounded"
           placeholder="Employee ID *"
         />
         <input
+          name="email"
+          value={form.email}
+          onChange={handleChange}
           type="email"
           className="w-full px-3 py-2 border border-gray-200 rounded"
           placeholder="Email *"
         />
-
         <select
+          name="dept"
+          value={form.dept}
+          onChange={handleChange}
           className="w-full px-3 py-2 border border-gray-200 rounded"
           required
         >
-          <option>Select department</option>
+          <option value="">Select department</option>
           {depts?.map((dept) => (
             <option key={dept.dept_code} value={dept.dept_code}>
               {dept.dept_name}
             </option>
           ))}
         </select>
-        <div className="flex justify-between mt-4">
-          <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
-            Add HOD
-          </button>
-        </div>
-      </div>
+
+        <button
+          type="submit"
+          disabled={submitStatus.loading}
+          className={`w-full mt-4 flex justify-center items-center gap-2 ${
+            submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
+          } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
+        >
+          {submitStatus.loading ? (
+            <>
+              <svg
+                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              Processing...
+            </>
+          ) : (
+            <>
+              <FaUserPlus className="w-4 h-4" />
+              Add HOD
+            </>
+          )}
+        </button>
+
+        {submitStatus.error && (
+          <div className="text-red-500 text-sm mt-2">{submitStatus.error}</div>
+        )}
+        {submitStatus.success && (
+          <div className="text-green-500 text-sm mt-2">
+            HOD added successfully!
+          </div>
+        )}
+      </form>
     </div>
   );
 }
 
 // Reset Password Modal
 export function ResetPasswordModal() {
+  const [form, setForm] = useState({
+    userId: "",
+    role: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [submitStatus, setSubmitStatus] = useState({
+    loading: false,
+    error: null,
+    success: false,
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitStatus({ loading: true, error: null, success: false });
+
+    // Validation
+    if (!form.userId || !form.role || !form.password || !form.confirmPassword) {
+      setSubmitStatus({
+        loading: false,
+        error: "Please fill all required fields",
+        success: false,
+      });
+      return;
+    }
+    if (form.password !== form.confirmPassword) {
+      setSubmitStatus({
+        loading: false,
+        error: "Passwords do not match",
+        success: false,
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/api/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: form.userId,
+          role: form.role,
+          password: form.password,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to reset password");
+      }
+      setSubmitStatus({ loading: false, error: null, success: true });
+      setForm({
+        userId: "",
+        role: "",
+        password: "",
+        confirmPassword: "",
+      });
+    } catch (error) {
+      setSubmitStatus({ loading: false, error: error.message, success: false });
+    }
+  };
   return (
     <div className="w-full">
       <h2 className="text-lg font-semibold mb-4">Reset Password</h2>
-      <form className="space-y-4">
+      <form className="space-y-4" onSubmit={handleSubmit}>
         <select
+          id="role"
+          name="role"
           className="w-1/2 px-3 py-2 border border-gray-200 rounded"
           required
-          // value={importType}
-          // onChange={(e) => setImportType(e.target.value)}
+          value={form.role}
+          onChange={handleChange}
         >
           <option value="">Select Role</option>
           <option value="hod">HOD</option>
@@ -165,34 +670,50 @@ export function ResetPasswordModal() {
           <option value="student">Student</option>
         </select>
         <input
+          id="userId"
+          name="userId"
           type="text"
           className="w-full border rounded px-3 py-2"
-          placeholder="Employee ID *"
+          placeholder="User ID *"
           required
+          value={form.userId}
+          onChange={handleChange}
         />
         <input
-          type="email"
-          className="w-full border rounded px-3 py-2"
-          placeholder="Email *"
-          required
-        />
-        <input
+          name="password"
           type="password"
           className="w-full border rounded px-3 py-2"
           placeholder="New Password *"
           required
+          value={form.password}
+          onChange={handleChange}
         />
         <input
+          name="confirmPassword"
           type="password"
           className="w-full border rounded px-3 py-2"
           placeholder="Confirm Password *"
           required
+          value={form.confirmPassword}
+          onChange={handleChange}
         />
         <div className="flex justify-between mt-4">
-          <button className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded">
-            Reset Password
+          <button
+            type="submit"
+            className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded"
+            disabled={submitStatus.loading}
+          >
+            {submitStatus.loading ? "Processing..." : "Reset Password"}
           </button>
         </div>
+        {submitStatus.error && (
+          <div className="text-red-500 text-sm mt-2">{submitStatus.error}</div>
+        )}
+        {submitStatus.success && (
+          <div className="text-green-500 text-sm mt-2">
+            Password reset successful!
+          </div>
+        )}
       </form>
     </div>
   );

@@ -29,7 +29,7 @@ router.post("/add-student", async (req, res) => {
   try {
     await connection.beginTransaction();
 
-    const hashed = await bcrypt.hash("pass123", 10);
+    const hashed = await bcrypt.hash("student@aditya", 10);
 
     // 1. Insert into users table
     const [result] = await connection.query(
@@ -50,12 +50,18 @@ router.post("/add-student", async (req, res) => {
   } catch (err) {
     await connection.rollback();
     console.error(err);
-    res.status(500).json({ message: "Server error", error: err.errno });
+    res.status(500).json({
+      message:
+        err.code === "ER_DUP_ENTRY"
+          ? `Student with ID ${facultyId} already exists`
+          : err.message,
+      error: err.errno,
+    });
   } finally {
     connection.release();
   }
 });
-
+// Add a new faculty
 router.post("/add-faculty", async (req, res) => {
   const { facultyId, name, dept, email } = req.body;
 
@@ -74,18 +80,66 @@ router.post("/add-faculty", async (req, res) => {
 
     // 2. Insert into student_profiles table
     await connection.query(
-      `INSERT INTO student_profiles 
-        (student_id, name, dept_code)
+      `INSERT INTO faculty_profiles 
+        (faculty_id, name, dept_code)
         VALUES (?, ?, ?)`,
       [facultyId, name, dept]
     );
 
     await connection.commit();
-    res.status(200).json({ message: "Student added successfully" });
+    res.status(200).json({ message: "Faculty added successfully" });
   } catch (err) {
     await connection.rollback();
     console.error(err);
-    res.status(500).json({ message: "Server error", error: err.errno });
+    res.status(500).json({
+      message:
+        err.code === "ER_DUP_ENTRY"
+          ? `Faculty with ID ${facultyId} already exists`
+          : err.message,
+      error: err.errno,
+    });
+  } finally {
+    connection.release();
+  }
+});
+
+// Add a new hod
+router.post("/add-hod", async (req, res) => {
+  const { hodId, name, dept, email } = req.body;
+
+  const connection = await db.getConnection(); // Use a connection from the pool
+
+  try {
+    await connection.beginTransaction();
+
+    const hashed = await bcrypt.hash("hod@aditya", 10);
+
+    // 1. Insert into users table
+    const [result] = await connection.query(
+      `INSERT INTO users (user_id, email, password, role) VALUES (?,?, ?, ?)`,
+      [hodId, email, hashed, "hod"]
+    );
+
+    // 2. Insert into student_profiles table
+    await connection.query(
+      `INSERT INTO hod_profiles 
+        (hod_id, name, dept_code)
+        VALUES (?, ?, ?)`,
+      [hodId, name, dept]
+    );
+
+    await connection.commit();
+    res.status(200).json({ message: "HOD added successfully" });
+  } catch (err) {
+    await connection.rollback();
+    console.error(err);
+    res.status(500).json({
+      message:
+        err.code === "ER_DUP_ENTRY"
+          ? `HOD with ID ${hodId} already exists`
+          : err.message,
+      error: err.errno,
+    });
   } finally {
     connection.release();
   }
@@ -283,6 +337,31 @@ router.post("/bulk-import-faculty", upload.single("file"), async (req, res) => {
       fs.unlinkSync(req.file.path);
     }
 
+    res.status(500).json({ message: "Server error", error: err.message });
+  } finally {
+    connection.release();
+  }
+});
+
+router.post("/reset-password", async (req, res) => {
+  const { userId, role, password } = req.body;
+  if (!userId || !role || !password) {
+    return res.status(400).json({ message: "Missing required fields" });
+  }
+
+  const connection = await db.getConnection();
+  try {
+    const hashed = await bcrypt.hash(password, 10);
+    const [result] = await connection.query(
+      "UPDATE users SET password = ? WHERE user_id = ? AND role = ?",
+      [hashed, userId, role]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json({ message: "Password reset successful" });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Server error", error: err.message });
   } finally {
     connection.release();
