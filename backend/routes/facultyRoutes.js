@@ -54,11 +54,12 @@ async function scrapeAndUpdatePerformance(student_id, platform, username) {
     if (performanceData) {
       await db
         .query(
-          `UPDATE student_performance SET contests_cc = ?,stars_cc=?,problems_cc=? WHERE student_id = ?`,
+          `UPDATE student_performance SET contests_cc = ?,stars_cc=?,problems_cc=?,badges_cc=? WHERE student_id = ?`,
           [
             performanceData?.Contests_Participated,
             performanceData?.Star,
             performanceData?.problemsSolved,
+            performanceData?.Badges,
             student_id,
           ]
         )
@@ -73,7 +74,7 @@ async function scrapeAndUpdatePerformance(student_id, platform, username) {
     if (performanceData) {
       await db
         .query(
-          `UPDATE student_performance SET school_gfg = ?,basic_gfg=?,easy_gfg=?,medium_gfg=?,hard_gfg=? WHERE student_id = ?`,
+          `UPDATE student_performance SET school_gfg = ?,basic_gfg=?,easy_gfg=?,medium_gfg=?,hard_gfg=?, WHERE student_id = ?`,
           [
             performanceData?.School,
             performanceData?.Basic,

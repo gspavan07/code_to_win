@@ -1,8 +1,6 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-const db = require("./config/db");
-const cron = require("node-cron");
 const http = require("http");
 const socketIo = require("socket.io");
 const setupProfileScraperRoutes = require("./profileScraperRoutes");

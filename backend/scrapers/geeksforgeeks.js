@@ -4,7 +4,7 @@
 
 const cheerio = require("cheerio");
 const axios = require("axios");
-const { logger, extractUsername } = require("../utils");
+const { logger } = require("../utils");
 const config = require("../config");
 
 /**

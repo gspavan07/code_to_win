@@ -75,7 +75,17 @@ async function scrapeCodeChefProfile(url) {
     if (match) {
       problemsSolved = parseInt(match[1], 10);
     }
+    let badges = [];
 
+    $(".widget.badges .badge").each((index, element) => {
+      const title = $(element).find(".badge__title").text().trim();
+
+      if (title && !title.toLowerCase().includes("no badges")) {
+        badges.push({
+          title,
+        });
+      }
+    });
     // Try different selectors for contests participated
     let contestsParticipated = 0;
     const contestText = $(".contest-participated-count b").text().trim();
@@ -90,31 +100,19 @@ async function scrapeCodeChefProfile(url) {
       }
     }
 
-    const totalScore =
-      contestsParticipated * config.SCORE_WEIGHTS.codechef.contest;
-
     logger.info(`Successfully scraped CodeChef profile for ${username}`);
-    console.log(
-      username,
-      star,
-      rating,
-      contestsParticipated,
-      totalScore,
-      problemsSolved
-    );
     return {
       Username: username,
       Star: star,
       Rating: rating,
       Contests_Participated: contestsParticipated,
       problemsSolved: problemsSolved,
-      Total_Score: totalScore,
+      Badges: badges.length,
     };
   } catch (error) {
     logger.error(`Error scraping CodeChef profile: ${error.message}`);
     return {
       Username: extractUsername(url),
-      Total_Score: 0,
       Error: error.message,
     };
   }
