@@ -7,6 +7,7 @@ import { useDepts } from "../context/MetaContext";
 import LoadingSpinner from "../common/LoadingSpinner";
 import { FaDownload } from "react-icons/fa6";
 import * as XLSX from "xlsx";
+import dayjs from "dayjs";
 
 const RankBadge = ({ rank }) => {
   if (rank === 1)
@@ -66,29 +67,25 @@ const RankingTable = ({ filter }) => {
       setRanks([]);
     }
   };
-
   useEffect(() => {
     fetchRanks();
   }, [JSON.stringify(filters), topX]);
 
   const handleChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
+
   };
 
   const filteredRanks = ranks.filter(
     (s) =>
       s.name?.toLowerCase().includes(search.toLowerCase()) ||
-      s.roll_number?.toLowerCase().includes(search.toLowerCase())
+      s.student_id?.toLowerCase().includes(search.toLowerCase())
   );
-
-  const SAMPLE_CSV_DATA = `Faculty Id,Faculty Name
-  0104,Lalu Prasad
-  0142,Kumar`;
 
   const downloadSampleXLSX = () => {
     // 1. Simulate a large dataset
     const largeData = [];
-    largeData.push(["Student Id", "Student Name", "Branch", "year", "Section", "score"]);
+    largeData.push(["Student Id", "Student Name", "Branch", "year", "Section", "Lt_easy", "Lt_med", "Lt_hard", "GFG_school", "GFG_basic", "GFG_easy", "GFG_med", "GFG_hard", "GFG_Contests", "CC_problems", "CC_contests", "CC_stars", "HR_badges", "Score"]);
 
     ranks.forEach((rank) => {
       largeData.push([
@@ -97,10 +94,27 @@ const RankingTable = ({ filter }) => {
         rank.dept_name,
         rank.year,
         rank.section,
-        rank.score
+        rank?.performance?.platformWise?.leetcode?.easy,
+        rank?.performance?.platformWise?.leetcode?.medium,
+        rank?.performance?.platformWise?.leetcode?.hard,
+        rank?.performance?.platformWise?.gfg?.school,
+        rank?.performance?.platformWise?.gfg?.basic,
+        rank?.performance?.platformWise?.gfg?.easy,
+        rank?.performance?.platformWise?.gfg?.medium,
+        rank?.performance?.platformWise?.gfg?.hard,
+        rank?.performance?.platformWise?.gfg?.contests,
+        rank?.performance?.platformWise?.codechef?.problems,
+        rank?.performance?.platformWise?.codechef?.contests,
+        rank?.performance?.platformWise?.codechef?.stars,
+        rank?.performance?.platformWise?.hackerrank?.badges,
+        rank.score,
       ]);
     });
 
+    const now = new Date();
+    const formattedDate = dayjs(now).format("DD/MM/YYYY | hh:mm A");
+    const deptName = depts.find(d => d.dept_code === filters.dept)?.dept_name || filters.dept;
+    const filenamePrefix = `${deptName || ""}${filters?.year ? " " + filters.year + "_year" : ""}${filters?.section ? " " + filters.section + "_sec" : ""}`.trim() || "overall";
     // 2. Convert array of arrays to worksheet
     const worksheet = XLSX.utils.aoa_to_sheet(largeData);
 
@@ -122,7 +136,7 @@ const RankingTable = ({ filter }) => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "faculty_bulk_template.xlsx";
+    a.download = `${filenamePrefix} ${formattedDate}.xlsx`;
     a.click();
     URL.revokeObjectURL(url);
   };

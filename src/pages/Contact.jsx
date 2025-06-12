@@ -18,10 +18,10 @@ const ContactUs = () => {
   return (
     <>
       <Navbar />
-      <section className="px-36 py-12 md:flex md:gap-36 h-[88vh] justify-center">
+      <section className="px-4 py-8 md:px-12 lg:px-24 xl:px-36 md:py-12 flex flex-col md:flex-row md:gap-12 lg:gap-24 xl:gap-36 min-h-[88vh] justify-center">
         {/* Left Column */}
-        <div className="md:w-1/2">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Contact Us</h2>
+        <div className="w-full md:w-1/2 mb-10 md:mb-0">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">Contact Us</h2>
           <p className="text-gray-600 mb-8">
             Have questions about the Student Coding Profile Dashboard? We'd love
             to hear from you. Fill out the form or reach out through any of the
@@ -41,7 +41,7 @@ const ContactUs = () => {
           </div>
 
           {/* Office Hours */}
-          <div className="mt-10">
+          <div className="mt-8 md:mt-10">
             <h3 className="font-semibold text-lg text-gray-800 mb-2">
               Office Hours
             </h3>
@@ -62,20 +62,20 @@ const ContactUs = () => {
               title="Location Map"
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3813.6586735108035!2d82.06222184967987!3d17.08934056956225!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a3782e23e8dc385%3A0x9916ae57f5d1f1ad!2sAditya%20University!5e0!3m2!1sen!2sus!4v1747199210002!5m2!1sen!2sus"
               width="100%"
-              height="250"
+              height="200"
               style={{ border: 0 }}
               allowFullScreen=""
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              className="rounded shadow"
+              className="rounded shadow w-full"
             ></iframe>
           </div>
         </div>
 
         {/* Right Column */}
-        <div className="md:w-1/2 mt-10 md:mt-0">
-          <div className="bg-white border rounded-lg shadow p-6">
-            <h3 className="text-xl font-semibold mb-4">Send Us Feedback</h3>
+        <div className="w-full md:w-1/2">
+          <div className="bg-white border rounded-lg shadow p-4 sm:p-6">
+            <h3 className="text-lg md:text-xl font-semibold mb-4">Send Us Feedback</h3>
             <form className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
@@ -117,8 +117,8 @@ const ContactUs = () => {
           </div>
 
           {/* FAQ Section */}
-          <div className="mt-10 space-y-4">
-            <h3 className="text-xl font-semibold">
+          <div className="mt-8 md:mt-10 space-y-4">
+            <h3 className="text-lg md:text-xl font-semibold">
               Frequently Asked Questions
             </h3>
             {faqs.map((faq, index) => (
