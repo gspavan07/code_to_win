@@ -9,11 +9,13 @@ import {
   AddIndividualStudentModel,
 } from "../../components/Modals";
 import Navbar from "../../components/Navbar";
+import Footer from "../components/Footer";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import ProfileScraper from "../../components/ProfileScraper";
 // Lazy-loaded components
 const RankingTable = lazy(() => import("../../components/Ranking"));
 const ViewProfile = lazy(() => import("../../components/ViewProfile"));
+
 const metricToPlatform = {
   badges_hr: "HackerRank",
   contests_cc: "CodeChef",
@@ -324,6 +326,7 @@ function AdminDashboard() {
           />
         </div>
       </div>
+      <Footer />
     </>
   );
 }

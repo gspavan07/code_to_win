@@ -7,6 +7,7 @@ import Navbar from "../../components/Navbar";
 import StatsCard from "../../components/ui/StatsCard";
 import PlatformCard from "../../components/ui/PlatformCard";
 import { EditModal, UpdateProfileModal } from "../../components/Modals";
+import Footer from "../../components/Footer";
 const StudentDashboard = () => {
   const [editProfile, setEditprofile] = useState(false);
   const [updateProfile, setUpdateProfile] = useState(false);
@@ -62,11 +63,17 @@ const StudentDashboard = () => {
           {/* Sidebar */}
           <div className="bg-white rounded-xl shadow-lg p-6  lg:w-md h-fit -mt-24 z-20">
             <div className="flex flex-r items-center mb-4">
-              <img
+              <div className="bg-blue-100 text-blue-800 rounded-lg w-24 h-24 flex  items-center text-4xl justify-center font-bold">
+                {currentUser.name
+                  ?.split(" ")
+                  .map((n) => n[0])
+                  .join("")}
+              </div>
+              {/* <img
                 src="/profile_bg.jpeg"
                 alt="sunil"
                 className="object-cover w-24 h-24 rounded  mb-2"
-              />
+              /> */}
               <div className="ml-3">
                 <h2 className="text-lg font-bold">{currentUser.name}</h2>
                 <p className="text-sm text-gray-500  mt-2">University Rank</p>
@@ -144,7 +151,7 @@ const StudentDashboard = () => {
           </div>
 
           {/* Main Section */}
-          <div className="w-full rounded-xl bg-white">
+          <div className="w-full rounded-xl">
             <div className="flex flex-wrap gap-1 mb-4">
               <span className="px-4 py-2 bg-white rounded-xl shadow-sm">
                 Campus:{" "}
@@ -169,7 +176,7 @@ const StudentDashboard = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-2 mb-4 xl:grid-cols-4 gap-3 p-2 border border-gray-200 rounded-lg">
+            <div className="grid grid-cols-2 mb-4 xl:grid-cols-4 gap-3">
               <StatsCard
                 icon={<FiCode />}
                 title="Total Problems"
@@ -197,7 +204,7 @@ const StudentDashboard = () => {
             </div>
 
             {/* Platform-wise Stats */}
-            <div className="grid grid-cols-2 gap-2 md:gap-6 md:p-4 ">
+            <div className="grid grid-cols-2 gap-2 md:gap-6 ">
               <PlatformCard
                 name="LeetCode"
                 color=" hover:text-yellow-600 hover:shadow-yellow-600"
@@ -249,6 +256,7 @@ const StudentDashboard = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </>
   );
 };

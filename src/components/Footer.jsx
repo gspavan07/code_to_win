@@ -3,7 +3,7 @@ import { NavLink } from "react-router-dom";
 
 const Footer = () => {
   return (
-    <footer className="bg-white border-t border-gray-200 mt-16 py-10 px-6 text-base text-gray-600">
+    <footer className="bg-white border-t border-gray-200 pt-10 pb-5 px-6 text-base text-gray-600">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* Logo and Description */}
         <div>
@@ -104,7 +104,10 @@ const Footer = () => {
 
       <div className="mt-10 text-center text-base text-gray-400 border-t border-gray-100 pt-6">
         © 2025 CodeProfileTracker. All rights reserved by{" "}
-        <span className="text-black font-medium">Ofzen</span>.
+        <a href="" className="text-black font-medium">
+          Ofzen
+        </a>
+        .
       </div>
     </footer>
   );

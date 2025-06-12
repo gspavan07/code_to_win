@@ -48,13 +48,16 @@ const Navbar = () => {
             </>
           ) : (
             <div className="hidden md:flex items-center gap-6">
-              <div className="flex items-center gap-2 font-medium p-2 cursor-pointer">
-                <FiUser />
-                {currentUser.name}
-                <span className="text-sm font-normal text-gray-500">
-                  ({currentUser.role})
-                </span>
-              </div>
+              <NavLink to={`/${currentUser.role}`}>
+                <div className="flex items-center gap-2 font-medium p-2 cursor-pointer">
+                  <FiUser />
+                  {currentUser.name}
+                  <span className="text-sm font-normal text-gray-500">
+                    ({currentUser.role})
+                  </span>
+                </div>
+              </NavLink>
+
               <div
                 onClick={logout}
                 className="flex items-center gap-2 on hover:text-blue-800 p-2 cursor-pointer"

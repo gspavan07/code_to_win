@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const PDFDocument = ({ student, stdDetails }) => {
+const PDFDocument = ({ student }) => {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -184,13 +184,13 @@ const PDFDocument = ({ student, stdDetails }) => {
         <View style={styles.statsContainer}>
           <View style={styles.statBox}>
             <Text style={styles.statValue}>
-              {stdDetails?.performance?.combined?.totalSolved || "NaN"}
+              {student?.performance?.combined?.totalSolved || "NaN"}
             </Text>
             <Text style={styles.statLabel}>Total Problems</Text>
           </View>
           <View style={styles.statBox}>
             <Text style={styles.statValue}>
-              {stdDetails?.performance?.combined?.totalContests || "NaN"}
+              {student?.performance?.combined?.totalContests || "NaN"}
             </Text>
             <Text style={styles.statLabel}>Total Contests</Text>
           </View>
@@ -204,21 +204,21 @@ const PDFDocument = ({ student, stdDetails }) => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>LeetCode</Text>
           <Text style={styles.statValue}>
-            {stdDetails?.performance?.platformWise?.leetcode?.easy +
-              stdDetails?.performance?.platformWise?.leetcode?.medium +
-              stdDetails?.performance?.platformWise?.leetcode?.hard || 0}
+            {student?.performance?.platformWise?.leetcode?.easy +
+              student?.performance?.platformWise?.leetcode?.medium +
+              student?.performance?.platformWise?.leetcode?.hard || 0}
           </Text>
           <Text style={styles.statLabel}>Problems Solved</Text>
           <Text style={styles.breakdown}>
             <Text>
-              Easy: {stdDetails?.performance?.platformWise?.leetcode?.easy || 0}
+              Easy: {student?.performance?.platformWise?.leetcode?.easy || 0}
             </Text>
             <Text>
               Medium:
-              {stdDetails?.performance?.platformWise?.leetcode?.medium || 0}
+              {student?.performance?.platformWise?.leetcode?.medium || 0}
             </Text>
             <Text>
-              Hard:{stdDetails?.performance?.platformWise?.leetcode?.hard || 0}
+              Hard:{student?.performance?.platformWise?.leetcode?.hard || 0}
             </Text>
           </Text>
         </View>
@@ -226,40 +226,39 @@ const PDFDocument = ({ student, stdDetails }) => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>CodeChef</Text>
           <Text style={styles.statValue}>
-            {stdDetails?.performance?.platformWise?.codechef?.contests || 0}
+            {student?.performance?.platformWise?.codechef?.contests || 0}
           </Text>
           <Text style={styles.statLabel}>Contests Participated</Text>
           <Text style={styles.breakdown}>
-            Easy:{" "}
-            {stdDetails?.performance?.platformWise?.codechef?.problems || 0}
+            Easy: {student?.performance?.platformWise?.codechef?.problems || 0}
           </Text>
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>GeeksforGeeks</Text>
           <Text style={styles.statValue}>
-            {stdDetails?.performance?.platformWise?.gfg?.school +
-              stdDetails?.performance?.platformWise?.gfg?.basic +
-              stdDetails?.performance?.platformWise?.gfg?.easy +
-              stdDetails?.performance?.platformWise?.gfg?.medium +
-              stdDetails?.performance?.platformWise?.gfg?.hard || 0}
+            {student?.performance?.platformWise?.gfg?.school +
+              student?.performance?.platformWise?.gfg?.basic +
+              student?.performance?.platformWise?.gfg?.easy +
+              student?.performance?.platformWise?.gfg?.medium +
+              student?.performance?.platformWise?.gfg?.hard || 0}
           </Text>
           <Text style={styles.statLabel}>Problems Solved</Text>
           <Text style={styles.breakdown}>
             <Text>
-              School: {stdDetails?.performance?.platformWise?.gfg?.school || 0}{" "}
+              School: {student?.performance?.platformWise?.gfg?.school || 0}{" "}
             </Text>
             <Text>
-              Basic: {stdDetails?.performance?.platformWise?.gfg?.basic || 0}{" "}
+              Basic: {student?.performance?.platformWise?.gfg?.basic || 0}{" "}
             </Text>
             <Text>
-              Easy: {stdDetails?.performance?.platformWise?.gfg?.easy || 0}{" "}
+              Easy: {student?.performance?.platformWise?.gfg?.easy || 0}{" "}
             </Text>
             <Text>
-              Medium: {stdDetails?.performance?.platformWise?.gfg?.medium || 0}{" "}
+              Medium: {student?.performance?.platformWise?.gfg?.medium || 0}{" "}
             </Text>
             <Text>
-              Hard: {stdDetails?.performance?.platformWise?.gfg?.hard || 0}
+              Hard: {student?.performance?.platformWise?.gfg?.hard || 0}
             </Text>
           </Text>
         </View>
@@ -267,7 +266,7 @@ const PDFDocument = ({ student, stdDetails }) => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>HackerRank</Text>
           <Text style={styles.statValue}>
-            {stdDetails?.performance?.platformWise?.hackerrank?.badges || 0}
+            {student?.performance?.platformWise?.hackerrank?.badges || 0}
           </Text>
           <Text style={styles.statLabel}>Badges Gained</Text>
         </View>
