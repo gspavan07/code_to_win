@@ -140,9 +140,9 @@ const RankingTable = ({ filter }) => {
           />
         )}
       </Suspense>
-      <div className="p-6">
+      <div className="lg:p-6">
         <div className="flex flex-row justify-between ">
-          <h1 className="md:text-2xl text-xl font-semibold mb-4">
+          <h1 className="md:text-2xl text-xl font-semibold mb-4 px-6">
             🏆 Student Rankings
           </h1>
 
@@ -256,20 +256,20 @@ const RankingTable = ({ filter }) => {
         <table className="min-w-full bg-white border rounded-lg overflow-hidden shadow text-sm md:text-base">
           <thead className="bg-gray-100 text-center">
             <tr>
-              <th className="py-3 px-4">Rank</th>
-              <th className="py-3 px-4 text-left">Student</th>
-              <th className="py-3 px-4">Roll Number</th>
-              <th className="py-3 px-4 sr-only md:not-sr-only">Branch</th>
-              <th className="py-3 px-4  sr-only md:not-sr-only">Year</th>
-              <th className="py-3 px-4  sr-only md:not-sr-only">Section</th>
-              <th className="py-3 px-4">Score</th>
-              <th className="py-3 px-4">Actions</th>
+              <th className="py-3 lg:px-4 px-2">Rank</th>
+              <th className="py-3 lg:px-4 px-2 text-left">Student</th>
+              <th className="py-3 lg:px-4 px-2">Roll Number</th>
+              <th className="py-3 lg:px-4 px-2 sr-only md:not-sr-only">Branch</th>
+              <th className="py-3 lg:px-4 px-2  sr-only md:not-sr-only">Year</th>
+              <th className="py-3 lg:px-4 px-2  sr-only md:not-sr-only">Section</th>
+              <th className="py-3 lg:px-4 px-2">Score</th>
+              <th className="py-3 lg:px-4 px-2">Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredRanks.map((s) => (
               <tr key={s.student_id} className="hover:bg-gray-50 text-center">
-                <td className="py-3 px-4 ">
+                <td className="py-3 px-2 md:px-4 ">
                   <RankBadge rank={s.rank} />
                 </td>
                 <td className="py-3 px-4 text-left flex items-center gap-2">
@@ -282,15 +282,15 @@ const RankingTable = ({ filter }) => {
                   {s.name}
                 </td>
                 <td className="py-3 px-4">{s.student_id}</td>
-                <td className="py-3 px-4 sr-only md:not-sr-only">
+                <td className="py-3 md:px-4 px-2 sr-only md:not-sr-only">
                   {s.dept_name}
                 </td>
-                <td className="py-3 px-4 sr-only md:not-sr-only">{s.year}</td>
-                <td className="py-3 px-4 sr-only md:not-sr-only">
+                <td className="py-3 md:px-4 px-2 sr-only md:not-sr-only">{s.year}</td>
+                <td className="py-3 md:px-4 px-2 sr-only md:not-sr-only">
                   {s.section}
                 </td>
-                <td className="py-3 px-4 font-semibold">{s.score}</td>
-                <td className="py-3 px-4 ">
+                <td className="py-3 md:px-4 px-2 font-semibold">{s.score}</td>
+                <td className="py-3 md:px-4 px-2 ">
                   <div
                     onClick={() => setSelectedStudent(s)}
                     className="text-gray-700 px-2 py-1 justify-center rounded hover:text-blue-700 flex items-center gap-1 cursor-pointer"
