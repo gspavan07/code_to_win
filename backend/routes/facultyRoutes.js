@@ -160,13 +160,11 @@ router.get("/students", async (req, res) => {
   try {
     let query = `
       SELECT 
-  sp.*, 
-  u.email, 
-  d.dept_name
-FROM student_profiles sp
-JOIN users u ON sp.student_id = u.user_id
-JOIN dept d ON sp.dept_code = d.dept_code
-WHERE 1=1
+        sp.*, 
+        d.dept_name
+      FROM student_profiles sp
+      JOIN dept d ON sp.dept_code = d.dept_code
+      WHERE 1=1
     `;
     const params = [];
     if (dept) {
@@ -183,6 +181,65 @@ WHERE 1=1
     }
 
     const [students] = await db.query(query, params);
+
+    // Attach performance for each student
+    for (const student of students) {
+      const [perfRows] = await db.query(
+        `SELECT * FROM student_performance WHERE student_id = ?`,
+        [student.student_id]
+      );
+      if (perfRows.length > 0) {
+        const p = perfRows[0];
+        const totalSolved =
+          p.easy_lc +
+          p.medium_lc +
+          p.hard_lc +
+          p.school_gfg +
+          p.basic_gfg +
+          p.easy_gfg +
+          p.medium_gfg +
+          p.hard_gfg +
+          p.problems_cc;
+
+        const combined = {
+          totalSolved: totalSolved,
+          totalContests: p.contests_cc + p.contests_gfg,
+          stars_cc: p.stars_cc,
+          badges_hr: p.badges_hr,
+          last_updated: p.last_updated,
+        };
+
+        const platformWise = {
+          leetcode: {
+            easy: p.easy_lc,
+            medium: p.medium_lc,
+            hard: p.hard_lc,
+          },
+          gfg: {
+            school: p.school_gfg,
+            basic: p.basic_gfg,
+            easy: p.easy_gfg,
+            medium: p.medium_gfg,
+            hard: p.hard_gfg,
+            contests: p.contests_gfg,
+          },
+          codechef: {
+            problems: p.problems_cc,
+            contests: p.contests_cc,
+            stars: p.stars_cc,
+          },
+          hackerrank: {
+            badges: p.stars_hr,
+          },
+        };
+
+        student.performance = {
+          combined,
+          platformWise,
+        };
+      }
+    }
+
     res.json(students);
   } catch (err) {
     console.error(err);

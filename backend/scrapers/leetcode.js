@@ -28,6 +28,9 @@ async function fetchLeetCodeData(username) {
       profile {
         ranking
       }
+        badges{
+          id        
+        }
     }
     userContestRanking(username: "${username}") {
       attendedContestsCount
@@ -142,11 +145,12 @@ async function scrapeLeetCodeProfile(url) {
 
     // Extract contest data
     const contestsAttended = contest.attendedContestsCount || 0;
-
+    const badges = user.badges || 0;
     return {
       Username: username,
       Problems: problems,
       Contests_Attended: contestsAttended,
+      badges: badges.length,
     };
   } catch (error) {
     logger.error(`Error in get_leetcode_profile: ${error.message}`);

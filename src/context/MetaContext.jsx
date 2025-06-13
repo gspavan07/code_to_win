@@ -26,8 +26,9 @@ export function DeptProvider({ children }) {
         setLoading(false);
       }
     };
-
-    fetchDepts();
+    setTimeout(() => {
+      fetchDepts();
+    }, 1000);
   }, []);
 
   return (

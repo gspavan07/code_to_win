@@ -4,15 +4,15 @@ const StudentTable = ({
   students = [],
   showBranch = true,
   showYear = true,
-  showSection = true,
-  rankLabel = "S. No", // 👈 new prop
+  showSection = true, // 👈 new prop
   onProfileClick = () => {},
 }) => {
+  console.log(students);
   return (
     <table className="min-w-full bg-white border rounded-lg overflow-hidden shadow text-sm">
       <thead className="bg-gray-100 text-center">
         <tr>
-          <th className="py-3 px-4">{rankLabel}</th>
+          <th className="py-3 px-4">S. No</th>
           {/* 👈 dynamic column name */}
           <th className="py-3 px-4 text-left">Student</th>
           <th className="py-3 px-4">Roll Number</th>

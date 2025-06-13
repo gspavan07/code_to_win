@@ -72,9 +72,13 @@ router.get("/students", async (req, res) => {
   const { dept, year, section } = req.query;
   try {
     let query = `
-      SELECT sp.*, u.email 
+      SELECT 
+        sp.*, 
+        u.email, 
+        d.dept_name
       FROM student_profiles sp
       JOIN users u ON sp.student_id = u.user_id
+      JOIN dept d ON sp.dept_code = d.dept_code
       WHERE 1=1
     `;
     const params = [];
@@ -92,6 +96,65 @@ router.get("/students", async (req, res) => {
     }
 
     const [students] = await db.query(query, params);
+
+    // Attach performance for each student
+    for (const student of students) {
+      const [perfRows] = await db.query(
+        `SELECT * FROM student_performance WHERE student_id = ?`,
+        [student.student_id]
+      );
+      if (perfRows.length > 0) {
+        const p = perfRows[0];
+        const totalSolved =
+          p.easy_lc +
+          p.medium_lc +
+          p.hard_lc +
+          p.school_gfg +
+          p.basic_gfg +
+          p.easy_gfg +
+          p.medium_gfg +
+          p.hard_gfg +
+          p.problems_cc;
+
+        const combined = {
+          totalSolved: totalSolved,
+          totalContests: p.contests_cc + p.contests_gfg,
+          stars_cc: p.stars_cc,
+          badges_hr: p.badges_hr,
+          last_updated: p.last_updated,
+        };
+
+        const platformWise = {
+          leetcode: {
+            easy: p.easy_lc,
+            medium: p.medium_lc,
+            hard: p.hard_lc,
+          },
+          gfg: {
+            school: p.school_gfg,
+            basic: p.basic_gfg,
+            easy: p.easy_gfg,
+            medium: p.medium_gfg,
+            hard: p.hard_gfg,
+            contests: p.contests_gfg,
+          },
+          codechef: {
+            problems: p.problems_cc,
+            contests: p.contests_cc,
+            stars: p.stars_cc,
+          },
+          hackerrank: {
+            badges: p.stars_hr,
+          },
+        };
+
+        student.performance = {
+          combined,
+          platformWise,
+        };
+      }
+    }
+
     res.json(students);
   } catch (err) {
     console.error(err);
@@ -104,16 +167,20 @@ router.get("/faculty", async (req, res) => {
   const { dept } = req.query;
   try {
     let query = `
-      SELECT fp.*, u.email 
+      SELECT fp.*,
+             fsa.year, fsa.section
       FROM faculty_profiles fp
-      JOIN users u ON fp.faculty_id = u.user_id
+      JOIN faculty_section_assignment fsa ON fp.faculty_id = fsa.faculty_id
       WHERE 1=1
     `;
+
     const params = [];
+
     if (dept) {
-      query += " AND fp.dept = ?";
+      query += " AND fp.dept_code = ?";
       params.push(dept);
     }
+
     const [faculty] = await db.query(query, params);
     res.json(faculty);
   } catch (err) {
@@ -122,21 +189,19 @@ router.get("/faculty", async (req, res) => {
   }
 });
 
-// POST /hod/faculty
-router.post("/add-faculty", async (req, res) => {
-  const { faculty_id, name, dept, email } = req.body;
+// POST /hod/assign-faculty
+router.post("/assign-faculty", async (req, res) => {
+  const { faculty_id, dept_code, year, section } = req.body;
+  if (!faculty_id || !dept_code || !year || !section) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
   try {
-    // Insert into users table
+    // Insert assignment
     await db.query(
-      "INSERT INTO users (user_id, email, role) VALUES (?, ?, 'faculty')",
-      [faculty_id, email]
+      "UPDATE faculty_section_assignment SET year=?, section=? WHERE faculty_id=?",
+      [year, section, faculty_id]
     );
-    // Insert into faculty_profiles table
-    await db.query(
-      "INSERT INTO faculty_profiles (faculty_id, name, dept) VALUES (?, ?, ?)",
-      [faculty_id, name, dept, sections]
-    );
-    res.status(201).json({ message: "Faculty added successfully" });
+    res.json({ message: "Faculty assigned successfully" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });

@@ -28,126 +28,34 @@ const Navbar = () => {
               </h1>
             </div>
           </NavLink>
-          {!currentUser ? (
-            <>
-              {/* Desktop Menu */}
-              <div className="hidden md:flex items-center gap-6">
-                <NavLink to="/" className={linkClass}>
-                  Home
-                </NavLink>
-                <NavLink to="/stdDash" className={linkClass}>
-                  Check Your Strength
-                </NavLink>
-                <NavLink to="/dev" className={linkClass}>
-                  Developers
-                </NavLink>
-                <NavLink to="/contact" className={linkClass}>
-                  Contact
-                </NavLink>
-              </div>
-            </>
-          ) : (
-            <div className="hidden md:flex items-center gap-6">
-              <NavLink to={`/${currentUser.role}`}>
-                <div className="flex items-center gap-2 font-medium p-2 cursor-pointer">
-                  <FiUser />
-                  {currentUser.name}
-                  <span className="text-sm font-normal text-gray-500">
-                    ({currentUser.role})
-                  </span>
-                </div>
-              </NavLink>
 
-              <div
-                onClick={logout}
-                className="flex items-center gap-2 on hover:text-blue-800 p-2 cursor-pointer"
-              >
-                <FiLogOut />
-                Logout
-              </div>
+          <div className="hidden md:flex items-center gap-6">
+            <div className="flex items-center gap-2 font-medium p-2 cursor-pointer">
+              <FiUser />
+              {currentUser.name}
+              <span className="text-sm font-normal text-gray-500">
+                ({currentUser.role})
+              </span>
             </div>
-          )}
+            <div
+              onClick={logout}
+              className="flex items-center gap-2 on hover:text-blue-800 p-2 cursor-pointer"
+            >
+              <FiLogOut />
+              Logout
+            </div>
+          </div>
 
           {/* Mobile Hamburger */}
           <div className="md:hidden flex items-center">
-            {!currentUser ? (
-              <button
-                onClick={() => setMobileMenuOpen((prev) => !prev)}
-                className="text-2xl text-gray-700 focus:outline-none"
-              >
-                {mobileMenuOpen ? <FiX /> : <FiMenu />}
-              </button>
-            ) : (
-              <div
-                onClick={logout}
-                className="flex items-center gap-2 on hover:text-blue-800 p-2 cursor-pointer"
-              >
-                <FiLogOut />
-              </div>
-            )}
+            <div
+              onClick={logout}
+              className="flex items-center gap-2 on hover:text-blue-800 p-2 cursor-pointer"
+            >
+              <FiLogOut />
+            </div>
           </div>
         </div>
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden flex flex-col gap-2 py-2">
-            <NavLink
-              to="/"
-              className={linkClass}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Home
-            </NavLink>
-            <NavLink
-              to="/stdDash"
-              className={linkClass}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Check Your Strength
-            </NavLink>
-            <NavLink
-              to="/dev"
-              className={linkClass}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Developers
-            </NavLink>
-            <NavLink
-              to="/contact"
-              className={linkClass}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Contact
-            </NavLink>
-            {!isLoggedIn ? (
-              <>
-                <NavLink
-                  to="/login"
-                  className={linkClass}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Login
-                </NavLink>
-                <NavLink
-                  to="/register"
-                  className={linkClass}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Register
-                </NavLink>
-              </>
-            ) : (
-              <button
-                onClick={() => {
-                  handleLogout();
-                  setMobileMenuOpen(false);
-                }}
-                className="flex items-center gap-2 px-4 py-2 text-left hover:bg-gray-100"
-              >
-                <FiLogOut /> Logout
-              </button>
-            )}
-          </div>
-        )}
       </div>
     </nav>
   );

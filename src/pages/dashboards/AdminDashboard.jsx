@@ -9,9 +9,9 @@ import {
   AddIndividualStudentModel,
 } from "../../components/Modals";
 import Navbar from "../../components/Navbar";
-import Footer from "../components/Footer";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import ProfileScraper from "../../components/ProfileScraper";
+import Footer from "../../components/Footer";
 // Lazy-loaded components
 const RankingTable = lazy(() => import("../../components/Ranking"));
 const ViewProfile = lazy(() => import("../../components/ViewProfile"));
