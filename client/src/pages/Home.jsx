@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Navbar from "../components/Navbar";
-import RankingTable from "../components/Ranking";
-import Login from "../pages/Login";
+import Login from "./Login";
 import Footer from "../components/Footer";
 import { Link } from "react-router-dom";
 import { FiMenu, FiX } from "react-icons/fi";
@@ -22,7 +20,7 @@ function Home() {
   const fetchRanks = async () => {
     try {
       const limit = 10;
-      const url = `http://localhost:5000/ranking/overall?limit=${limit}`;
+      const url = `/api/ranking/overall?limit=${limit}`;
 
       const response = await fetch(url, {
         method: "GET",

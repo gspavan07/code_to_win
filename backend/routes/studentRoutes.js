@@ -127,7 +127,7 @@ router.get("/profile", async (req, res) => {
   }
 });
 
-router.put("/profile-update", async (req, res) => {
+router.put("/update-profile", async (req, res) => {
   const { userId, name } = req.body;
 
   try {
@@ -144,7 +144,6 @@ router.put("/profile-update", async (req, res) => {
   }
 });
 
-// Coding platform profile submission
 // POST /student/coding-profile
 router.post("/coding-profile", async (req, res) => {
   const { userId, leetcode_id, codechef_id, geekforgeeks_id, hackerrank_id } =

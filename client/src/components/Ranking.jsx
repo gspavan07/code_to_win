@@ -1,7 +1,6 @@
 import React, { useEffect, useState, lazy, Suspense } from "react";
-import axios from "axios";
 import { TbUserShare } from "react-icons/tb";
-const ViewProfile = lazy(() => import("../components/ViewProfile"));
+const ViewProfile = lazy(() => import("./ViewProfile"));
 import { FaSearch } from "react-icons/fa";
 import { useDepts } from "../context/MetaContext";
 import LoadingSpinner from "../common/LoadingSpinner";
@@ -40,28 +39,36 @@ const RankingTable = ({ filter }) => {
   const [years, setYears] = useState([]);
   const { depts, loading } = useDepts();
   const [sections, setSections] = useState([]);
+
   const fetchRanks = async () => {
     try {
       let params = { ...filters };
       if (topX) params.limit = topX;
 
-      let res;
+      // Build query string
+      const queryString = Object.entries(params)
+        .filter(([_, v]) => v !== "" && v !== undefined)
+        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+        .join("&");
+
+      let url;
       if (!filters.dept && !filters.year && !filters.section) {
-        res = await axios.get("http://localhost:5000/ranking/overall", {
-          params,
-        });
+        url = `/api/ranking/overall${queryString ? "?" + queryString : ""}`;
       } else {
-        res = await axios.get("http://localhost:5000/ranking/filter", {
-          params,
-        });
+        url = `/api/ranking/filter${queryString ? "?" + queryString : ""}`;
       }
-      const uniqueYears = [...new Set(res.data.map((s) => s.year))].sort(
+
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch rankings");
+      const data = await res.json();
+
+      const uniqueYears = [...new Set(data.map((s) => s.year))].sort(
         (a, b) => a - b
       );
       setYears(uniqueYears);
-      const uniqueSections = [...new Set(res.data.map((s) => s.section))];
+      const uniqueSections = [...new Set(data.map((s) => s.section))];
       setSections(uniqueSections);
-      setRanks(res.data);
+      setRanks(data);
     } catch (err) {
       console.error(err);
       setRanks([]);
@@ -73,7 +80,6 @@ const RankingTable = ({ filter }) => {
 
   const handleChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
-
   };
 
   const filteredRanks = ranks.filter(
@@ -85,7 +91,30 @@ const RankingTable = ({ filter }) => {
   const downloadSampleXLSX = () => {
     // 1. Simulate a large dataset
     const largeData = [];
-    largeData.push(["Student Id", "Student Name", "Branch", "year", "Section", "Lt_easy", "Lt_med", "Lt_hard", "Lt_Contest", "Lt_badges", "GFG_school", "GFG_basic", "GFG_easy", "GFG_med", "GFG_hard", "GFG_Contests", "CC_problems", "CC_Contests", "CC_stars", "CC_badges", "HR_badges", "Score"]);
+    largeData.push([
+      "Student Id",
+      "Student Name",
+      "Branch",
+      "year",
+      "Section",
+      "Lt_easy",
+      "Lt_med",
+      "Lt_hard",
+      "Lt_Contest",
+      "Lt_badges",
+      "GFG_school",
+      "GFG_basic",
+      "GFG_easy",
+      "GFG_med",
+      "GFG_hard",
+      "GFG_Contests",
+      "CC_problems",
+      "CC_Contests",
+      "CC_stars",
+      "CC_badges",
+      "HR_badges",
+      "Score",
+    ]);
 
     ranks.forEach((rank) => {
       largeData.push([
@@ -116,8 +145,13 @@ const RankingTable = ({ filter }) => {
 
     const now = new Date();
     const formattedDate = dayjs(now).format("DD/MM/YYYY | hh:mm A");
-    const deptName = depts.find(d => d.dept_code === filters.dept)?.dept_name || filters.dept;
-    const filenamePrefix = `${deptName || ""}${filters?.year ? " " + filters.year + "_year" : ""}${filters?.section ? " " + filters.section + "_sec" : ""}`.trim() || "overall";
+    const deptName =
+      depts.find((d) => d.dept_code === filters.dept)?.dept_name ||
+      filters.dept;
+    const filenamePrefix =
+      `${deptName || ""}${filters?.year ? " " + filters.year + "_year" : ""}${
+        filters?.section ? " " + filters.section + "_sec" : ""
+      }`.trim() || "overall";
     // 2. Convert array of arrays to worksheet
     const worksheet = XLSX.utils.aoa_to_sheet(largeData);
 
@@ -144,9 +178,6 @@ const RankingTable = ({ filter }) => {
     URL.revokeObjectURL(url);
   };
 
-
-
-
   return (
     <>
       <Suspense fallback={<LoadingSpinner />}>
@@ -162,7 +193,6 @@ const RankingTable = ({ filter }) => {
           <h1 className="md:text-2xl text-xl font-semibold mb-4 px-6">
             🏆 Student Rankings
           </h1>
-
         </div>
         {/* Filters */}
         {filter && (
@@ -252,7 +282,6 @@ const RankingTable = ({ filter }) => {
                     ))}
                   </select>
                 </div>
-
               </div>
               <div className="relative max-w-xs flex  gap-x-5 mr-15 py-3">
                 <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 opacity-85 text-blue-800" />
@@ -263,7 +292,12 @@ const RankingTable = ({ filter }) => {
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-10 pr-3 py-2 border border-gray-300 rounded-lg hover:bg-blue-50  focus:ring-1   transition outline-none "
                 />
-                <button className="px-2 items-center rounded-lg bg-blue-600 flex gap-2 text-white " onClick={downloadSampleXLSX}><FaDownload /> Download</button>
+                <button
+                  className="px-2 items-center rounded-lg bg-blue-600 flex gap-2 text-white "
+                  onClick={downloadSampleXLSX}
+                >
+                  <FaDownload /> Download
+                </button>
               </div>
             </div>
           </>
@@ -276,47 +310,63 @@ const RankingTable = ({ filter }) => {
               <th className="py-3 lg:px-4 px-2">Rank</th>
               <th className="py-3 lg:px-4 px-2 text-left">Student</th>
               <th className="py-3 lg:px-4 px-2">Roll Number</th>
-              <th className="py-3 lg:px-4 px-2 sr-only md:not-sr-only">Branch</th>
-              <th className="py-3 lg:px-4 px-2  sr-only md:not-sr-only">Year</th>
-              <th className="py-3 lg:px-4 px-2  sr-only md:not-sr-only">Section</th>
+              <th className="py-3 lg:px-4 px-2 sr-only md:not-sr-only">
+                Branch
+              </th>
+              <th className="py-3 lg:px-4 px-2  sr-only md:not-sr-only">
+                Year
+              </th>
+              <th className="py-3 lg:px-4 px-2  sr-only md:not-sr-only">
+                Section
+              </th>
               <th className="py-3 lg:px-4 px-2">Score</th>
               <th className="py-3 lg:px-4 px-2">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredRanks.map((s) => (
-              <tr key={s.student_id} className="hover:bg-gray-50 text-center">
-                <td className="py-3 px-2 md:px-4 ">
-                  <RankBadge rank={s.rank} />
-                </td>
-                <td className="py-3 px-4 text-left flex items-center gap-2">
-                  <div className=" hidden bg-blue-100 text-blue-800 rounded-full w-8 h-8 md:flex items-center text-sm justify-center font-bold">
-                    {s.name
-                      ?.split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </div>
-                  {s.name}
-                </td>
-                <td className="py-3 px-4">{s.student_id}</td>
-                <td className="py-3 md:px-4 px-2 sr-only md:not-sr-only">
-                  {s.dept_name}
-                </td>
-                <td className="py-3 md:px-4 px-2 sr-only md:not-sr-only">{s.year}</td>
-                <td className="py-3 md:px-4 px-2 sr-only md:not-sr-only">
-                  {s.section}
-                </td>
-                <td className="py-3 md:px-4 px-2 font-semibold">{s.score}</td>
-                <td className="py-3 md:px-4 px-2 ">
-                  <div
-                    onClick={() => setSelectedStudent(s)}
-                    className="text-gray-700 px-2 py-1 justify-center rounded hover:text-blue-700 flex items-center gap-1 cursor-pointer"
-                  >
-                    <TbUserShare /> Profile
-                  </div>
+            {filteredRanks.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="text-center py-10 text-gray-500">
+                  No students in ranking
                 </td>
               </tr>
-            ))}
+            ) : (
+              filteredRanks.map((s) => (
+                <tr key={s.student_id} className="hover:bg-gray-50 text-center">
+                  <td className="py-3 px-2 md:px-4 ">
+                    <RankBadge rank={s.rank} />
+                  </td>
+                  <td className="py-3 px-4 text-left flex items-center gap-2">
+                    <div className=" hidden bg-blue-100 text-blue-800 rounded-full w-8 h-8 md:flex items-center text-sm justify-center font-bold">
+                      {s.name
+                        ?.split(" ")
+                        .map((n) => n[0])
+                        .join("")}
+                    </div>
+                    {s.name}
+                  </td>
+                  <td className="py-3 px-4">{s.student_id}</td>
+                  <td className="py-3 md:px-4 px-2 sr-only md:not-sr-only">
+                    {s.dept_name}
+                  </td>
+                  <td className="py-3 md:px-4 px-2 sr-only md:not-sr-only">
+                    {s.year}
+                  </td>
+                  <td className="py-3 md:px-4 px-2 sr-only md:not-sr-only">
+                    {s.section}
+                  </td>
+                  <td className="py-3 md:px-4 px-2 font-semibold">{s.score}</td>
+                  <td className="py-3 md:px-4 px-2 ">
+                    <div
+                      onClick={() => setSelectedStudent(s)}
+                      className="text-gray-700 px-2 py-1 justify-center rounded hover:text-blue-700 flex items-center gap-1 cursor-pointer"
+                    >
+                      <TbUserShare /> Profile
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

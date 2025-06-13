@@ -22,14 +22,14 @@ const io = socketIo(server, {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/auth", require("./routes/authRoutes"));
-app.use("/student", require("./routes/studentRoutes"));
-app.use("/faculty", require("./routes/facultyRoutes"));
-app.use("/hod", require("./routes/hodRoutes"));
-app.use("/admin", require("./routes/adminRoutes"));
-app.use("/ranking", require("./routes/rankingRoutes"));
-app.use("/meta", require("./routes/metaRoutes"));
-app.use("/api", require("./routes/managementRoutes"));
+app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/student", require("./routes/studentRoutes"));
+app.use("/api/faculty", require("./routes/facultyRoutes"));
+app.use("/api/hod", require("./routes/hodRoutes"));
+app.use("/api/admin", require("./routes/adminRoutes"));
+app.use("/api/ranking", require("./routes/rankingRoutes"));
+app.use("/api/meta", require("./routes/metaRoutes"));
+app.use("/api/", require("./routes/managementRoutes"));
 
 // Routes using Socket.IO
 app.use("/api/profile-scraper", setupProfileScraperRoutes(io));

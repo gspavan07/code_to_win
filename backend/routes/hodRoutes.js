@@ -1,8 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../config/db"); // MySQL connection
-const bcrypt = require("bcryptjs");
-// GET /hod/profile
+
 // GET /hod/profile
 router.get("/profile", async (req, res) => {
   const { userId } = req.query;

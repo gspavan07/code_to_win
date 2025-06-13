@@ -2,14 +2,12 @@ const express = require("express");
 const router = express.Router();
 const db = require("../config/db");
 
-// GET /meta/platforms-and-grading
-router.get("/platforms-and-grading", async (req, res) => {
+// GET /meta/grading
+router.get("/grading", async (req, res) => {
   try {
-    // Fetch platforms
-    const [platforms] = await db.query("SELECT * FROM coding_platforms");
     // Fetch grading system
     const [grading] = await db.query("SELECT * FROM grading_system");
-    res.json({ platforms, grading });
+    res.json({ grading });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });

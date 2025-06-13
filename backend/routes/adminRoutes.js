@@ -120,25 +120,4 @@ router.get("/faculty", async (req, res) => {
   }
 });
 
-// POST /hod/faculty
-router.post("/add-faculty", async (req, res) => {
-  const { faculty_id, name, dept, email } = req.body;
-  try {
-    // Insert into users table
-    await db.query(
-      "INSERT INTO users (user_id, email, role) VALUES (?, ?, 'faculty')",
-      [faculty_id, email]
-    );
-    // Insert into faculty_profiles table
-    await db.query(
-      "INSERT INTO faculty_profiles (faculty_id, name, dept) VALUES (?, ?, ?)",
-      [faculty_id, name, dept, sections]
-    );
-    res.status(201).json({ message: "Faculty added successfully" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
 module.exports = router;

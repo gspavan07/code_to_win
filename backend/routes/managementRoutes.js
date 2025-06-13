@@ -18,7 +18,40 @@ const upload = multer({
     cb(null, true);
   },
 });
+//Add branch
+router.post("/add-branch", async (req, res) => {
+  const { dept_code, dept_name } = req.body;
+  if (!dept_code || !dept_name) {
+    return res
+      .status(400)
+      .json({ message: "dept_code and dept_name are required" });
+  }
 
+  const connection = await db.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    await connection.query(
+      "INSERT INTO dept (dept_code, dept_name) VALUES (?, ?)",
+      [dept_code, dept_name]
+    );
+
+    await connection.commit();
+    res.status(200).json({ message: "Branch added successfully" });
+  } catch (err) {
+    await connection.rollback();
+    console.error(err);
+    res.status(500).json({
+      message:
+        err.code === "ER_DUP_ENTRY"
+          ? `Branch with code '${dept_code}' already exists`
+          : err.message,
+      error: err.errno,
+    });
+  } finally {
+    connection.release();
+  }
+});
 // Add a new student (first to users, then to student_profiles)
 router.post("/add-student", async (req, res) => {
   const { stdId, name, dept, year, section, degree, cgpa } = req.body;

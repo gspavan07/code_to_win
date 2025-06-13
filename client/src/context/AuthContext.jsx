@@ -1,6 +1,10 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import axios from "axios";
-const API_URL = "http://localhost:5000";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+} from "react";
 const AuthContext = createContext();
 
 export function useAuth() {
@@ -11,11 +15,12 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(true);
+
   const checkAuth = async () => {
     try {
       const token = localStorage.getItem("authToken");
       if (token) {
-        const response = await fetch(`${API_URL}/auth/validate`, {
+        const response = await fetch(`/api/auth/validate`, {
           method: "GET",
           headers: {
             Authorization: token,
@@ -24,10 +29,7 @@ export function AuthProvider({ children }) {
           mode: "cors",
         });
 
-        if (!response.ok) {
-          throw new Error("Token validation failed");
-        }
-
+        if (!response.ok) throw new Error("Token validation failed");
         const validationData = await response.json();
 
         if (validationData.valid) {
@@ -35,16 +37,17 @@ export function AuthProvider({ children }) {
           const userId = user.user_id;
           const role = user.role;
 
-          // Construct query string manually
-          const profileRes = await fetch(
-            `${API_URL}/${role}/profile?userId=${encodeURIComponent(userId)}`
-          );
-
-          if (!profileRes.ok) {
-            throw new Error("Failed to fetch user profile");
+          // Only fetch profile if not included in validationData
+          let profileData = {};
+          if (!validationData.profile) {
+            const profileRes = await fetch(
+              `/api/${role}/profile?userId=${encodeURIComponent(userId)}`
+            );
+            if (!profileRes.ok) throw new Error("Failed to fetch user profile");
+            profileData = await profileRes.json();
+          } else {
+            profileData = validationData.profile;
           }
-
-          const profileData = await profileRes.json();
 
           const userData = { ...user, ...profileData };
           setCurrentUser(userData);
@@ -64,19 +67,16 @@ export function AuthProvider({ children }) {
       setLoading(false);
     }
   };
-  // Check if user is already logged in
+
   useEffect(() => {
     checkAuth();
   }, []);
 
-  // Login function
   const login = async (email, password, role) => {
     try {
-      const response = await fetch(`${API_URL}/auth/login`, {
+      const response = await fetch(`/api/auth/login`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, role }),
       });
 
@@ -85,19 +85,17 @@ export function AuthProvider({ children }) {
         throw new Error(errorData.message || "Login failed");
       }
 
-      const { token, user } = await response.json();
-
+      const { token, user, profile } = await response.json();
       const userId = user.user_id;
 
-      const profileRes = await fetch(
-        `${API_URL}/${user.role}/profile?userId=${encodeURIComponent(userId)}`
-      );
-
-      if (!profileRes.ok) {
-        throw new Error("Failed to fetch user profile");
+      let profileData = profile;
+      if (!profileData) {
+        const profileRes = await fetch(
+          `/api/${user.role}/profile?userId=${encodeURIComponent(userId)}`
+        );
+        if (!profileRes.ok) throw new Error("Failed to fetch user profile");
+        profileData = await profileRes.json();
       }
-
-      const profileData = await profileRes.json();
 
       const userData = { ...user, ...profileData };
       localStorage.setItem("authToken", token);
@@ -113,20 +111,24 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // Logout function
-  const logout = async () => {
+  // Logout does not need to be async
+  const logout = () => {
     localStorage.removeItem("authToken");
     setCurrentUser(null);
     setUserRole(null);
   };
 
-  const value = {
-    currentUser,
-    userRole,
-    loading,
-    login,
-    logout,
-  };
+  // Memoize context value
+  const value = useMemo(
+    () => ({
+      currentUser,
+      userRole,
+      loading,
+      login,
+      logout,
+    }),
+    [currentUser, userRole, loading]
+  );
 
   return (
     <AuthContext.Provider value={value}>

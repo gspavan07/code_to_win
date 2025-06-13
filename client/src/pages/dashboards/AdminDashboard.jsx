@@ -1,23 +1,43 @@
 import React, { useState, lazy, useMemo, useEffect, Suspense } from "react";
 import { FaUser } from "react-icons/fa6";
 import { useAuth } from "../../context/AuthContext";
-import {
-  AddFacultyModal,
-  AddHODModal,
-  ResetPasswordModal,
-  BulkImportModal,
-  AddIndividualStudentModel,
-} from "../../components/Modals";
 import Navbar from "../../components/Navbar";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import ProfileScraper from "../../components/ProfileScraper";
 import Footer from "../../components/Footer";
+
 // Lazy-loaded components
 const RankingTable = lazy(() => import("../../components/Ranking"));
 const ViewProfile = lazy(() => import("../../components/ViewProfile"));
+const AddFacultyModal = lazy(() =>
+  import("../../components/Modals").then((m) => ({
+    default: m.AddFacultyModal,
+  }))
+);
+const AddHODModal = lazy(() =>
+  import("../../components/Modals").then((m) => ({ default: m.AddHODModal }))
+);
+const ResetPasswordModal = lazy(() =>
+  import("../../components/Modals").then((m) => ({
+    default: m.ResetPasswordModal,
+  }))
+);
+const BulkImportModal = lazy(() =>
+  import("../../components/Modals").then((m) => ({
+    default: m.BulkImportModal,
+  }))
+);
+const AddIndividualStudentModel = lazy(() =>
+  import("../../components/Modals").then((m) => ({
+    default: m.AddIndividualStudentModel,
+  }))
+);
+const AddBranchModal = lazy(() =>
+  import("../../components/Modals").then((m) => ({ default: m.AddBranchModal }))
+);
 
 const metricToPlatform = {
-  badges_hr: "HackerRank",
+  stars_hr: "HackerRank",
   contests_cc: "CodeChef",
   easy_gfg: "GeeksforGeeks",
   medium_gfg: "GeeksforGeeks",
@@ -29,44 +49,48 @@ const metricToPlatform = {
   problems_cc: "CodeChef",
   stars_cc: "CodeChef",
   basic_gfg: "GeeksforGeeks",
+  badges_cc: "CodeChef",
+  badges_lc: "LeetCode",
+  contests_lc: "LeetCode",
+  contests_gfg: "GeeksforGeeks",
 };
 
-// const platformOrder = ["LeetCode", "GeeksforGeeks", "CodeChef", "HackerRank"];
+const platformOrder = ["LeetCode", "GeeksforGeeks", "CodeChef", "HackerRank"];
 
 function AdminDashboard() {
   const { currentUser } = useAuth();
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedTab, setSelectedTab] = useState("StudentRanking");
   const [grading, setGrading] = useState([]);
-  const [platformOrder, setPlatform] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [userMgmtTab, setUserMgmtTab] = useState("addStudent");
+  const [userMgmtTab, setUserMgmtTab] = useState("addBranch");
   const [changedMetrics, setChangedMetrics] = useState(new Set());
 
   // Helper to make metric names readable
   const metricLabels = {
-    badges_hr: "HackerRank Badges",
+    stars_hr: "HackerRank Badges",
     contests_cc: "CodeChef Contests",
     problems_cc: "CodeChef Problems",
     stars_cc: "CodeChef Stars",
+    badges_cc: "CodeChef Badges",
     school_gfg: "GeeksforGeeks School",
     basic_gfg: "GeeksforGeeks Basic",
     easy_gfg: "GeeksforGeeks Easy",
     hard_gfg: "GeeksforGeeks Hard",
     medium_gfg: "GeeksforGeeks Medium",
+    contests_gfg: "GeeksforGeeks Contests",
     easy_lc: "LeetCode Easy",
     hard_lc: "LeetCode Hard",
     medium_lc: "LeetCode Medium",
+    badges_lc: "LeetCode Badges",
+    contests_lc: "LeetCode Contests",
   };
   useEffect(() => {
     const fetchGrading = async () => {
       setLoading(true);
       try {
-        const res = await fetch(
-          "http://localhost:5000/meta/platforms-and-grading"
-        );
+        const res = await fetch("/api/meta/grading");
         const data = await res.json();
-        setPlatform(data.platforms || []);
         setGrading(data.grading || []);
       } catch (err) {
         alert("Failed to load grading config");
@@ -97,7 +121,7 @@ function AdminDashboard() {
       const updates = grading.filter((item) => changedMetrics.has(item.metric));
       await Promise.all(
         updates.map((item) =>
-          fetch(`http://localhost:5000/meta/grading/${item.metric}`, {
+          fetch(`/api/meta/grading/${item.metric}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ points: item.points }),
@@ -221,38 +245,36 @@ function AdminDashboard() {
                 >
                   {platformOrder.map(
                     (platform) =>
-                      gradingByPlatform[platform.name] && (
-                        <div key={platform.platform_id} className="mb-6 ">
+                      gradingByPlatform[platform] && (
+                        <div key={platform} className="mb-6 ">
                           <h2 className="text-xl font-semibold mb-4 text-blue-700">
-                            {platform.name}
+                            {platform}
                           </h2>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {gradingByPlatform[platform.name].map(
-                              (item, idx) => (
-                                <div
-                                  key={idx}
-                                  className="flex items-center justify-between py-2"
-                                >
-                                  <span className="font-medium">
-                                    {metricLabels[item.metric] || item.metric}
-                                  </span>
-                                  <input
-                                    type="number"
-                                    min={0}
-                                    value={item.points}
-                                    onChange={(e) =>
-                                      handleGradingChange(
-                                        grading.findIndex(
-                                          (g) => g.metric === item.metric
-                                        ),
-                                        e.target.value
-                                      )
-                                    }
-                                    className="w-24 border border-gray-200 rounded px-3 py-1 focus:ring-2 focus:ring-blue-500 outline-none"
-                                  />
-                                </div>
-                              )
-                            )}
+                            {gradingByPlatform[platform].map((item, idx) => (
+                              <div
+                                key={idx}
+                                className="flex items-center justify-between py-2"
+                              >
+                                <span className="font-medium">
+                                  {metricLabels[item.metric] || item.metric}
+                                </span>
+                                <input
+                                  type="number"
+                                  min={0}
+                                  value={item.points}
+                                  onChange={(e) =>
+                                    handleGradingChange(
+                                      grading.findIndex(
+                                        (g) => g.metric === item.metric
+                                      ),
+                                      e.target.value
+                                    )
+                                  }
+                                  className="w-24 border border-gray-200 rounded px-3 py-1 focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                              </div>
+                            ))}
                           </div>
                         </div>
                       )
@@ -284,6 +306,7 @@ function AdminDashboard() {
                   </h2>
                   <ul className="space-y-2">
                     {[
+                      { key: "addBranch", label: "Add Branch" }, // <-- Added here
                       { key: "addStudent", label: "Add Student" },
                       { key: "addFaculty", label: "Add Faculty" },
                       { key: "addHOD", label: "Add HOD" },
@@ -307,13 +330,16 @@ function AdminDashboard() {
                 </div>
                 {/* Right Content */}
                 <div className="flex-1 p-6">
-                  {userMgmtTab === "addStudent" && (
-                    <AddIndividualStudentModel />
-                  )}
-                  {userMgmtTab === "addFaculty" && <AddFacultyModal />}
-                  {userMgmtTab === "addHOD" && <AddHODModal />}
-                  {userMgmtTab === "resetPassword" && <ResetPasswordModal />}
-                  {userMgmtTab === "bulkImport" && <BulkImportModal />}
+                  <Suspense fallback={<LoadingSpinner />}>
+                    {userMgmtTab === "addStudent" && (
+                      <AddIndividualStudentModel />
+                    )}
+                    {userMgmtTab === "addFaculty" && <AddFacultyModal />}
+                    {userMgmtTab === "addHOD" && <AddHODModal />}
+                    {userMgmtTab === "resetPassword" && <ResetPasswordModal />}
+                    {userMgmtTab === "bulkImport" && <BulkImportModal />}
+                    {userMgmtTab === "addBranch" && <AddBranchModal />}
+                  </Suspense>
                 </div>
               </div>
             </div>

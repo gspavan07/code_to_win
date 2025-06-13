@@ -4,14 +4,143 @@ import BulkImportStudent from "./ui/BulkImportStudent";
 import BulkImportFaculty from "./ui/BulkImportFaculty";
 import { FaUserPlus } from "react-icons/fa6";
 
-const API_BASE = "http://localhost:5000";
-
 const optionList = [
   { label: "Leetcode", key: "leetcode" },
   { label: "CodeChef", key: "codechef" },
   { label: "GeeksforGeeks", key: "geekforgeeks" },
   { label: "HackerRank", key: "hackerrank" },
 ];
+
+// Add Branch Modal
+export function AddBranchModal() {
+  const { refreshDepts } = useDepts();
+  const [form, setForm] = useState({
+    dept_code: "",
+    dept_name: "",
+  });
+  const [submitStatus, setSubmitStatus] = useState({
+    loading: false,
+    error: null,
+    success: false,
+  });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitStatus({ loading: true, error: null, success: false });
+
+    // Basic validation
+    if (!form.dept_code || !form.dept_name) {
+      setSubmitStatus({
+        loading: false,
+        error: "Please fill all required fields",
+        success: false,
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/add-branch`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to add dept");
+      }
+
+      setSubmitStatus({ loading: false, error: null, success: true });
+
+      // Reset form after successful submission
+      setForm({
+        dept_code: "",
+        dept_name: "",
+      });
+
+      if (refreshDepts) refreshDepts();
+    } catch (error) {
+      setSubmitStatus({ loading: false, error: error.message, success: false });
+    }
+  };
+
+  return (
+    <div className="w-full">
+      <form className="space-y-4" onSubmit={handleSubmit}>
+        <h3>Add Branch</h3>
+        <input
+          name="dept_code"
+          value={form.dept_code}
+          onChange={handleChange}
+          type="text"
+          className="w-full px-3 py-2 border border-gray-200 rounded"
+          placeholder="Department Code*"
+        />
+        <input
+          name="dept_name"
+          value={form.dept_name}
+          onChange={handleChange}
+          type="text"
+          className="w-full px-3 py-2 border border-gray-200 rounded"
+          placeholder="Department Name *"
+        />
+
+        <button
+          type="submit"
+          disabled={submitStatus.loading}
+          className={`w-full mt-4 flex justify-center items-center gap-2 ${
+            submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
+          } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
+        >
+          {submitStatus.loading ? (
+            <>
+              <svg
+                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              Processing...
+            </>
+          ) : (
+            <>
+              <FaUserPlus className="w-4 h-4" />
+              Add Branch
+            </>
+          )}
+        </button>
+
+        {submitStatus.error && (
+          <div className="text-red-500 text-sm mt-2">{submitStatus.error}</div>
+        )}
+        {submitStatus.success && (
+          <div className="text-green-500 text-sm mt-2">
+            Department added successfully!
+          </div>
+        )}
+      </form>
+    </div>
+  );
+}
 
 export function AddIndividualStudentModel({ onSuccess }) {
   const { depts } = useDepts();
@@ -58,7 +187,7 @@ export function AddIndividualStudentModel({ onSuccess }) {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/faculty/add-student`, {
+      const response = await fetch(`/api/add-student`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -191,10 +320,10 @@ export function AddIndividualStudentModel({ onSuccess }) {
                 {year === 1
                   ? "st"
                   : year === 2
-                    ? "nd"
-                    : year === 3
-                      ? "rd"
-                      : "th"}
+                  ? "nd"
+                  : year === 3
+                  ? "rd"
+                  : "th"}
               </option>
             ))}
           </select>
@@ -221,8 +350,9 @@ export function AddIndividualStudentModel({ onSuccess }) {
         <button
           type="submit"
           disabled={submitStatus.loading}
-          className={`w-full mt-4 flex justify-center items-center gap-2 ${submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
-            } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
+          className={`w-full mt-4 flex justify-center items-center gap-2 ${
+            submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
+          } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
         >
           {submitStatus.loading ? (
             <>
@@ -303,7 +433,7 @@ export function AddFacultyModal() {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/api/add-faculty`, {
+      const response = await fetch(`/api/add-faculty`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -378,8 +508,9 @@ export function AddFacultyModal() {
         <button
           type="submit"
           disabled={submitStatus.loading}
-          className={`w-full mt-4 flex justify-center items-center gap-2 ${submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
-            } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
+          className={`w-full mt-4 flex justify-center items-center gap-2 ${
+            submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
+          } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
         >
           {submitStatus.loading ? (
             <>
@@ -460,7 +591,7 @@ export function AddHODModal() {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/api/add-hod`, {
+      const response = await fetch(`/api/add-hod`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -535,8 +666,9 @@ export function AddHODModal() {
         <button
           type="submit"
           disabled={submitStatus.loading}
-          className={`w-full mt-4 flex justify-center items-center gap-2 ${submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
-            } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
+          className={`w-full mt-4 flex justify-center items-center gap-2 ${
+            submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
+          } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
         >
           {submitStatus.loading ? (
             <>
@@ -625,7 +757,7 @@ export function ResetPasswordModal() {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/api/reset-password`, {
+      const response = await fetch(`/api/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -907,7 +1039,7 @@ export function UpdateProfileModal({ onClose, user }) {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/student/coding-profile`, {
+      const response = await fetch(`/api/student/coding-profile`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -990,6 +1122,7 @@ export function UpdateProfileModal({ onClose, user }) {
     </div>
   );
 }
+
 export function UserResetPasswordModal({ onClose, user }) {
   const [form, setForm] = useState({
     password: "",
@@ -1029,7 +1162,7 @@ export function UserResetPasswordModal({ onClose, user }) {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/api/reset-password`, {
+      const response = await fetch(`/api/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1099,7 +1232,9 @@ export function UserResetPasswordModal({ onClose, user }) {
             </button>
           </div>
           {submitStatus.error && (
-            <div className="text-red-500 text-sm mt-2">{submitStatus.error}</div>
+            <div className="text-red-500 text-sm mt-2">
+              {submitStatus.error}
+            </div>
           )}
           {submitStatus.success && (
             <div className="text-green-500 text-sm mt-2">
