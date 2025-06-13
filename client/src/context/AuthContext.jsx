@@ -72,12 +72,12 @@ export function AuthProvider({ children }) {
     checkAuth();
   }, []);
 
-  const login = async (email, password, role) => {
+  const login = async (userId, password, role) => {
     try {
       const response = await fetch(`/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, role }),
+        body: JSON.stringify({ userId, password, role }),
       });
 
       if (!response.ok) {
@@ -86,7 +86,6 @@ export function AuthProvider({ children }) {
       }
 
       const { token, user, profile } = await response.json();
-      const userId = user.user_id;
 
       let profileData = profile;
       if (!profileData) {

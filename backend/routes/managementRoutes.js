@@ -79,10 +79,8 @@ router.post("/add-student", async (req, res) => {
     );
     await connection.query(
       `INSERT INTO student_performance 
-      (student_id, easy_lc, medium_lc, hard_lc, school_gfg, basic_gfg, easy_gfg, 
-      medium_gfg, hard_gfg, contests_gfg, problems_cc, contests_cc, stars_cc, 
-      stars_hr, contests_lc, badges_cc) 
-      VALUES (?, '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0');`,
+      (student_id) 
+      VALUES (?);`,
       [stdId]
     );
 
@@ -94,7 +92,7 @@ router.post("/add-student", async (req, res) => {
     res.status(500).json({
       message:
         err.code === "ER_DUP_ENTRY"
-          ? `Student with ID ${facultyId} already exists`
+          ? `Student with ID ${stdId} already exists`
           : err.message,
       error: err.errno,
     });
@@ -234,6 +232,10 @@ router.post("/bulk-import-student", upload.single("file"), async (req, res) => {
            (student_id, name, dept_code, year, section, degree, cgpa)
            VALUES (?, ?, ?, ?, ?, ?, ?)`,
           [stdId, name, dept, year, section, row.Degree, row.CGPA]
+        );
+        await connection.query(
+          `INSERT INTO student_performance (student_id) VALUES (?);`,
+          [stdId]
         );
 
         results.push({ stdId: stdId, status: "success" });

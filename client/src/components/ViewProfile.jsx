@@ -9,42 +9,25 @@ import html2canvas from "html2canvas";
 import PDFDocument from "../utils/PDFDocument";
 
 const ViewProfile = ({ student, onClose }) => {
-  const [stdDetails, setStdDetails] = useState({});
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const profileRef = useRef(null);
 
-  useEffect(() => {
-    const fetchPerformance = async () => {
-      try {
-        const res = await axios.get(`http://localhost:5000/student/profile`, {
-          params: {
-            userId: student.student_id,
-          },
-        });
-        setStdDetails(res.data || {});
-      } catch (err) {
-        console.error("Error fetching performance data:", err);
-        setStdDetails({});
-      }
-    };
-    if (student.student_id) {
-      fetchPerformance();
-    }
-  }, [student.student_id]);
+  console.log(student);
 
   const handleDownloadPDF = async () => {
+    setIsGeneratingPDF(true);
     try {
-      const blob = await pdf(
-        <PDFDocument student={student} stdDetails={stdDetails} />
-      ).toBlob();
+      const blob = await pdf(<PDFDocument student={student} />).toBlob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `${student?.name + "_" + student?.student_id || "profile"
-        }.pdf`;
+      link.download = `${
+        student?.name + "_" + student?.student_id || "profile"
+      }.pdf`;
       link.click();
       URL.revokeObjectURL(url);
+      setIsGeneratingPDF(false);
     } catch (error) {
+      setIsGeneratingPDF(false);
       console.error("Error generating PDF:", error);
     }
   };
@@ -58,10 +41,7 @@ const ViewProfile = ({ student, onClose }) => {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Profile Content */}
-        <div
-          ref={profileRef}
-          className="w-full flex flex-col items-center space-y-4"
-        >
+        <div className="w-full flex flex-col items-center space-y-4">
           <div className="rounded-xl p-4 flex flex-col items-start gap-6 justify-between bg-[#3370ff] text-[#ffffff] shadow-lg w-full">
             {/* Avatar + Name */}
             <div className="flex items-center gap-4">
@@ -104,19 +84,19 @@ const ViewProfile = ({ student, onClose }) => {
             <StatsCard
               icon={<FiCode />}
               title="Total Problems"
-              value={stdDetails?.performance?.combined?.totalSolved || 0}
+              value={student?.performance?.combined?.totalSolved || 0}
               color="blue"
             />
             <StatsCard
               icon={<FiCheck />}
               title="Total Contests"
-              value={stdDetails?.performance?.combined?.totalContests || 0}
+              value={student?.performance?.combined?.totalContests || 0}
               color="success"
             />
             <StatsCard
               icon={<FiCode />}
               title="Grand Total"
-              value={student.score || "NaN"}
+              value={student.score}
               color="warning"
             />
           </div>
@@ -126,53 +106,47 @@ const ViewProfile = ({ student, onClose }) => {
               name="LeetCode"
               color=" hover:text-[#a96b00]  hover:shadow-[#a96b00] "
               total={
-                stdDetails?.performance?.platformWise?.leetcode?.easy +
-                stdDetails?.performance?.platformWise?.leetcode?.medium +
-                stdDetails?.performance?.platformWise?.leetcode?.hard
+                student?.performance?.platformWise?.leetcode?.easy +
+                student?.performance?.platformWise?.leetcode?.medium +
+                student?.performance?.platformWise?.leetcode?.hard
               }
               breakdown={{
-                Easy: stdDetails?.performance?.platformWise?.leetcode?.easy,
-                Medium: stdDetails?.performance?.platformWise?.leetcode?.medium,
-                Hard: stdDetails?.performance?.platformWise?.leetcode?.hard,
+                Easy: student?.performance?.platformWise?.leetcode?.easy,
+                Medium: student?.performance?.platformWise?.leetcode?.medium,
+                Hard: student?.performance?.platformWise?.leetcode?.hard,
               }}
             />
             <PlatformCard
               name="CodeChef"
               color=" hover:text-[#a92700] hover:shadow-[#a92700]"
-              total={
-                stdDetails?.performance?.platformWise?.codechef?.contests ||
-                "NaN"
-              }
+              total={student?.performance?.platformWise?.codechef?.contests}
               subtitle="Contests Participated"
               breakdown={{
-                Easy: stdDetails?.performance?.platformWise?.codechef?.problems,
+                Easy: student?.performance?.platformWise?.codechef?.problems,
               }}
             />
             <PlatformCard
               name="GeeksforGeeks"
               color=" hover:text-[#1c7800] hover:shadow-[#1c7800]"
               total={
-                stdDetails?.performance?.platformWise?.gfg?.school +
-                stdDetails?.performance?.platformWise?.gfg?.basic +
-                stdDetails?.performance?.platformWise?.gfg?.easy +
-                stdDetails?.performance?.platformWise?.gfg?.medium +
-                stdDetails?.performance?.platformWise?.gfg?.hard
+                student?.performance?.platformWise?.gfg?.school +
+                student?.performance?.platformWise?.gfg?.basic +
+                student?.performance?.platformWise?.gfg?.easy +
+                student?.performance?.platformWise?.gfg?.medium +
+                student?.performance?.platformWise?.gfg?.hard
               }
               breakdown={{
-                School: stdDetails?.performance?.platformWise?.gfg?.school,
-                Basic: stdDetails?.performance?.platformWise?.gfg?.basic,
-                Easy: stdDetails?.performance?.platformWise?.gfg?.easy,
-                Medium: stdDetails?.performance?.platformWise?.gfg?.medium,
-                Hard: stdDetails?.performance?.platformWise?.gfg?.hard,
+                School: student?.performance?.platformWise?.gfg?.school,
+                Basic: student?.performance?.platformWise?.gfg?.basic,
+                Easy: student?.performance?.platformWise?.gfg?.easy,
+                Medium: student?.performance?.platformWise?.gfg?.medium,
+                Hard: student?.performance?.platformWise?.gfg?.hard,
               }}
             />
             <PlatformCard
               name="HackerRank"
               color=" hover:text-black hover:shadow-black"
-              total={
-                stdDetails?.performance?.platformWise?.hackerrank?.badges ||
-                "NaN"
-              }
+              total={student?.performance?.platformWise?.hackerrank?.badges}
               subtitle="Badges Gained"
             />
           </div>

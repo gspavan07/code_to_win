@@ -341,7 +341,8 @@ const RankingTable = ({ filter }) => {
                       {s.name
                         ?.split(" ")
                         .map((n) => n[0])
-                        .join("")}
+                        .join("")
+                        .slice(0, 2)}
                     </div>
                     {s.name}
                   </td>

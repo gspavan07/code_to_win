@@ -25,12 +25,27 @@ router.get("/overall", async (req, res) => {
 FROM student_profiles sp
 JOIN student_performance p ON sp.student_id = p.student_id
 JOIN dept d ON sp.dept_code = d.dept_code
-ORDER BY score DESC
+ORDER BY score DESC, sp.student_id ASC
 LIMIT ?`,
       [limit]
     );
-    // Add rank field
-    rows.forEach((s, i) => (s.rank = i + 1));
+    // Check if all scores are 0
+    const allZero = rows.every((s) => s.score === 0);
+
+    // If all scores are zero, sort by student_id (already handled by ORDER BY above)
+    if (allZero) {
+      rows.sort((a, b) => (a.student_id > b.student_id ? 1 : -1));
+    }
+
+    // Add rank field and update DB
+    for (let i = 0; i < rows.length; i++) {
+      rows[i].rank = i + 1;
+      // Update the rank in the database
+      await db.query(
+        "UPDATE student_profiles SET overall_rank = ? WHERE student_id = ?",
+        [rows[i].rank, rows[i].student_id]
+      );
+    }
 
     // Fetch and attach performance data for each student
     for (const student of rows) {
@@ -130,10 +145,17 @@ FROM student_profiles sp
 JOIN student_performance p ON sp.student_id = p.student_id
 JOIN dept d ON sp.dept_code = d.dept_code
 ${where}
-ORDER BY score DESC
+ORDER BY score DESC, sp.student_id ASC
 LIMIT ?`,
       [...params, limit]
     );
+
+    // Check if all scores are 0
+    const allZero = rows.every((s) => s.score === 0);
+    if (allZero) {
+      rows.sort((a, b) => (a.student_id > b.student_id ? 1 : -1));
+    }
+
     rows.forEach((s, i) => (s.rank = i + 1));
     // Attach performance for each student
     for (const student of rows) {

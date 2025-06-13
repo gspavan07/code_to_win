@@ -7,17 +7,17 @@ const db = require("../config/db");
 require("dotenv").config();
 // Login a user
 router.post("/login", async (req, res) => {
-  const { email, password, role } = req.body;
+  const { userId, password, role } = req.body;
   // Input validation
-  if (!email || !password || !role) {
+  if (!userId || !password || !role) {
     return res.status(400).json({
-      message: "Email, password and role are required",
+      message: "User Id, password and role are required",
     });
   }
   try {
     const [rows] = await db.query(
-      "SELECT * FROM users WHERE email = ? AND role = ?",
-      [email, role]
+      "SELECT * FROM users WHERE user_id = ? AND role = ?",
+      [userId, role]
     );
 
     if (rows.length === 0)

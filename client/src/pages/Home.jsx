@@ -51,9 +51,11 @@ function Home() {
         <div className=" mx-auto px-4 sm:px-6 lg:px-10 xl:px-40">
           <div className="flex justify-between h-16 items-center">
             {/* Logo */}
-            <Link to="/">
+            <Link to="/" className="flex gap-2">
               <div className="flex flex-row items-center gap-3">
                 <img src="/logo.svg" alt="" />
+                <div className="border border-gray-500 h-full" />
+                <img src="/au_logo.svg" alt="" className="w-14" />
                 <h1 className="text-lg font-bold text-gray-800">CodeTracker</h1>
               </div>
             </Link>
@@ -151,7 +153,8 @@ function Home() {
                     {s.name
                       ?.split(" ")
                       .map((n) => n[0])
-                      .join("")}
+                      .join("")
+                      .slice(0, 2)}
                   </div>
                   {s.name}
                 </td>

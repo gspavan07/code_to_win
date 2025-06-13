@@ -1,18 +1,15 @@
 import React, { useState, useCallback } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { motion } from "framer-motion";
 import { FiUser, FiLock, FiEye, FiEyeOff, FiUserCheck } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
 
 const ROLES = ["student", "faculty", "hod", "admin"];
 
 const Login = () => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm();
+  const [formData, setFormData] = useState({
+    userId: "",
+    password: "",
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [selectedRole, setSelectedRole] = useState(ROLES[0]);
@@ -24,34 +21,40 @@ const Login = () => {
     return <Navigate to={`/${currentUser.role}`} replace />;
   }
 
-  const togglePasswordVisibility = useCallback(
-    () => setShowPassword((prev) => !prev),
-    []
-  );
+  const togglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev);
+  };
 
-  const onSubmit = useCallback(
-    async (data) => {
-      setErr(null);
-      setIsSubmitting(true);
-      try {
-        const result = await login(data.email, data.password, selectedRole);
-        if (result.success) {
-          navigate(`/${result.role || selectedRole}`);
-        } else {
-          setErr(result.message);
-        }
-      } catch (error) {
-        console.error("Login error:", error);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErr(null);
+    setIsSubmitting(true);
+    console.log(formData.userId, formData.password, selectedRole);
+    try {
+      const result = await login(
+        formData.userId,
+        formData.password,
+        selectedRole
+      );
+      if (result.success) {
+        // navigate(`/${result.role || selectedRole}`);
+      } else {
         setErr(result.message);
-      } finally {
-        setIsSubmitting(false);
       }
-    },
-    [login, navigate, selectedRole]
-  );
+    } catch (error) {
+      console.error("Login error:", error);
+      setErr(result.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-  const handleRoleChange = useCallback((role) => setSelectedRole(role), []);
-
+  const handleRoleChange = (role) => {
+    setSelectedRole(role);
+  };
+  const handleChange = (key, value) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+  };
   return (
     <div className=" pt-16 flex items-center justify-center px-4 py-12">
       <div className="bg-white rounded-xl shadow-lg p-8">
@@ -88,41 +91,28 @@ const Login = () => {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Email */}
           <div>
             <label
-              htmlFor="email"
+              htmlFor="userId"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Email Address
+              User ID
             </label>
             <div className="relative w-full">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <FiUser className="text-gray-400" />
               </div>
               <input
-                id="email"
-                type="email"
-                {...register("email", {
-                  required: "Email is required",
-                  pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: "Invalid email address",
-                  },
-                })}
-                className={`w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pl-10 ${
-                  errors.email ? "border-red-500 focus:ring-red-500" : ""
-                }`}
-                placeholder="your.email@example.com"
+                id="userId"
+                type="username"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pl-10"
+                placeholder="22A91XXXX"
                 autoComplete="username"
+                onChange={(e) => handleChange("userId", e.target.value)}
               />
             </div>
-            {errors.email && (
-              <p className="mt-1 text-xs text-red-600">
-                {errors.email.message}
-              </p>
-            )}
           </div>
           {/* Password */}
           <div>
@@ -139,18 +129,10 @@ const Login = () => {
               <input
                 id="password"
                 type={showPassword ? "text" : "password"}
-                {...register("password", {
-                  required: "Password is required",
-                  minLength: {
-                    value: 6,
-                    message: "Password must be at least 6 characters",
-                  },
-                })}
-                className={`w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pl-10 pr-10 ${
-                  errors.password ? "border-red-500 focus:ring-red-500" : ""
-                }`}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pl-10 pr-10"
                 placeholder="••••••••"
                 autoComplete="current-password"
+                onChange={(e) => handleChange("password", e.target.value)}
               />
               <button
                 type="button"
@@ -161,11 +143,6 @@ const Login = () => {
                 {showPassword ? <FiEyeOff /> : <FiEye />}
               </button>
             </div>
-            {errors.password && (
-              <p className="mt-1 text-xs text-red-600">
-                {errors.password.message}
-              </p>
-            )}
           </div>
 
           <button

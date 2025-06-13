@@ -2,15 +2,6 @@ const express = require("express");
 const router = express.Router();
 const db = require("../config/db"); // MySQL connection
 
-// Calculate score expression for ranking
-async function getScoreExpression() {
-  const [gradingData] = await db.query("SELECT * FROM grading_system");
-  // Example: (p.badges_hr * 5) + (p.basic_gfg * 1) + ...
-  return gradingData
-    .map((row) => `(p.${row.metric} * ${row.points})`)
-    .join(" + ");
-}
-
 // Profile routes
 router.get("/profile", async (req, res) => {
   const userId = req.query.userId;
@@ -18,7 +9,10 @@ router.get("/profile", async (req, res) => {
   try {
     // 1. Get student profile
     const [profileResult] = await db.query(
-      "SELECT * FROM student_profiles WHERE student_id = ?",
+      `SELECT sp.*, d.dept_name
+        FROM student_profiles sp
+        JOIN dept d ON sp.dept_code = d.dept_code
+        WHERE sp.student_id = ?`,
       [userId]
     );
     if (profileResult.length === 0) {
@@ -48,25 +42,6 @@ router.get("/profile", async (req, res) => {
     );
     if (data.length === 0)
       return res.status(404).json({ message: "No performance data found" });
-    const scoreExpr = await getScoreExpression();
-    // Get all students ordered by score
-    const [rows] = await db.query(
-      `SELECT sp.student_id, sp.*,
-              ${scoreExpr} AS score
-       FROM student_profiles sp
-       JOIN student_performance p ON sp.student_id = p.student_id
-       ORDER BY score DESC`
-    );
-    // Find the rank of the requested student
-    let rank = null;
-    let student = null;
-    for (let i = 0; i < rows.length; i++) {
-      if (rows[i].student_id == userId) {
-        rank = i + 1;
-        student = rows[i];
-        break;
-      }
-    }
 
     const p = data[0];
     const totalSolved =
@@ -114,7 +89,6 @@ router.get("/profile", async (req, res) => {
 
     res.json({
       ...profile,
-      rank,
       coding_profiles,
       performance: {
         combined,

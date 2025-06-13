@@ -6,7 +6,11 @@ import dayjs from "dayjs";
 import Navbar from "../../components/Navbar";
 import StatsCard from "../../components/ui/StatsCard";
 import PlatformCard from "../../components/ui/PlatformCard";
-import { EditModal, UpdateProfileModal, UserResetPasswordModal } from "../../components/Modals";
+import {
+  EditModal,
+  UpdateProfileModal,
+  UserResetPasswordModal,
+} from "../../components/Modals";
 import Footer from "../../components/Footer";
 const StudentDashboard = () => {
   const [editProfile, setEditprofile] = useState(false);
@@ -16,8 +20,7 @@ const StudentDashboard = () => {
   const formattedDate = dayjs(
     currentUser.performance.combined.last_updated
   ).format("DD/MM/YYYY | hh:mm A");
-  const [activeModal, setActiveModal] = useState(null);
-
+  console.log(currentUser);
   const easyProblems =
     currentUser.performance.platformWise.leetcode.easy +
     currentUser.performance.platformWise.gfg.school +
@@ -45,7 +48,11 @@ const StudentDashboard = () => {
         />
       )}
       {changepassword && (
-        <UserResetPasswordModal user={currentUser} onClose={() => setChangepassword(false)} />)}
+        <UserResetPasswordModal
+          user={currentUser}
+          onClose={() => setChangepassword(false)}
+        />
+      )}
       <Navbar />
 
       <div className=" bg-gray-50 p-6 lg:px-10 xl:px-40">
@@ -70,7 +77,8 @@ const StudentDashboard = () => {
                 {currentUser.name
                   ?.split(" ")
                   .map((n) => n[0])
-                  .join("")}
+                  .join("")
+                  .slice(0, 2)}
               </div>
               {/* <img
                 src="/profile_bg.jpeg"
@@ -81,7 +89,7 @@ const StudentDashboard = () => {
                 <h2 className="text-lg font-bold">{currentUser.name}</h2>
                 <p className="text-sm text-gray-500  mt-2">University Rank</p>
                 <p className="text-xl font-semibold text-gray-800">
-                  {currentUser.rank}
+                  {currentUser.overall_rank}
                 </p>
               </div>
             </div>
@@ -96,7 +104,7 @@ const StudentDashboard = () => {
 
               <p className="font-semibold">Personal Information</p>
 
-              <p className="flex justify-between">
+              <p className="flex  justify-between">
                 <span className="font-semibold text-left">Name:</span>{" "}
                 {currentUser.name}
               </p>
@@ -111,7 +119,9 @@ const StudentDashboard = () => {
               <button
                 onClick={() => setChangepassword(true)}
                 className="text-blue-600 underline text-xs mx-auto cursor-pointer"
-              >changepassword</button>
+              >
+                changepassword
+              </button>
             </div>
             <hr className="my-4" />
             <div className="text-justify space-y-4">
@@ -171,7 +181,7 @@ const StudentDashboard = () => {
 
               <span className="px-4 py-2 bg-white rounded-xl shadow-sm">
                 Department:{" "}
-                <span className="font-semibold">{currentUser.dept}</span>
+                <span className="font-semibold">{currentUser.dept_name}</span>
               </span>
               <span className="px-4 py-2 bg-white rounded-xl shadow-sm">
                 Year: <span className="font-semibold">{currentUser.year}</span>
