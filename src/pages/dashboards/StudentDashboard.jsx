@@ -6,11 +6,12 @@ import dayjs from "dayjs";
 import Navbar from "../../components/Navbar";
 import StatsCard from "../../components/ui/StatsCard";
 import PlatformCard from "../../components/ui/PlatformCard";
-import { EditModal, UpdateProfileModal } from "../../components/Modals";
+import { EditModal, UpdateProfileModal, UserResetPasswordModal } from "../../components/Modals";
 import Footer from "../../components/Footer";
 const StudentDashboard = () => {
   const [editProfile, setEditprofile] = useState(false);
   const [updateProfile, setUpdateProfile] = useState(false);
+  const [changepassword, setChangepassword] = useState(false);
   const { currentUser } = useAuth();
   const formattedDate = dayjs(
     currentUser.performance.combined.last_updated
@@ -43,6 +44,8 @@ const StudentDashboard = () => {
           onClose={() => setUpdateProfile(false)}
         />
       )}
+      {changepassword && (
+        <UserResetPasswordModal user={currentUser} onClose={() => setChangepassword(false)} />)}
       <Navbar />
 
       <div className=" bg-gray-50 p-6 lg:px-10 xl:px-40">
@@ -105,6 +108,10 @@ const StudentDashboard = () => {
                 <span className="font-semibold text-left">Email:</span>{" "}
                 {currentUser.email}
               </p>
+              <button
+                onClick={() => setChangepassword(true)}
+                className="text-blue-600 underline text-xs mx-auto cursor-pointer"
+              >changepassword</button>
             </div>
             <hr className="my-4" />
             <div className="text-justify space-y-4">
@@ -127,7 +134,7 @@ const StudentDashboard = () => {
                     const status = currentUser.coding_profiles?.[statusKey];
                     return (
                       <div key={platform} className="flex justify-between">
-                        <span className="font-semibold text-left">
+                        <span className="font-semibold text-left••••••••••••••">
                           {platform.charAt(0).toUpperCase() + platform.slice(1)}
                         </span>
                         <p className="text-gray-500">

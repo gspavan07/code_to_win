@@ -191,10 +191,10 @@ export function AddIndividualStudentModel({ onSuccess }) {
                 {year === 1
                   ? "st"
                   : year === 2
-                  ? "nd"
-                  : year === 3
-                  ? "rd"
-                  : "th"}
+                    ? "nd"
+                    : year === 3
+                      ? "rd"
+                      : "th"}
               </option>
             ))}
           </select>
@@ -221,9 +221,8 @@ export function AddIndividualStudentModel({ onSuccess }) {
         <button
           type="submit"
           disabled={submitStatus.loading}
-          className={`w-full mt-4 flex justify-center items-center gap-2 ${
-            submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
-          } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
+          className={`w-full mt-4 flex justify-center items-center gap-2 ${submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
+            } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
         >
           {submitStatus.loading ? (
             <>
@@ -379,9 +378,8 @@ export function AddFacultyModal() {
         <button
           type="submit"
           disabled={submitStatus.loading}
-          className={`w-full mt-4 flex justify-center items-center gap-2 ${
-            submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
-          } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
+          className={`w-full mt-4 flex justify-center items-center gap-2 ${submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
+            } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
         >
           {submitStatus.loading ? (
             <>
@@ -537,9 +535,8 @@ export function AddHODModal() {
         <button
           type="submit"
           disabled={submitStatus.loading}
-          className={`w-full mt-4 flex justify-center items-center gap-2 ${
-            submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
-          } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
+          className={`w-full mt-4 flex justify-center items-center gap-2 ${submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
+            } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
         >
           {submitStatus.loading ? (
             <>
@@ -748,13 +745,13 @@ export function BulkImportModal() {
       {/* Render different components based on import type */}
       {importType === "student" && (
         <div className="p-10 border border-gray-200 felx flex-col rounded-2xl">
-          <p className="text-2xl text-gray-800">Student Bulk Import</p>
+          <p className="text-2xl text-gray-800">Student Bulk Upload</p>
           <BulkImportStudent />
         </div>
       )}
       {importType === "faculty" && (
         <div className="p-10 border border-gray-200 felx flex-col rounded-2xl">
-          <p className="text-2xl text-gray-800">Faculty Bulk Import</p>
+          <p className="text-2xl text-gray-800">Faculty Bulk Upload</p>
           <BulkImportFaculty />
         </div>
       )}
@@ -803,7 +800,7 @@ export function EditModal({ onClose, user }) {
           onClick={onClose}
           className="absolute top-2 right-3 text-2xl text-gray-600 hover:text-black"
         >
-          ×
+          x
         </button>
         <h2 className="text-xl font-semibold mb-2">Personal Information</h2>
         <form onSubmit={handleSubmit} className="space-y-2">
@@ -988,6 +985,127 @@ export function UpdateProfileModal({ onClose, user }) {
               {loading ? "Saving..." : "Save"}
             </button>
           </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+export function UserResetPasswordModal({ onClose, user }) {
+  const [form, setForm] = useState({
+    password: "",
+    confirmPassword: "",
+  });
+  const [submitStatus, setSubmitStatus] = useState({
+    loading: false,
+    error: null,
+    success: false,
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitStatus({ loading: true, error: null, success: false });
+
+    // Validation
+    if (!form.password || !form.confirmPassword) {
+      setSubmitStatus({
+        loading: false,
+        error: "Please fill all required fields",
+        success: false,
+      });
+      return;
+    }
+    if (form.password !== form.confirmPassword) {
+      setSubmitStatus({
+        loading: false,
+        error: "Passwords do not match",
+        success: false,
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/api/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.student_id,
+          role: user.role,
+          password: form.password,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to reset password");
+      }
+      setSubmitStatus({ loading: false, error: null, success: true });
+      setForm({
+        password: "",
+        confirmPassword: "",
+      });
+    } catch (error) {
+      setSubmitStatus({ loading: false, error: error.message, success: false });
+    }
+  };
+  return (
+    <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-3 text-2xl text-gray-600 hover:text-black"
+        >
+          x
+        </button>
+        <h2 className="text-lg font-semibold mb-4">Reset Password</h2>
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          <input
+            id="userId"
+            name="userId"
+            type="text"
+            className="w-full border rounded px-3 py-2"
+            placeholder="User ID *"
+            value={user.student_id}
+            disabled
+          />
+          <input
+            name="password"
+            type="password"
+            className="w-full border rounded px-3 py-2"
+            placeholder="New Password *"
+            required
+            value={form.password}
+            onChange={handleChange}
+          />
+          <input
+            name="confirmPassword"
+            type="password"
+            className="w-full border rounded px-3 py-2"
+            placeholder="Confirm Password *"
+            required
+            value={form.confirmPassword}
+            onChange={handleChange}
+          />
+          <div className="flex justify-between mt-4">
+            <button
+              type="submit"
+              className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded"
+              disabled={submitStatus.loading}
+            >
+              {submitStatus.loading ? "Processing..." : "Reset Password"}
+            </button>
+          </div>
+          {submitStatus.error && (
+            <div className="text-red-500 text-sm mt-2">{submitStatus.error}</div>
+          )}
+          {submitStatus.success && (
+            <div className="text-green-500 text-sm mt-2">
+              Password reset successful!
+            </div>
+          )}
         </form>
       </div>
     </div>

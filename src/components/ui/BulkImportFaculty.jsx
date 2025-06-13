@@ -153,9 +153,8 @@ const BulkImportFaculty = ({ onSuccess }) => {
       <button
         type="submit"
         disabled={bulkUploadStatus.loading}
-        className={`w-full mt-4 flex justify-center items-center gap-2 ${
-          bulkUploadStatus.loading ? "bg-green-500" : "bg-green-600"
-        } text-white font-medium py-2 rounded hover:bg-green-700 transition`}
+        className={`w-full mt-4 flex justify-center items-center gap-2 ${bulkUploadStatus.loading ? "bg-green-500" : "bg-green-600"
+          } text-white font-medium py-2 rounded hover:bg-green-700 transition`}
       >
         {bulkUploadStatus.loading ? (
           <>
@@ -175,12 +174,12 @@ const BulkImportFaculty = ({ onSuccess }) => {
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               />
             </svg>
-            Importing...
+            Uploading...
           </>
         ) : (
           <>
             <FaUpload className="w-4 h-4" />
-            Import Faculty
+            Upload Faculty
           </>
         )}
       </button>
@@ -192,7 +191,7 @@ const BulkImportFaculty = ({ onSuccess }) => {
       )}
       {bulkUploadStatus.success && (
         <div className="text-green-500 text-sm mt-2">
-          Faculty imported successfully!
+          Faculty upload successfully!
         </div>
       )}
     </form>

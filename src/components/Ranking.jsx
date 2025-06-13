@@ -85,7 +85,7 @@ const RankingTable = ({ filter }) => {
   const downloadSampleXLSX = () => {
     // 1. Simulate a large dataset
     const largeData = [];
-    largeData.push(["Student Id", "Student Name", "Branch", "year", "Section", "Lt_easy", "Lt_med", "Lt_hard", "GFG_school", "GFG_basic", "GFG_easy", "GFG_med", "GFG_hard", "GFG_Contests", "CC_problems", "CC_contests", "CC_stars", "HR_badges", "Score"]);
+    largeData.push(["Student Id", "Student Name", "Branch", "year", "Section", "Lt_easy", "Lt_med", "Lt_hard", "Lt_Contest", "Lt_badges", "GFG_school", "GFG_basic", "GFG_easy", "GFG_med", "GFG_hard", "GFG_Contests", "CC_problems", "CC_Contests", "CC_stars", "CC_badges", "HR_badges", "Score"]);
 
     ranks.forEach((rank) => {
       largeData.push([
@@ -97,6 +97,8 @@ const RankingTable = ({ filter }) => {
         rank?.performance?.platformWise?.leetcode?.easy,
         rank?.performance?.platformWise?.leetcode?.medium,
         rank?.performance?.platformWise?.leetcode?.hard,
+        rank?.performance?.platformWise?.leetcode?.contests,
+        rank?.performance?.platformWise?.leetcode?.badges,
         rank?.performance?.platformWise?.gfg?.school,
         rank?.performance?.platformWise?.gfg?.basic,
         rank?.performance?.platformWise?.gfg?.easy,
@@ -106,6 +108,7 @@ const RankingTable = ({ filter }) => {
         rank?.performance?.platformWise?.codechef?.problems,
         rank?.performance?.platformWise?.codechef?.contests,
         rank?.performance?.platformWise?.codechef?.stars,
+        rank?.performance?.platformWise?.codechef?.badges,
         rank?.performance?.platformWise?.hackerrank?.badges,
         rank.score,
       ]);
@@ -260,7 +263,7 @@ const RankingTable = ({ filter }) => {
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-10 pr-3 py-2 border border-gray-300 rounded-lg hover:bg-blue-50  focus:ring-1   transition outline-none "
                 />
-                <button className="px-2 items-center rounded-lg bg-blue-600 flex gap-2 text-white " onClick={downloadSampleXLSX}><FaDownload /> Export</button>
+                <button className="px-2 items-center rounded-lg bg-blue-600 flex gap-2 text-white " onClick={downloadSampleXLSX}><FaDownload /> Download</button>
               </div>
             </div>
           </>
