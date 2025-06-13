@@ -106,6 +106,9 @@ router.get("/profile", async (req, res) => {
       "SELECT year, section FROM faculty_section_assignment WHERE faculty_id = ?",
       [userId]
     );
+
+    // let total_students = 0;
+
     const [[{ total_students }]] = await db.query(
       "SELECT COUNT(*) AS total_students FROM student_profiles WHERE dept_code = ? AND year = ? AND section = ?",
       [

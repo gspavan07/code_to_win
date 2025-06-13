@@ -24,8 +24,6 @@ const BulkImportStudent = lazy(() =>
   import("../../components/ui/BulkImportStudent")
 );
 
-const API_BASE = "http://localhost:5000";
-
 function FacultyDashboard() {
   const { currentUser } = useAuth();
   const [addStudentMenu, setAddStudentMenu] = useState("individual");
@@ -37,7 +35,7 @@ function FacultyDashboard() {
   const fetchStudents = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get(`${API_BASE}/faculty/students`, {
+      const { data } = await axios.get(`/api/faculty/students`, {
         params: {
           dept: currentUser?.dept_code,
           year: currentUser?.year,
@@ -78,7 +76,7 @@ function FacultyDashboard() {
       <div className="bg-blue-500 p-4 rounded-lg shadow">
         <h2 className="text-gray-200 text-sm">Total Students</h2>
         <p className="text-2xl font-bold text-center text-white">
-          {currentUser?.total_students}
+          {currentUser?.total_students || 0}
         </p>
       </div>
     </div>

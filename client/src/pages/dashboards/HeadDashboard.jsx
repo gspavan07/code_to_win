@@ -176,7 +176,7 @@ function FacultyManagementTab({ years, sections, facultyList }) {
     }
     setLoading(true);
     try {
-      await axios.post("http://localhost:5000/hod/assign-faculty", {
+      await axios.post("/api/hod/assign-faculty", {
         faculty_id: selectedFaculty,
         dept_code: facultyList.find((f) => f.faculty_id === selectedFaculty)
           ?.dept_code,
@@ -374,7 +374,7 @@ function HeadDashboard() {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const { data } = await axios.get("http://localhost:5000/hod/students", {
+        const { data } = await axios.get("/api/hod/students", {
           params: {
             dept: currentUser.dept_code,
             year: filterYear || "",
@@ -398,7 +398,7 @@ function HeadDashboard() {
     const fetchFaculty = async () => {
       try {
         const { data } = await axios.get(
-          `http://localhost:5000/hod/faculty?dept=${currentUser.dept_code}`
+          `/api/hod/faculty?dept=${currentUser.dept_code}`
         );
         setFacultyList(data);
       } catch (error) {

@@ -124,6 +124,10 @@ router.post("/add-faculty", async (req, res) => {
         VALUES (?, ?, ?)`,
       [facultyId, name, dept]
     );
+    await connection.query(
+      `INSERT INTO faculty_section_assignment (faculty_id) VALUES (?)`,
+      [facultyId]
+    );
 
     await connection.commit();
     res.status(200).json({ message: "Faculty added successfully" });

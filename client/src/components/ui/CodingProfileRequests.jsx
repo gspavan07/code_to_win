@@ -78,7 +78,7 @@ function CodingProfileRequests({ dept, year, section, facultyId }) {
           onAction={async (platformIdHandled) => {
             // Fetch latest requests and use the result directly
             const { data: latestRequests } = await axios.get(
-              "http://localhost:5000/faculty/coding-profile-requests",
+              "/api/faculty/coding-profile-requests",
               { params: { dept, year, section } }
             );
             setRequests(latestRequests);
@@ -113,7 +113,7 @@ function CodingProfileRequests({ dept, year, section, facultyId }) {
 // Modal component
 function StudentRequestsModal({ student, onClose, onAction, facultyId }) {
   const handleAction = async (platform, action) => {
-    await axios.post("http://localhost:5000/faculty/verify-coding-profile", {
+    await axios.post("/api/faculty/verify-coding-profile", {
       student_id: student.student_id,
       platform, // send platform name
       action,

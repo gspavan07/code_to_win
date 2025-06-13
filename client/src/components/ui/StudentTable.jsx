@@ -35,7 +35,8 @@ const StudentTable = ({
                   {student.name
                     ?.split(" ")
                     .map((n) => n[0])
-                    .join("")}
+                    .join("")
+                    .slice(0, 2)}
                 </div>
                 {student.name}
               </td>
