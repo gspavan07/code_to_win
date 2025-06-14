@@ -29,7 +29,7 @@ const Login = () => {
     e.preventDefault();
     setErr(null);
     setIsSubmitting(true);
-    console.log(formData.userId, formData.password, selectedRole);
+    // console.log(formData.userId, formData.password, selectedRole);
     try {
       const result = await login(
         formData.userId,
@@ -37,7 +37,7 @@ const Login = () => {
         selectedRole
       );
       if (result.success) {
-        // navigate(`/${result.role || selectedRole}`);
+        navigate(`/${result.role || selectedRole}`);
       } else {
         setErr(result.message);
       }

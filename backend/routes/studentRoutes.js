@@ -68,6 +68,8 @@ router.get("/profile", async (req, res) => {
         easy: p.easy_lc,
         medium: p.medium_lc,
         hard: p.hard_lc,
+        contests: p.contests_lc,
+        badges: p.badges_lc,
       },
       gfg: {
         school: p.school_gfg,
@@ -81,12 +83,12 @@ router.get("/profile", async (req, res) => {
         problems: p.problems_cc,
         contests: p.contests_cc,
         stars: p.stars_cc,
+        badges: p.badges_cc,
       },
       hackerrank: {
         badges: p.stars_hr,
       },
     };
-
     res.json({
       ...profile,
       coding_profiles,

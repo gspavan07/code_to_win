@@ -1,4 +1,3 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { TbUserShare } from "react-icons/tb";
 import StudentTable from "./StudentTable";
@@ -10,10 +9,14 @@ function CodingProfileRequests({ dept, year, section, facultyId }) {
 
   const fetchRequests = async () => {
     setLoading(true);
-    const { data } = await axios.get(
-      "http://localhost:5000/faculty/coding-profile-requests",
-      { params: { dept, year, section } }
+    const res = await fetch(
+      `/api/faculty/coding-profile-requests?dept=${encodeURIComponent(
+        dept
+      )}&year=${encodeURIComponent(year)}&section=${encodeURIComponent(
+        section
+      )}`
     );
+    const data = await res.json();
     setRequests(data);
     setLoading(false);
   };
@@ -52,7 +55,8 @@ function CodingProfileRequests({ dept, year, section, facultyId }) {
                   {reqs[0].name
                     ?.split(" ")
                     .map((n) => n[0])
-                    .join("")}
+                    .join("")
+                    .slice(0, 2)}
                 </div>
                 {reqs[0].name}
               </td>
@@ -77,10 +81,14 @@ function CodingProfileRequests({ dept, year, section, facultyId }) {
           onClose={() => setSelectedStudent(null)}
           onAction={async (platformIdHandled) => {
             // Fetch latest requests and use the result directly
-            const { data: latestRequests } = await axios.get(
-              "/api/faculty/coding-profile-requests",
-              { params: { dept, year, section } }
+            const res = await fetch(
+              `/api/faculty/coding-profile-requests?dept=${encodeURIComponent(
+                dept
+              )}&year=${encodeURIComponent(year)}&section=${encodeURIComponent(
+                section
+              )}`
             );
+            const latestRequests = await res.json();
             setRequests(latestRequests);
 
             // Group the latest requests
@@ -113,11 +121,15 @@ function CodingProfileRequests({ dept, year, section, facultyId }) {
 // Modal component
 function StudentRequestsModal({ student, onClose, onAction, facultyId }) {
   const handleAction = async (platform, action) => {
-    await axios.post("/api/faculty/verify-coding-profile", {
-      student_id: student.student_id,
-      platform, // send platform name
-      action,
-      faculty_id: facultyId,
+    await fetch("/api/faculty/verify-coding-profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        student_id: student.student_id,
+        platform, // send platform name
+        action,
+        faculty_id: facultyId,
+      }),
     });
     await onAction(platform);
   };

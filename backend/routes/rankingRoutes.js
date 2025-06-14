@@ -15,6 +15,7 @@ async function getScoreExpression() {
 router.get("/overall", async (req, res) => {
   try {
     const scoreExpr = await getScoreExpression();
+    // console.log(scoreExpr);
     const limit = Math.max(1, Math.min(parseInt(req.query.limit) || 100, 1000)); // max 1000
     const [rows] = await db.query(
       `SELECT 
@@ -42,8 +43,8 @@ LIMIT ?`,
       rows[i].rank = i + 1;
       // Update the rank in the database
       await db.query(
-        "UPDATE student_profiles SET overall_rank = ? WHERE student_id = ?",
-        [rows[i].rank, rows[i].student_id]
+        "UPDATE student_profiles SET score=?, overall_rank = ? WHERE student_id = ?",
+        [rows[i].score, rows[i].rank, rows[i].student_id]
       );
     }
 
@@ -79,6 +80,8 @@ LIMIT ?`,
             easy: p.easy_lc,
             medium: p.medium_lc,
             hard: p.hard_lc,
+            contests: p.contests_lc,
+            badges: p.badges_lc,
           },
           gfg: {
             school: p.school_gfg,
@@ -92,6 +95,7 @@ LIMIT ?`,
             problems: p.problems_cc,
             contests: p.contests_cc,
             stars: p.stars_cc,
+            badges: p.badges_cc,
           },
           hackerrank: {
             badges: p.stars_hr,
