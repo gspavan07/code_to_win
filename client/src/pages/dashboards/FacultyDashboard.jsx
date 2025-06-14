@@ -12,6 +12,7 @@ import Navbar from "../../components/Navbar";
 import axios from "axios";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import { AddIndividualStudentModel } from "../../components/Modals";
+import UserProfile from "../../components/ui/UserProfile";
 
 // Lazy-loaded components
 const RankingTable = lazy(() => import("../../components/Ranking"));
@@ -56,31 +57,7 @@ function FacultyDashboard() {
 
   const memoizedStudents = useMemo(() => students, [students]);
 
-  const FacultyInfoCard = () => (
-    <div className="bg-blue-600 rounded-md p-4 md:p-6 text-white flex flex-col md:flex-row items-center justify-between w-full shadow-md gap-4">
-      <div className="flex items-center flex-col md:flex-row">
-        <div className="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center mb-2 md:mb-0 md:mr-4">
-          <FaUser className="text-white text-2xl" />
-        </div>
-        <div className="flex flex-col items-center md:items-start">
-          <div className="text-xl font-semibold">{currentUser?.name}</div>
-          <div className="text-base">{currentUser?.email}</div>
-          <div className="mt-1">
-            <span className="text-base bg-blue-500 font-semibold text-white px-2 py-1 rounded-full">
-              {currentUser?.dept_name} - {currentUser?.year} -{" "}
-              {currentUser?.section}
-            </span>
-          </div>
-        </div>
-      </div>
-      <div className="bg-blue-500 p-4 rounded-lg shadow">
-        <h2 className="text-gray-200 text-sm">Total Students</h2>
-        <p className="text-2xl font-bold text-center text-white">
-          {currentUser?.total_students || 0}
-        </p>
-      </div>
-    </div>
-  );
+
 
   const DashboardTabs = () => (
     <div className="grid grid-cols-2 md:grid-cols-4 justify-around rounded bg-gray-100 border-gray-200 border gap-2 md:gap-4 p-1 mb-4 text-base">
@@ -93,9 +70,8 @@ function FacultyDashboard() {
         <button
           key={tab}
           onClick={() => setSelectedTab(tab)}
-          className={`flex-1 min-w-[120px] py-1 rounded ${
-            selectedTab === tab ? "bg-white text-black" : ""
-          }`}
+          className={`flex-1 min-w-[120px] py-1 rounded ${selectedTab === tab ? "bg-white text-black" : ""
+            }`}
         >
           {tab.replace(/([A-Z])/g, " $1").trim()}
         </button>
@@ -124,8 +100,7 @@ function FacultyDashboard() {
       <div className="bg-gray-50 min-h-screen">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-8 space-y-4 p-2 md:p-6">
           <h1 className="text-2xl font-semibold">Faculty Dashboard</h1>
-
-          <FacultyInfoCard />
+          <UserProfile user={currentUser} />
           <DashboardTabs />
 
           {loading ? (
@@ -203,11 +178,10 @@ function FacultyDashboard() {
                     <ul className="space-y-2">
                       <li>
                         <button
-                          className={`w-full text-left px-3 py-2 rounded ${
-                            addStudentMenu === "individual"
-                              ? "bg-blue-600 text-white"
-                              : "bg-gray-100 text-gray-900"
-                          }`}
+                          className={`w-full text-left px-3 py-2 rounded ${addStudentMenu === "individual"
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-100 text-gray-900"
+                            }`}
                           onClick={() => setAddStudentMenu("individual")}
                         >
                           Add Individual Student
@@ -215,11 +189,10 @@ function FacultyDashboard() {
                       </li>
                       <li>
                         <button
-                          className={`w-full text-left px-3 py-2 rounded ${
-                            addStudentMenu === "bulk"
-                              ? "bg-blue-600 text-white"
-                              : "bg-gray-100 text-gray-900"
-                          }`}
+                          className={`w-full text-left px-3 py-2 rounded ${addStudentMenu === "bulk"
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-100 text-gray-900"
+                            }`}
                           onClick={() => setAddStudentMenu("bulk")}
                         >
                           Bulk Import Students

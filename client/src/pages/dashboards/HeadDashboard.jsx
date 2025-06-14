@@ -7,31 +7,13 @@ import axios from "axios";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import { AddIndividualStudentModel } from "../../components/Modals";
 import BulkImportStudent from "../../components/ui/BulkImportStudent";
+import UserProfile from "../../components/ui/UserProfile";
 
 // Lazy-loaded components
 const RankingTable = lazy(() => import("../../components/Ranking"));
 const ViewProfile = lazy(() => import("../../components/ViewProfile"));
 const StudentTable = lazy(() => import("../../components/ui/StudentTable"));
 
-// Faculty Info Card
-function FacultyInfo({ currentUser }) {
-  return (
-    <div className="bg-blue-600 rounded-md p-4 md:p-6 text-white flex flex-col md:flex-row items-center w-full shadow-md gap-4">
-      <div className="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center mb-2 md:mb-0 md:mr-4">
-        <FaUser className="text-white text-2xl" />
-      </div>
-      <div className="flex flex-col items-center md:items-start">
-        <div className="text-xl font-semibold">{currentUser.name}</div>
-        <div className="text-base">{currentUser.email}</div>
-        <div className="mt-1">
-          <span className="text-base bg-blue-400 font-semibold text-white px-2 py-1 rounded-full">
-            {currentUser.dept_name}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // Stats Cards
 function StatsCards({ currentUser }) {
@@ -67,9 +49,8 @@ function DashboardTabs({ selectedTab, setSelectedTab }) {
         <button
           key={tab.key}
           onClick={() => setSelectedTab(tab.key)}
-          className={`flex-1 min-w-[120px] py-1 rounded ${
-            selectedTab === tab.key ? "bg-white text-black" : ""
-          }`}
+          className={`flex-1 min-w-[120px] py-1 rounded ${selectedTab === tab.key ? "bg-white text-black" : ""
+            }`}
         >
           {tab.label}
         </button>
@@ -283,9 +264,8 @@ function FacultyManagementTab({ years, sections, facultyList }) {
           </button>
           {message && (
             <div
-              className={`mt-2 text-center text-sm ${
-                message.type === "success" ? "text-green-600" : "text-red-600"
-              }`}
+              className={`mt-2 text-center text-sm ${message.type === "success" ? "text-green-600" : "text-red-600"
+                }`}
             >
               {message.text}
             </div>
@@ -309,11 +289,10 @@ function AddStudentTab() {
         <ul className="space-y-2">
           <li>
             <button
-              className={`w-full text-left px-3 py-2 rounded ${
-                addStudentMenu === "individual"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-900"
-              }`}
+              className={`w-full text-left px-3 py-2 rounded ${addStudentMenu === "individual"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-100 text-gray-900"
+                }`}
               onClick={() => setAddStudentMenu("individual")}
             >
               Add Individual Student
@@ -321,11 +300,10 @@ function AddStudentTab() {
           </li>
           <li>
             <button
-              className={`w-full text-left px-3 py-2 rounded ${
-                addStudentMenu === "bulk"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-900"
-              }`}
+              className={`w-full text-left px-3 py-2 rounded ${addStudentMenu === "bulk"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-100 text-gray-900"
+                }`}
               onClick={() => setAddStudentMenu("bulk")}
             >
               Bulk Import Students
@@ -439,7 +417,7 @@ function HeadDashboard() {
       <div className="bg-gray-50 min-h-screen">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-8 space-y-4 p-2 md:p-6">
           <h1 className="text-2xl font-semibold">HOD Dashboard</h1>
-          <FacultyInfo currentUser={currentUser} />
+          <UserProfile user={currentUser} />
           <StatsCards currentUser={currentUser} />
           <DashboardTabs
             selectedTab={selectedTab}
