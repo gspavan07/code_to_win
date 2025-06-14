@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useDepts } from "../context/MetaContext";
 import BulkImportStudent from "./ui/BulkImportStudent";
 import BulkImportFaculty from "./ui/BulkImportFaculty";
-import { FaUserPlus } from "react-icons/fa6";
+import { FaUserMinus, FaUserPlus } from "react-icons/fa6";
 
 const optionList = [
   { label: "Leetcode", key: "leetcode" },
@@ -93,9 +93,8 @@ export function AddBranchModal() {
         <button
           type="submit"
           disabled={submitStatus.loading}
-          className={`w-full mt-4 flex justify-center items-center gap-2 ${
-            submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
-          } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
+          className={`w-full mt-4 flex justify-center items-center gap-2 ${submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
+            } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
         >
           {submitStatus.loading ? (
             <>
@@ -320,10 +319,10 @@ export function AddIndividualStudentModel({ onSuccess }) {
                 {year === 1
                   ? "st"
                   : year === 2
-                  ? "nd"
-                  : year === 3
-                  ? "rd"
-                  : "th"}
+                    ? "nd"
+                    : year === 3
+                      ? "rd"
+                      : "th"}
               </option>
             ))}
           </select>
@@ -350,9 +349,8 @@ export function AddIndividualStudentModel({ onSuccess }) {
         <button
           type="submit"
           disabled={submitStatus.loading}
-          className={`w-full mt-4 flex justify-center items-center gap-2 ${
-            submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
-          } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
+          className={`w-full mt-4 flex justify-center items-center gap-2 ${submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
+            } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
         >
           {submitStatus.loading ? (
             <>
@@ -398,7 +396,141 @@ export function AddIndividualStudentModel({ onSuccess }) {
     </div>
   );
 }
+export function DElIndividualStudentModel({ onSuccess }) {
+  const { depts } = useDepts();
+  const [formData, setFormData] = useState({
+    stdId: "",
+  });
 
+  const [submitStatus, setSubmitStatus] = useState({
+    loading: false,
+    error: null,
+    success: false,
+  });
+
+  const handleChange = (key, value) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitStatus({ loading: true, error: null, success: false });
+
+    // Basic validation
+    if (
+      !formData.stdId
+    ) {
+      setSubmitStatus({
+        loading: false,
+        error: "Please fill all required fields",
+        success: false,
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/add-student`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to add student");
+      }
+
+      setSubmitStatus({ loading: false, error: null, success: true });
+
+      // Reset form after successful submission
+      setFormData({
+        stdId: "",
+      });
+
+      // Notify parent to refresh student list
+      if (onSuccess) onSuccess();
+    } catch (error) {
+      setSubmitStatus({ loading: false, error: error.message, success: false });
+    }
+  };
+
+  return (
+    <div className="bg-white p-4 md:p-6 rounded shadow">
+      <h2 className="text-xl font-bold text-gray-900 mb-1">
+        Add Individual Student
+      </h2>
+      <p className="text-sm text-gray-500 mb-6">
+        Add a single student to your section
+      </p>
+      <form className="space-y-4" onSubmit={handleSubmit}>
+
+        {/* Roll Number */}
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Roll Number *
+          </label>
+          <input
+            id="stdId"
+            value={formData.stdId}
+            onChange={(e) => handleChange("stdId", e.target.value)}
+            type="text"
+            placeholder="Enter roll number"
+            className="w-full border border-gray-50 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+
+        <button
+          type="submit"
+          disabled={submitStatus.loading}
+          className={`w-full mt-4 flex justify-center items-center gap-2 ${submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
+            } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
+        >
+          {submitStatus.loading ? (
+            <>
+              <svg
+                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              Processing...
+            </>
+          ) : (
+            <>
+              <FaUserMinus className="w-4 h-4" />
+              Delete Student
+            </>
+          )}
+        </button>
+
+        {submitStatus.error && (
+          <div className="text-red-500 text-sm mt-2">{submitStatus.error}</div>
+        )}
+        {submitStatus.success && (
+          <div className="text-green-500 text-sm mt-2">
+            Student delete successfully!
+          </div>
+        )}
+      </form>
+    </div>
+  );
+}
 // Add Faculty Modal
 export function AddFacultyModal() {
   const { depts } = useDepts();
@@ -508,9 +640,8 @@ export function AddFacultyModal() {
         <button
           type="submit"
           disabled={submitStatus.loading}
-          className={`w-full mt-4 flex justify-center items-center gap-2 ${
-            submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
-          } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
+          className={`w-full mt-4 flex justify-center items-center gap-2 ${submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
+            } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
         >
           {submitStatus.loading ? (
             <>
@@ -666,9 +797,8 @@ export function AddHODModal() {
         <button
           type="submit"
           disabled={submitStatus.loading}
-          className={`w-full mt-4 flex justify-center items-center gap-2 ${
-            submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
-          } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
+          className={`w-full mt-4 flex justify-center items-center gap-2 ${submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
+            } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
         >
           {submitStatus.loading ? (
             <>
@@ -927,10 +1057,10 @@ export function EditModal({ onClose, user }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-sm p-6 relative">
         <button
           onClick={onClose}
-          className="absolute top-2 right-3 text-2xl text-gray-600 hover:text-black"
+          className="absolute top-2 right-3 text-2xl text-gray-600 hover:text-black  cursor-pointer"
         >
           x
         </button>
@@ -940,48 +1070,48 @@ export function EditModal({ onClose, user }) {
             name="name"
             value={form.name}
             onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
+            className="flex-1 border border-blue-50 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200 w-full"
             placeholder="Name"
           />
           <input
             name="roll"
             value={form.roll}
             disabled
-            className="w-full border rounded px-3 py-2 bg-gray-100"
+            className="flex-1 border border-blue-100 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200 w-full cursor-not-allowed"
             placeholder="Registration Number"
           />
           <input
             name="year"
             value={form.year}
             disabled
-            className="w-full border rounded px-3 py-2 bg-gray-100"
+            className="flex-1 border border-blue-100 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200 w-full cursor-not-allowed"
             placeholder="Year"
           />
           <input
             name="section"
             value={form.section}
             disabled
-            className="w-full border rounded px-3 py-2 bg-gray-100"
+            className="flex-1 border border-blue-100 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200 w-full cursor-not-allowed"
             placeholder="Section"
           />
           <input
             name="email"
             value={form.email}
             disabled
-            className="w-full border rounded px-3 py-2 bg-gray-100"
+            className="flex-1 border border-blue-100 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200 w-full cursor-not-allowed"
             placeholder="Email"
           />
           <div className="flex justify-end gap-2 mt-4">
             <button
               type="button"
               onClick={handleCancel}
-              className="px-4 py-2 border rounded text-gray-600 hover:bg-gray-100"
+              className="px-4 py-2 border rounded text-gray-600 hover:bg-gray-100 cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+              className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 cursor-pointer"
             >
               Save
             </button>
@@ -1064,7 +1194,7 @@ export function UpdateProfileModal({ onClose, user }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
-      <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-lg relative">
+      <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-lg relative">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-xl font-bold text-gray-400 hover:text-gray-600"
@@ -1186,7 +1316,7 @@ export function UserResetPasswordModal({ onClose, user }) {
   };
   return (
     <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-sm p-6 relative">
         <button
           onClick={onClose}
           className="absolute top-2 right-3 text-2xl text-gray-600 hover:text-black"
@@ -1199,7 +1329,7 @@ export function UserResetPasswordModal({ onClose, user }) {
             id="userId"
             name="userId"
             type="text"
-            className="w-full border rounded px-3 py-2"
+            className="flex-1 border border-blue-50 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200 w-full"
             placeholder="User ID *"
             value={user.student_id}
             disabled
@@ -1207,7 +1337,7 @@ export function UserResetPasswordModal({ onClose, user }) {
           <input
             name="password"
             type="password"
-            className="w-full border rounded px-3 py-2"
+            className="flex-1 border border-blue-50 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200 w-full"
             placeholder="New Password *"
             required
             value={form.password}
@@ -1216,7 +1346,7 @@ export function UserResetPasswordModal({ onClose, user }) {
           <input
             name="confirmPassword"
             type="password"
-            className="w-full border rounded px-3 py-2"
+            className="flex-1 border border-blue-50 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200 w-full"
             placeholder="Confirm Password *"
             required
             value={form.confirmPassword}

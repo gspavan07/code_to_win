@@ -118,12 +118,12 @@ const StudentDashboard = () => {
               </p>
               <button
                 onClick={() => setChangepassword(true)}
-                className="text-blue-600 underline text-xs mx-auto cursor-pointer"
+                className="text-blue-600 underline text-sm float-right cursor-pointer mb-2"
               >
                 changepassword
               </button>
             </div>
-            <hr className="my-4" />
+            <hr className="my-4 w-full" />
             <div className="text-justify space-y-4">
               <button
                 onClick={() => setUpdateProfile(true)}
@@ -193,7 +193,7 @@ const StudentDashboard = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-2 mb-4 xl:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 mb-4 xl:grid-cols-4 gap-3 md:border-0 border border-gray-200 p-4 rounded-xl ">
               <StatsCard
                 icon={<FiCode />}
                 title="Total Problems"
@@ -201,7 +201,7 @@ const StudentDashboard = () => {
                 color="blue"
               />
               <StatsCard
-                icon={<FiCheck />}
+                icon={<FiCode />}
                 title="Easy Problems"
                 value={easyProblems}
                 color="success"
@@ -225,6 +225,7 @@ const StudentDashboard = () => {
               <PlatformCard
                 name="LeetCode"
                 color=" hover:text-yellow-600 hover:shadow-yellow-600"
+                icon="/LeetCode_logo.png"
                 total={
                   currentUser.performance.platformWise.leetcode.easy +
                   currentUser.performance.platformWise.leetcode.medium +
@@ -234,20 +235,26 @@ const StudentDashboard = () => {
                   Easy: currentUser.performance.platformWise.leetcode.easy,
                   Medium: currentUser.performance.platformWise.leetcode.medium,
                   Hard: currentUser.performance.platformWise.leetcode.hard,
+                  contests: currentUser.performance.platformWise.leetcode.contests,
+                  Badges: currentUser.performance.platformWise.leetcode.badges,
                 }}
               />
               <PlatformCard
                 name="CodeChef"
                 color=" hover:text-orange-900 hover:shadow-orange-900"
+                icon="/codechef_logo.png"
                 total={currentUser.performance.platformWise.codechef.contests}
                 subtitle="Contests Participated"
                 breakdown={{
-                  Easy: currentUser.performance.platformWise.codechef.problems,
+                  "Problems Solved": currentUser.performance.platformWise.codechef.problems,
+                  Star: currentUser.performance.platformWise.codechef.stars,
+                  Badges: currentUser.performance.platformWise.codechef.badges,
                 }}
               />
               <PlatformCard
                 name="GeeksforGeeks"
                 color=" hover:text-green-600 hover:shadow-green-600"
+                icon="/GeeksForGeeks_logo.png"
                 total={
                   currentUser.performance.platformWise.gfg.school +
                   currentUser.performance.platformWise.gfg.basic +
@@ -266,6 +273,7 @@ const StudentDashboard = () => {
               <PlatformCard
                 name="HackerRank"
                 color=" hover:text-gray-900 hover:shadow-gray-900"
+                icon="/HackerRank_logo.png"
                 total={currentUser.performance.platformWise.hackerrank.badges}
                 subtitle="Badges Gained"
               />

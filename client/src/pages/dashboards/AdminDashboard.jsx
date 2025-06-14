@@ -5,6 +5,7 @@ import Navbar from "../../components/Navbar";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import ProfileScraper from "../../components/ProfileScraper";
 import Footer from "../../components/Footer";
+import UserProfile from "../../components/ui/UserProfile";
 
 // Lazy-loaded components
 const RankingTable = lazy(() => import("../../components/Ranking"));
@@ -168,18 +169,7 @@ function AdminDashboard() {
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-8 space-y-4 p-2 md:p-6">
           <h1 className="text-2xl font-semibold">Admin Dashboard</h1>
           {/* Admin Info */}
-          <div className="bg-blue-600 rounded-md p-4 md:p-6 text-white flex flex-col md:flex-row items-center w-full shadow-md gap-4">
-            {/* Avatar Circle */}
-            <div className="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center mb-2 md:mb-0 md:mr-4">
-              <FaUser className="text-white text-2xl" />
-            </div>
-
-            {/* Text Info */}
-            <div className="flex flex-col items-center md:items-start">
-              <div className="text-xl font-semibold">{currentUser.name}</div>
-              <div className="text-base">{currentUser.email}</div>
-            </div>
-          </div>
+          <UserProfile user={currentUser} />
           {/* Section Stats Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="bg-white p-4 rounded-lg shadow">
@@ -199,25 +189,22 @@ function AdminDashboard() {
           <div className="grid grid-cols-2 md:grid-cols-3 justify-around rounded bg-gray-100 border-gray-200 border gap-2 md:gap-4 p-1 mb-4 text-base">
             <button
               onClick={() => setSelectedTab("StudentRanking")}
-              className={`flex-1 min-w-[120px] py-1 rounded cursor-pointer ${
-                selectedTab === "StudentRanking" ? "bg-white text-black" : ""
-              }`}
+              className={`flex-1 min-w-[120px] py-1 rounded cursor-pointer ${selectedTab === "StudentRanking" ? "bg-white text-black" : ""
+                }`}
             >
               Student Ranking
             </button>
             <button
               onClick={() => setSelectedTab("GradingSystem")}
-              className={`flex-1 min-w-[120px] py-1 rounded cursor-pointer ${
-                selectedTab === "GradingSystem" ? "bg-white text-black" : ""
-              }`}
+              className={`flex-1 min-w-[120px] py-1 rounded cursor-pointer ${selectedTab === "GradingSystem" ? "bg-white text-black" : ""
+                }`}
             >
               Grading System
             </button>
             <button
               onClick={() => setSelectedTab("UserManagment")}
-              className={`flex-1 min-w-[120px] py-1 rounded cursor-pointer ${
-                selectedTab === "UserManagment" ? "bg-white text-black" : ""
-              }`}
+              className={`flex-1 min-w-[120px] py-1 rounded cursor-pointer ${selectedTab === "UserManagment" ? "bg-white text-black" : ""
+                }`}
             >
               User Managment
             </button>
@@ -315,11 +302,10 @@ function AdminDashboard() {
                     ].map((item) => (
                       <li key={item.key}>
                         <button
-                          className={`w-full text-left px-3 py-2 rounded transition ${
-                            userMgmtTab === item.key
+                          className={`w-full text-left px-3 py-2 rounded transition ${userMgmtTab === item.key
                               ? "bg-blue-600 text-white"
                               : "hover:bg-blue-100"
-                          }`}
+                            }`}
                           onClick={() => setUserMgmtTab(item.key)}
                         >
                           {item.label}

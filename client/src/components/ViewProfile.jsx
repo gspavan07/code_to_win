@@ -20,9 +20,8 @@ const ViewProfile = ({ student, onClose }) => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `${
-        student?.name + "_" + student?.student_id || "profile"
-      }.pdf`;
+      link.download = `${student?.name + "_" + student?.student_id || "profile"
+        }.pdf`;
       link.click();
       URL.revokeObjectURL(url);
       setIsGeneratingPDF(false);
@@ -101,9 +100,10 @@ const ViewProfile = ({ student, onClose }) => {
             />
           </div>
           {/* Platform-wise Stats */}
-          <div className="grid grid-cols-2  gap-2 md:gap-6 md:p-4">
+          <div className="grid grid-cols-2  gap-2 md:gap-6 w-full">
             <PlatformCard
               name="LeetCode"
+              icon="/LeetCode_logo.png"
               color=" hover:text-[#a96b00]  hover:shadow-[#a96b00] "
               total={
                 student?.performance?.platformWise?.leetcode?.easy +
@@ -114,19 +114,25 @@ const ViewProfile = ({ student, onClose }) => {
                 Easy: student?.performance?.platformWise?.leetcode?.easy,
                 Medium: student?.performance?.platformWise?.leetcode?.medium,
                 Hard: student?.performance?.platformWise?.leetcode?.hard,
+                Contests: student?.performance?.platformWise?.leetcode?.contests,
+                Badges: student?.performance?.platformWise?.leetcode?.badges,
               }}
             />
             <PlatformCard
               name="CodeChef"
+              icon="/codechef_logo.png"
               color=" hover:text-[#a92700] hover:shadow-[#a92700]"
               total={student?.performance?.platformWise?.codechef?.contests}
               subtitle="Contests Participated"
               breakdown={{
-                Easy: student?.performance?.platformWise?.codechef?.problems,
+                "problems Solved": student?.performance?.platformWise?.codechef?.problems,
+                Stars: student?.performance?.platformWise?.codechef?.stars,
+                Badges: student?.performance?.platformWise?.codechef?.badges,
               }}
             />
             <PlatformCard
               name="GeeksforGeeks"
+              icon="/GeeksForGeeks_logo.png"
               color=" hover:text-[#1c7800] hover:shadow-[#1c7800]"
               total={
                 student?.performance?.platformWise?.gfg?.school +
@@ -145,6 +151,7 @@ const ViewProfile = ({ student, onClose }) => {
             />
             <PlatformCard
               name="HackerRank"
+              icon="/HackerRank_logo.png"
               color=" hover:text-black hover:shadow-black"
               total={student?.performance?.platformWise?.hackerrank?.badges}
               subtitle="Badges Gained"
