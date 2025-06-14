@@ -6,14 +6,7 @@ import { useAuth } from "../context/AuthContext";
 
 const Navbar = () => {
   // Replace this with your actual authentication logic
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { logout, currentUser } = useAuth();
-  const linkClass = ({ isActive }) =>
-    isActive
-      ? "text-blue-600 border-b-2 border-blue-600 pb-1"
-      : "text-gray-800 hover:text-blue-600 pb-1";
 
   return (
     <nav className="bg-white shadow-lg border-b border-gray-200 sticky top-0 z-50">
@@ -22,10 +15,10 @@ const Navbar = () => {
           {/* Logo */}
           <NavLink to="/">
             <div className="flex flex-row items-center gap-3">
-              <GrCodepen className="text-3xl text-gray-800" />
-              <h1 className="text-lg font-bold text-gray-800">
-                Coding Dashboard
-              </h1>
+              <img src="/logo.svg" alt="" className="w-12" />
+              <div className="border border-gray-500 h-10" />
+              <img src="/au_logo.svg" alt="" className="w-10" />
+              <h1 className="text-lg font-bold text-gray-800">CodeTracker</h1>
             </div>
           </NavLink>
 
