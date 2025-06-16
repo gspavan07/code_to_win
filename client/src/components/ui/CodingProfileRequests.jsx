@@ -10,11 +10,7 @@ function CodingProfileRequests({ dept, year, section, facultyId }) {
   const fetchRequests = async () => {
     setLoading(true);
     const res = await fetch(
-      `/api/faculty/coding-profile-requests?dept=${encodeURIComponent(
-        dept
-      )}&year=${encodeURIComponent(year)}&section=${encodeURIComponent(
-        section
-      )}`
+      `/api/faculty/coding-profile-requests?dept=${dept}&year=${year}&section=${section}`
     );
     const data = await res.json();
     setRequests(data);
@@ -25,6 +21,7 @@ function CodingProfileRequests({ dept, year, section, facultyId }) {
     fetchRequests();
   }, [dept, year, section]);
 
+  console.log(requests);
   // Group requests by student_id
   const grouped = requests.reduce((acc, req) => {
     if (!acc[req.student_id]) acc[req.student_id] = [];
@@ -33,7 +30,7 @@ function CodingProfileRequests({ dept, year, section, facultyId }) {
   }, {});
 
   if (loading) return <p>Loading...</p>;
-  if (!requests.length) return <p>No pending requests.</p>;
+  if (!requests || requests.length == 0) return <p>No pending requests.</p>;
 
   return (
     <>

@@ -3,6 +3,7 @@ import Login from "./Login";
 import Footer from "../components/Footer";
 import { Link } from "react-router-dom";
 import { FiMenu, FiX } from "react-icons/fi";
+import Navbar from "../components/Navbar";
 
 const RankBadge = ({ rank }) => {
   if (rank === 1)
@@ -16,7 +17,6 @@ const RankBadge = ({ rank }) => {
 
 function Home() {
   const [ranks, setRanks] = useState([]);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const fetchRanks = async () => {
     try {
       const limit = 10;
@@ -47,56 +47,7 @@ function Home() {
   return (
     <div className="">
       <img src="/home_bg.svg" alt="" className="absolute -z-10 top-0 w-full" />
-      <nav className="py-5">
-        <div className=" mx-auto px-4 sm:px-6 lg:px-10 xl:px-40">
-          <div className="flex justify-between h-16 items-center">
-            {/* Logo */}
-            <Link to="/" className="flex gap-2">
-              <div className="flex flex-row items-center gap-3">
-                <img src="/logo.svg" alt="" />
-                <div className="border border-gray-500 h-full" />
-                <img src="/au_logo.svg" alt="" className="w-14" />
-                <h1 className="text-lg font-bold text-gray-800">CodeTracker</h1>
-              </div>
-            </Link>
-
-            {/* Desktop Menu */}
-            <div className="hidden md:flex items-center gap-6">
-              <Link to="/">Home</Link>
-              <Link to="/stdDash">Check Your Strength</Link>
-              <Link to="/dev">Developers</Link>
-              <Link to="/contact">Contact</Link>
-            </div>
-
-            {/* Mobile Hamburger */}
-            <div className="md:hidden flex items-center">
-              <button
-                onClick={() => setMobileMenuOpen((prev) => !prev)}
-                className="text-2xl text-gray-700 focus:outline-none"
-              >
-                {mobileMenuOpen ? <FiX /> : <FiMenu />}
-              </button>
-            </div>
-          </div>
-          {/* Mobile Menu */}
-          {mobileMenuOpen && (
-            <div className="md:hidden flex flex-col gap-2 py-2">
-              <Link to="/" onClick={() => setMobileMenuOpen(false)}>
-                Home
-              </Link>
-              <Link to="/stdDash" onClick={() => setMobileMenuOpen(false)}>
-                Check Your Strength
-              </Link>
-              <Link to="/dev" onClick={() => setMobileMenuOpen(false)}>
-                Developers
-              </Link>
-              <Link to="/contact" onClick={() => setMobileMenuOpen(false)}>
-                Contact
-              </Link>
-            </div>
-          )}
-        </div>
-      </nav>
+      <Navbar />
       <div className="relative flex flex-col lg:flex-row px-5 lgS:px-10 xl:px-40 justify-between items-center">
         <div className="flex flex-col items-center lg:items-start text-center lg:text-left ">
           <div className="flex flex-col">
@@ -120,13 +71,15 @@ function Home() {
       </div>
       <section className="relative w-[95%] xl:w-3/4 mx-auto  mb-20 z-20">
         <img
-          src="/owl.png"
+          src="/owl.gif"
           alt=""
-          className="absolute h-28 right-0 -top-20 w-auto"
+          className="absolute h-40 right-5 -top-32 w-auto"
         />
-        <div className="bg-yellow-50 py-5 px-5 flex items-center gap-5 rounded-t-2xl border-b-2 border-b-gray-200 text-center">
+        <div className="bg-yellow-50 py-5 px-5 lg:px-28 flex items-center gap-5 rounded-t-2xl border-b-2 border-b-gray-200 text-center">
           <img src="/trophy.png" alt="" />
-          <p className="font-bold text-base">Top Coders This Month</p>
+          <p className="font-bold text-base lg:text-xl">
+            Top Coders This Month
+          </p>
         </div>
         <table className="min-w-full px-10 bg-white border-b border-t-2 border-t-gray-800 rounded-b-2xl overflow-hidden shadow-2xl text-sm md:text-base">
           <thead className=" text-center">

@@ -283,15 +283,17 @@ const RankingTable = ({ filter }) => {
                   </select>
                 </div>
               </div>
-              <div className="relative max-w-xs flex  gap-x-5 mr-15 py-3">
-                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 opacity-85 text-blue-800" />
-                <input
-                  type="text"
-                  placeholder="Search students..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-10 pr-3 py-2 border border-gray-300 rounded-lg hover:bg-blue-50  focus:ring-1   transition outline-none "
-                />
+              <div className=" max-w-xs flex gap-x-5 mr-15 py-3">
+                <div className="relative">
+                  <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 opacity-85 text-blue-800" />
+                  <input
+                    type="text"
+                    placeholder="Search students..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-10 pr-3 py-2 border border-gray-300 rounded-lg hover:bg-blue-50  focus:ring-1   transition outline-none "
+                  />
+                </div>
                 <button
                   className="px-2 items-center rounded-lg bg-blue-600 flex gap-2 text-white "
                   onClick={downloadSampleXLSX}
@@ -362,7 +364,7 @@ const RankingTable = ({ filter }) => {
                       onClick={() => setSelectedStudent(s)}
                       className="text-gray-700 px-2 py-1 justify-center rounded hover:text-blue-700 flex items-center gap-1 cursor-pointer"
                     >
-                      <TbUserShare /> Profile
+                      <TbUserShare />
                     </div>
                   </td>
                 </tr>
