@@ -87,10 +87,21 @@ const StudentDashboard = () => {
               /> */}
               <div className="ml-3">
                 <h2 className="text-lg font-bold">{currentUser.name}</h2>
-                <p className="text-sm text-gray-500  mt-2">University Rank</p>
-                <p className="text-xl font-semibold text-gray-800">
-                  {currentUser.overall_rank}
-                </p>
+                <div className="flex gap-10">
+                  <div>
+                    <p className="text-sm text-gray-500  mt-2">University Rank</p>
+                    <p className="text-xl font-semibold text-gray-800">
+                      {currentUser.overall_rank}
+                    </p>
+                  </div>
+                  <div className="bg-green-200 rounded-full w-18 h-18 flex flex-col items-center p-2">
+                    <p className="text-sm text-gray-500  mt-2">Score</p>
+
+                    <p className="text-lg text-gray-900">
+                      {currentUser.score}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
             <hr className="my-4" />

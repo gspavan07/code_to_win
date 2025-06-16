@@ -476,7 +476,7 @@ export function DElIndividualStudentModel({ onSuccess }) {
             onChange={(e) => handleChange("stdId", e.target.value)}
             type="text"
             placeholder="Enter roll number"
-            className="w-full border border-gray-50 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-50 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
           />
         </div>
 
@@ -484,8 +484,8 @@ export function DElIndividualStudentModel({ onSuccess }) {
         <button
           type="submit"
           disabled={submitStatus.loading}
-          className={`w-full mt-4 flex justify-center items-center gap-2 ${submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
-            } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
+          className={`w-full mt-4 flex justify-center items-center gap-2 ${submitStatus.loading ? "bg-red-300" : "bg-red-500"
+            } text-white font-medium py-2 rounded hover:bg-red-600 transition`}
         >
           {submitStatus.loading ? (
             <>

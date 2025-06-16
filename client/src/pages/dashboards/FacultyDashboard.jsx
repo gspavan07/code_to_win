@@ -11,7 +11,7 @@ import { useAuth } from "../../context/AuthContext";
 import Navbar from "../../components/Navbar";
 import axios from "axios";
 import LoadingSpinner from "../../common/LoadingSpinner";
-import { AddIndividualStudentModel } from "../../components/Modals";
+import { AddIndividualStudentModel, DElIndividualStudentModel, ResetPasswordModal } from "../../components/Modals";
 import UserProfile from "../../components/ui/UserProfile";
 
 // Lazy-loaded components
@@ -198,6 +198,26 @@ function FacultyDashboard() {
                           Bulk Import Students
                         </button>
                       </li>
+                      <li>
+                        <button
+                          className={`w-full text-left px-3 py-2 rounded ${addStudentMenu === "delete"
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-100 text-gray-900"
+                            }`}
+                          onClick={() => setAddStudentMenu("delete")}
+                        >
+                          Delete Student
+                        </button>
+                      </li>
+                      <li>
+                        <button
+                          className={`w-full text-left px-3 py-2 rounded ${addStudentMenu === "resetpassword"
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-100 text-gray-900"
+                            }`}
+                          onClick={() => setAddStudentMenu("resetpassword")}
+                        >Reset Password</button>
+                      </li>
                     </ul>
                   </div>
 
@@ -218,6 +238,32 @@ function FacultyDashboard() {
                         </p>
                         <Suspense fallback={<LoadingSpinner />}>
                           <BulkImportStudent onSuccess={fetchStudents} />
+                        </Suspense>
+                      </div>
+                    )}
+                    {addStudentMenu === "delete" && (
+                      <div className="bg-white p-4 md:p-6 h-fit rounded shadow">
+                        <h2 className="text-xl font-bold text-gray-900 mb-1">
+                          Delete Student
+                        </h2>
+                        <p className="text-sm text-gray-500 mb-6">
+                          Delete a student from the system
+                        </p>
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <DElIndividualStudentModel onSuccess={fetchStudents} />
+                        </Suspense>
+                      </div>
+                    )}
+                    {addStudentMenu === "resetpassword" && (
+                      <div className="bg-white p-4 md:p-6 h-fit rounded shadow">
+                        <h2 className="text-xl font-bold text-gray-900 mb-1">
+                          Reset Student Password
+                        </h2>
+                        <p className="text-sm text-gray-500 mb-6">
+                          Reset the password for a student
+                        </p>
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <ResetPasswordModal onSuccess={fetchStudents} />
                         </Suspense>
                       </div>
                     )}
