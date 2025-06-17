@@ -3,7 +3,12 @@ import { useDepts } from "../context/MetaContext";
 import BulkImportStudent from "./ui/BulkImportStudent";
 import BulkImportFaculty from "./ui/BulkImportFaculty";
 import { FaUserMinus, FaUserPlus } from "react-icons/fa6";
-
+import { CiCircleCheck } from "react-icons/ci";
+const RequiredLabel = ({ label, htmlFor }) => (
+  <label htmlFor={htmlFor} className="block text-sm font-medium text-gray-700">
+    {label} <span className="text-red-500">*</span>
+  </label>
+);
 // Spinner Component
 const Spinner = () => (
   <svg
@@ -67,9 +72,8 @@ function GenericFormModal({
         {fields.map((field) => (
           <div key={field.name}>
             {field.label && (
-              <label className="block text-sm font-medium mb-1">
-                {field.label}
-              </label>
+              <RequiredLabel label={field.label} htmlFor={field.name} />
+
             )}
             {field.type === "select" ? (
               <select
@@ -103,7 +107,7 @@ function GenericFormModal({
                 onChange={handleChange}
                 type={field.type}
                 className="w-full px-3 py-2 border border-gray-200 rounded"
-                placeholder={field.placeholder}
+                placeholder={`Enter  ${field.label}`}
                 required={field.required}
                 disabled={field.disabled}
               />
@@ -113,9 +117,8 @@ function GenericFormModal({
         <button
           type="submit"
           disabled={loading}
-          className={`w-full mt-4 flex justify-center items-center gap-2 ${
-            loading ? "bg-blue-400" : "bg-blue-600"
-          } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
+          className={`w-full mt-4 flex justify-center items-center gap-2 ${loading ? "bg-blue-400" : "bg-blue-600"
+            } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
         >
           {loading ? (
             <>
@@ -192,13 +195,15 @@ export function AddBranchModal() {
       fields={[
         {
           name: "dept_code",
-          label: "Department Code*",
+          label: "Department Code",
+          placeholder: "e.g. A6,A0",
           type: "text",
           required: true,
         },
         {
           name: "dept_name",
-          label: "Department Name*",
+          label: "Department Name",
+          placeholder: "e.g. AIML,CSE",
           type: "text",
           required: true,
         },
@@ -273,19 +278,19 @@ export function AddIndividualStudentModel({ onSuccess }) {
       title="Add Individual Student"
       icon={<FaUserPlus className="w-4 h-4" />}
       fields={[
-        { name: "name", label: "Student Name*", type: "text", required: true },
-        { name: "stdId", label: "Roll Number*", type: "text", required: true },
-        { name: "cgpa", label: "CGPA*", type: "text", required: true },
+        { name: "name", label: "Student Name", type: "text", required: true },
+        { name: "stdId", label: "Roll Number", type: "text", required: true },
+        { name: "cgpa", label: "CGPA", type: "text", required: true },
         {
           name: "degree",
-          label: "Degree*",
+          label: "Degree",
           type: "select",
           required: true,
           options: ["B.Tech", "MCA"],
         },
         {
           name: "dept",
-          label: "Branch*",
+          label: "Branch",
           type: "select",
           required: true,
           options:
@@ -296,19 +301,18 @@ export function AddIndividualStudentModel({ onSuccess }) {
         },
         {
           name: "year",
-          label: "Year*",
+          label: "Year",
           type: "select",
           required: true,
           options: [1, 2, 3, 4].map((year) => ({
             value: year,
-            label: `${year}${
-              year === 1 ? "st" : year === 2 ? "nd" : year === 3 ? "rd" : "th"
-            }`,
+            label: `${year}${year === 1 ? "st" : year === 2 ? "nd" : year === 3 ? "rd" : "th"
+              }`,
           })),
         },
         {
           name: "section",
-          label: "Section*",
+          label: "Section",
           type: "select",
           required: true,
           options: ["A", "B", "C", "D"],
@@ -380,17 +384,17 @@ export function AddFacultyModal() {
       title="Add New Faculty"
       icon={<FaUserPlus className="w-4 h-4" />}
       fields={[
-        { name: "name", label: "Faculty Name*", type: "text", required: true },
+        { name: "name", label: "Faculty Name", type: "text", required: true },
         {
           name: "facultyId",
-          label: "Employee ID*",
+          label: "Employee ID",
           type: "text",
           required: true,
         },
-        { name: "email", label: "Email*", type: "email", required: true },
+        { name: "email", label: "Email", type: "email", required: true },
         {
           name: "dept",
-          label: "Department*",
+          label: "Department",
           type: "select",
           required: true,
           options:
@@ -462,12 +466,12 @@ export function AddHODModal() {
       title="Add New HOD"
       icon={<FaUserPlus className="w-4 h-4" />}
       fields={[
-        { name: "name", label: "HOD Name*", type: "text", required: true },
-        { name: "hodId", label: "Employee ID*", type: "text", required: true },
-        { name: "email", label: "Email*", type: "email", required: true },
+        { name: "name", label: "HOD Name", type: "text", required: true },
+        { name: "hodId", label: "Employee ID", type: "text", required: true },
+        { name: "email", label: "Email", type: "email", required: true },
         {
           name: "dept",
-          label: "Department*",
+          label: "Department",
           type: "select",
           required: true,
           options:
@@ -493,6 +497,7 @@ export function AddHODModal() {
 
 // Delete Confirm Modal
 export function DeleteConfirmModal({ onClose, user, onSuccess }) {
+  const [success, setSuccess] = useState(false);
   const [status, setStatus] = useState({
     loading: false,
     error: null,
@@ -517,11 +522,28 @@ export function DeleteConfirmModal({ onClose, user, onSuccess }) {
         success: "Student deleted successfully!",
       });
       if (onSuccess) onSuccess();
-      onClose();
+      setSuccess(true);
+      setTimeout(() => {
+        onClose();
+      }, 1500); // Close modal after 1.5 seconds
     } catch (error) {
       setStatus({ loading: false, error: error.message, success: null });
     }
   };
+
+  if (success) {
+    return (
+      <div
+        className="fixed inset-0 bg-black/50 flex justify-center items-center z-50"
+        onClick={onClose}
+      >
+        <div className="bg-white rounded-lg shadow-lg w-full max-w-fit flex flex-col items-center justify-center p-6">
+          <CiCircleCheck className="text-green-500 text-5xl" />
+          Student Deleted Successfully!
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
@@ -569,9 +591,8 @@ export function DeleteConfirmModal({ onClose, user, onSuccess }) {
           <button
             type="submit"
             disabled={status.loading}
-            className={`w-full mt-4 flex justify-center items-center gap-2 ${
-              status.loading ? "bg-red-300" : "bg-red-500"
-            } text-white font-medium py-2 rounded hover:bg-red-600 transition`}
+            className={`w-full mt-4 flex justify-center items-center gap-2 ${status.loading ? "bg-red-300" : "bg-red-500"
+              } text-white font-medium py-2 rounded hover:bg-red-600 transition`}
           >
             {status.loading ? (
               <>
@@ -652,7 +673,7 @@ export function DeleteIndividualStudentModal({ onSuccess }) {
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label className="block text-sm font-medium mb-1">
-              Roll Number *
+              Roll Number
             </label>
             <input
               id="userId"
@@ -666,9 +687,8 @@ export function DeleteIndividualStudentModal({ onSuccess }) {
           <button
             type="submit"
             disabled={status.loading}
-            className={`w-full mt-4 flex justify-center items-center gap-2 ${
-              status.loading ? "bg-red-300" : "bg-red-500"
-            } text-white font-medium py-2 rounded hover:bg-red-600 transition`}
+            className={`w-full mt-4 flex justify-center items-center gap-2 ${status.loading ? "bg-red-300" : "bg-red-500"
+              } text-white font-medium py-2 rounded hover:bg-red-600 transition`}
           >
             {status.loading ? (
               <>
@@ -703,7 +723,6 @@ export function ResetPasswordModal() {
   });
   const [form, setForm] = useState({
     userId: "",
-    role: "",
     password: "",
     confirmPassword: "",
   });
@@ -716,7 +735,7 @@ export function ResetPasswordModal() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus({ loading: true, error: null, success: null });
-    if (!form.userId || !form.role || !form.password || !form.confirmPassword) {
+    if (!form.userId || !form.password || !form.confirmPassword) {
       setStatus({
         loading: false,
         error: "Please fill all required fields",
@@ -738,7 +757,6 @@ export function ResetPasswordModal() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId: form.userId,
-          role: form.role,
           password: form.password,
         }),
       });
@@ -752,7 +770,6 @@ export function ResetPasswordModal() {
       });
       setForm({
         userId: "",
-        role: "",
         password: "",
         confirmPassword: "",
       });
@@ -765,25 +782,12 @@ export function ResetPasswordModal() {
     <div className="w-full">
       <h2 className="text-lg font-semibold mb-4">Reset Password</h2>
       <form className="space-y-4" onSubmit={handleSubmit}>
-        <select
-          id="role"
-          name="role"
-          className="w-1/2 px-3 py-2 border border-gray-200 rounded"
-          required
-          value={form.role}
-          onChange={handleChange}
-        >
-          <option value="">Select Role</option>
-          <option value="hod">HOD</option>
-          <option value="faculty">Faculty</option>
-          <option value="student">Student</option>
-        </select>
         <input
           id="userId"
           name="userId"
           type="text"
           className="w-full border rounded px-3 py-2"
-          placeholder="User ID *"
+          placeholder="User ID "
           required
           value={form.userId}
           onChange={handleChange}
@@ -792,7 +796,7 @@ export function ResetPasswordModal() {
           name="password"
           type="password"
           className="w-full border rounded px-3 py-2"
-          placeholder="New Password *"
+          placeholder="New Password "
           required
           value={form.password}
           onChange={handleChange}
@@ -801,7 +805,7 @@ export function ResetPasswordModal() {
           name="confirmPassword"
           type="password"
           className="w-full border rounded px-3 py-2"
-          placeholder="Confirm Password *"
+          placeholder="Confirm Password "
           required
           value={form.confirmPassword}
           onChange={handleChange}

@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import { FaUpload } from "react-icons/fa6";
 import { useDepts } from "../../context/MetaContext";
-
+const RequiredLabel = ({ label, htmlFor }) => (
+  <label htmlFor={htmlFor} className="block text-sm font-medium text-gray-700">
+    {label} <span className="text-red-500">*</span>
+  </label>)
 const API_BASE = "http://localhost:5000";
 
 const SAMPLE_CSV_DATA = `Student Id,Student Name,CGPA,Degree
@@ -122,7 +125,7 @@ const BulkImportStudent = ({ onSuccess }) => {
   return (
     <form className="space-y-4" onSubmit={handleBulkSubmit}>
       <div>
-        <label className="block text-sm font-medium mb-1">Branch *</label>
+        <RequiredLabel label="Branch" htmlFor="Branch" />
         <select
           value={bulkFormData.dept}
           onChange={(e) => handleBulkFormChange("dept", e.target.value)}
@@ -138,7 +141,7 @@ const BulkImportStudent = ({ onSuccess }) => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">Year *</label>
+        <RequiredLabel label="Year" htmlFor="year" />
         <select
           value={bulkFormData.year}
           onChange={(e) => handleBulkFormChange("year", e.target.value)}
@@ -155,7 +158,7 @@ const BulkImportStudent = ({ onSuccess }) => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">Section *</label>
+        <RequiredLabel label="section" htmlFor="section" />
         <select
           value={bulkFormData.section}
           onChange={(e) => handleBulkFormChange("section", e.target.value)}
@@ -171,9 +174,8 @@ const BulkImportStudent = ({ onSuccess }) => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">
-          Choose CSV File *
-        </label>
+        <RequiredLabel label="Choose CSV file" htmlFor="choose CSV file" />
+
         <div className="space-y-2">
           <input
             type="file"
