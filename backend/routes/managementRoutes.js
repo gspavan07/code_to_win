@@ -415,4 +415,65 @@ router.post("/reset-password", async (req, res) => {
     connection.release();
   }
 });
+
+//P0ST /api/delete-user
+router.post("/delete-user", async (req, res) => {
+  const { userId, role } = req.body;
+  if (!userId || !role) {
+    return res.status(400).json({ message: "Missing userId or role" });
+  }
+
+  const connection = await db.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    // Delete from role-specific profile table first
+    if (role === "student") {
+      await connection.query(
+        "DELETE FROM student_coding_profiles WHERE student_id = ?",
+        [userId]
+      );
+      await connection.query(
+        "DELETE FROM student_performance WHERE student_id = ?",
+        [userId]
+      );
+      await connection.query(
+        "DELETE FROM student_profiles WHERE student_id = ?",
+        [userId]
+      );
+    } else if (role === "faculty") {
+      await connection.query(
+        "DELETE FROM faculty_section_assignment WHERE faculty_id = ?",
+        [userId]
+      );
+      await connection.query(
+        "DELETE FROM faculty_profiles WHERE faculty_id = ?",
+        [userId]
+      );
+    } else if (role === "hod") {
+      await connection.query("DELETE FROM hod_profiles WHERE hod_id = ?", [
+        userId,
+      ]);
+    }
+
+    // Delete from users table
+    const [result] = await connection.query(
+      "DELETE FROM users WHERE user_id = ? AND role = ?",
+      [userId, role]
+    );
+    await connection.commit();
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({ message: "User deleted successfully" });
+  } catch (err) {
+    await connection.rollback();
+    console.error(err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  } finally {
+    connection.release();
+  }
+});
 module.exports = router;

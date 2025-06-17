@@ -1,8 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { TbSend } from "react-icons/tb";
+
 const ContactUs = () => {
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [status, setStatus] = useState({
+    loading: false,
+    success: null,
+    error: null,
+  });
+
   const faqs = [
     {
       question: "How is the score calculated?",
@@ -15,12 +23,42 @@ const ContactUs = () => {
         "The data is updated whenever new profiles are uploaded by administrators. Student performance data syncs weekly.",
     },
   ];
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus({ loading: true, success: null, error: null });
+
+    // Simple validation
+    if (!form.name || !form.email || !form.message) {
+      setStatus({
+        loading: false,
+        success: null,
+        error: "Please fill in all fields.",
+      });
+      return;
+    }
+
+    // Simulate sending (replace with real API call)
+    setTimeout(() => {
+      setStatus({
+        loading: false,
+        success: "Message sent successfully!",
+        error: null,
+      });
+      setForm({ name: "", email: "", message: "" });
+    }, 1200);
+  };
+
   return (
     <>
       <Navbar />
-      <section className="px-4 py-8 md:px-12 lg:px-24 xl:px-36 md:py-12 flex flex-col md:flex-row md:gap-12 lg:gap-24 xl:gap-36 min-h-[88vh] items-center justify-center">
+      <section className="px-4 py-8 md:px-12 lg:px-24 xl:px-36 md:py-12 flex flex-col md:flex-row md:gap-12 lg:gap-24 xl:gap-36 min-h-[88vh] justify-center items-center">
         {/* Left Column */}
-        <div className="w-full h-fit md:w-1/2 mb-10 md:mb-0">
+        <div className="w-full md:w-1/2 mb-10 md:mb-0">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
             Contact Us
           </h2>
@@ -61,20 +99,24 @@ const ContactUs = () => {
         </div>
 
         {/* Right Column */}
-        <div className="w-full md:w-1/2 h-fit">
+        <div className="w-full md:w-1/2">
           <div className="bg-white border border-gray-400 rounded-lg shadow p-4 sm:p-6">
             <h3 className="text-lg md:text-xl font-semibold mb-4">
               Send Us Feedback
             </h3>
-            <form className="space-y-4">
+            <form className="space-y-4" onSubmit={handleSubmit}>
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Name
                 </label>
                 <input
                   type="text"
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
                   placeholder="Your name"
                   className="mt-1 w-full border border-gray-300 rounded px-3 py-2"
+                  disabled={status.loading}
                 />
               </div>
               <div>
@@ -83,8 +125,12 @@ const ContactUs = () => {
                 </label>
                 <input
                   type="email"
+                  name="email"
+                  value={form.email}
+                  onChange={handleChange}
                   placeholder="Your email address"
                   className="mt-1 w-full border border-gray-300 rounded px-3 py-2"
+                  disabled={status.loading}
                 />
               </div>
               <div>
@@ -93,31 +139,37 @@ const ContactUs = () => {
                 </label>
                 <textarea
                   rows="4"
+                  name="message"
+                  value={form.message}
+                  onChange={handleChange}
                   placeholder="How can we help you?"
                   className="mt-1 w-full border border-gray-300 rounded px-3 py-2"
+                  disabled={status.loading}
                 ></textarea>
               </div>
               <button
                 type="submit"
-                className="bg-gray-900 text-white py-2 px-4 rounded flex items-center justify-center w-full gap-2 hover:bg-black transition"
+                className="bg-gray-900 text-white py-2 px-4 rounded flex items-center justify-center w-full gap-2 hover:bg-black transition disabled:opacity-60"
+                disabled={status.loading}
               >
-                <TbSend /> Send Message
+                {status.loading ? (
+                  <span>Sending...</span>
+                ) : (
+                  <>
+                    <TbSend /> Send Message
+                  </>
+                )}
               </button>
+              {status.error && (
+                <div className="text-red-600 text-sm mt-2">{status.error}</div>
+              )}
+              {status.success && (
+                <div className="text-green-600 text-sm mt-2">
+                  {status.success}
+                </div>
+              )}
             </form>
           </div>
-
-          {/* FAQ Section */}
-          {/* <div className="mt-8 md:mt-10 space-y-4">
-            <h3 className="text-lg md:text-xl font-semibold">
-              Frequently Asked Questions
-            </h3>
-            {faqs.map((faq, index) => (
-              <div key={index} className="bg-gray-100 p-4 rounded-lg">
-                <h4 className="font-semibold text-gray-800">{faq.question}</h4>
-                <p className="text-sm text-gray-600 mt-1">{faq.answer}</p>
-              </div>
-            ))}
-          </div> */}
         </div>
       </section>
       <Footer />

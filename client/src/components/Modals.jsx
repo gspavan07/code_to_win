@@ -4,204 +4,256 @@ import BulkImportStudent from "./ui/BulkImportStudent";
 import BulkImportFaculty from "./ui/BulkImportFaculty";
 import { FaUserMinus, FaUserPlus } from "react-icons/fa6";
 
-const optionList = [
-  { label: "Leetcode", key: "leetcode" },
-  { label: "CodeChef", key: "codechef" },
-  { label: "GeeksforGeeks", key: "geekforgeeks" },
-  { label: "HackerRank", key: "hackerrank" },
-];
+// Spinner Component
+const Spinner = () => (
+  <svg
+    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <circle
+      className="opacity-25"
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="currentColor"
+      strokeWidth="4"
+    ></circle>
+    <path
+      className="opacity-75"
+      fill="currentColor"
+      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+    ></path>
+  </svg>
+);
 
-// Add Branch Modal
-export function AddBranchModal() {
-  const { refreshDepts } = useDepts();
-  const [form, setForm] = useState({
-    dept_code: "",
-    dept_name: "",
-  });
-  const [submitStatus, setSubmitStatus] = useState({
-    loading: false,
-    error: null,
-    success: false,
-  });
+// Generic Form Modal
+function GenericFormModal({
+  title,
+  fields,
+  onSubmit,
+  submitLabel = "Submit",
+  loading,
+  error,
+  success,
+  onClose,
+  icon,
+  initialValues = {},
+}) {
+  const [form, setForm] = useState(initialValues);
+
+  useEffect(() => {
+    setForm(initialValues);
+  }, [initialValues]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setSubmitStatus({ loading: true, error: null, success: false });
+    onSubmit(form, setForm);
+  };
 
-    // Basic validation
+  return (
+    <div className="w-full">
+      <form className="space-y-4" onSubmit={handleSubmit}>
+        <h3 className="flex items-center gap-2">
+          {icon}
+          {title}
+        </h3>
+        {fields.map((field) => (
+          <div key={field.name}>
+            {field.label && (
+              <label className="block text-sm font-medium mb-1">
+                {field.label}
+              </label>
+            )}
+            {field.type === "select" ? (
+              <select
+                name={field.name}
+                value={form[field.name] || ""}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-200 rounded"
+                required={field.required}
+                disabled={field.disabled}
+              >
+                <option value="">{field.placeholder || "Select"}</option>
+                {field.options?.map((opt) =>
+                  typeof opt === "string" ? (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ) : (
+                    <option
+                      key={opt.value || opt.dept_code}
+                      value={opt.value || opt.dept_code}
+                    >
+                      {opt.label || opt.dept_name}
+                    </option>
+                  )
+                )}
+              </select>
+            ) : (
+              <input
+                name={field.name}
+                value={form[field.name] || ""}
+                onChange={handleChange}
+                type={field.type}
+                className="w-full px-3 py-2 border border-gray-200 rounded"
+                placeholder={field.placeholder}
+                required={field.required}
+                disabled={field.disabled}
+              />
+            )}
+          </div>
+        ))}
+        <button
+          type="submit"
+          disabled={loading}
+          className={`w-full mt-4 flex justify-center items-center gap-2 ${
+            loading ? "bg-blue-400" : "bg-blue-600"
+          } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
+        >
+          {loading ? (
+            <>
+              <Spinner />
+              Processing...
+            </>
+          ) : (
+            <>
+              {icon}
+              {submitLabel}
+            </>
+          )}
+        </button>
+        {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
+        {success && (
+          <div className="text-green-500 text-sm mt-2">{success}</div>
+        )}
+      </form>
+      {onClose && (
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-3 text-2xl text-gray-600 hover:text-black cursor-pointer"
+        >
+          x
+        </button>
+      )}
+    </div>
+  );
+}
+
+// Add Branch Modal
+export function AddBranchModal() {
+  const { refreshDepts } = useDepts();
+  const [status, setStatus] = useState({
+    loading: false,
+    error: null,
+    success: null,
+  });
+
+  const handleSubmit = async (form, setForm) => {
+    setStatus({ loading: true, error: null, success: null });
     if (!form.dept_code || !form.dept_name) {
-      setSubmitStatus({
+      setStatus({
         loading: false,
         error: "Please fill all required fields",
-        success: false,
+        success: null,
       });
       return;
     }
-
     try {
       const response = await fetch(`/api/add-branch`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to add dept");
-      }
-
-      setSubmitStatus({ loading: false, error: null, success: true });
-
-      // Reset form after successful submission
-      setForm({
-        dept_code: "",
-        dept_name: "",
+      if (!response.ok) throw new Error(data.message || "Failed to add dept");
+      setStatus({
+        loading: false,
+        error: null,
+        success: "Department added successfully!",
       });
-
+      setForm({ dept_code: "", dept_name: "" });
       if (refreshDepts) refreshDepts();
     } catch (error) {
-      setSubmitStatus({ loading: false, error: error.message, success: false });
+      setStatus({ loading: false, error: error.message, success: null });
     }
   };
 
   return (
-    <div className="w-full">
-      <form className="space-y-4" onSubmit={handleSubmit}>
-        <h3>Add Branch</h3>
-        <input
-          name="dept_code"
-          value={form.dept_code}
-          onChange={handleChange}
-          type="text"
-          className="w-full px-3 py-2 border border-gray-200 rounded"
-          placeholder="Department Code*"
-        />
-        <input
-          name="dept_name"
-          value={form.dept_name}
-          onChange={handleChange}
-          type="text"
-          className="w-full px-3 py-2 border border-gray-200 rounded"
-          placeholder="Department Name *"
-        />
-
-        <button
-          type="submit"
-          disabled={submitStatus.loading}
-          className={`w-full mt-4 flex justify-center items-center gap-2 ${submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
-            } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
-        >
-          {submitStatus.loading ? (
-            <>
-              <svg
-                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              Processing...
-            </>
-          ) : (
-            <>
-              <FaUserPlus className="w-4 h-4" />
-              Add Branch
-            </>
-          )}
-        </button>
-
-        {submitStatus.error && (
-          <div className="text-red-500 text-sm mt-2">{submitStatus.error}</div>
-        )}
-        {submitStatus.success && (
-          <div className="text-green-500 text-sm mt-2">
-            Department added successfully!
-          </div>
-        )}
-      </form>
-    </div>
+    <GenericFormModal
+      title="Add Branch"
+      icon={<FaUserPlus className="w-4 h-4" />}
+      fields={[
+        {
+          name: "dept_code",
+          label: "Department Code*",
+          type: "text",
+          required: true,
+        },
+        {
+          name: "dept_name",
+          label: "Department Name*",
+          type: "text",
+          required: true,
+        },
+      ]}
+      onSubmit={handleSubmit}
+      loading={status.loading}
+      error={status.error}
+      success={status.success}
+      initialValues={{ dept_code: "", dept_name: "" }}
+    />
   );
 }
 
+// Add Individual Student Modal
 export function AddIndividualStudentModel({ onSuccess }) {
   const { depts } = useDepts();
-  const [formData, setFormData] = useState({
-    name: "",
-    stdId: "",
-    dept: "",
-    year: "",
-    section: "",
-    degree: "",
-    cgpa: "",
-  });
-
-  const [submitStatus, setSubmitStatus] = useState({
+  const [status, setStatus] = useState({
     loading: false,
     error: null,
-    success: false,
+    success: null,
   });
 
-  const handleChange = (key, value) => {
-    setFormData((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSubmitStatus({ loading: true, error: null, success: false });
-
-    // Basic validation
+  const handleSubmit = async (form, setForm) => {
+    setStatus({ loading: true, error: null, success: null });
     if (
-      !formData.name ||
-      !formData.stdId ||
-      !formData.dept ||
-      !formData.year ||
-      !formData.section ||
-      !formData.degree ||
-      !formData.cgpa
+      !form.name ||
+      !form.stdId ||
+      !form.dept ||
+      !form.year ||
+      !form.section ||
+      !form.degree ||
+      !form.cgpa
     ) {
-      setSubmitStatus({
+      setStatus({
         loading: false,
         error: "Please fill all required fields",
-        success: false,
+        success: null,
       });
       return;
     }
-
     try {
       const response = await fetch(`/api/add-student`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(form),
       });
-
       const data = await response.json();
-
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(data.message || "Failed to add student");
-      }
-
-      setSubmitStatus({ loading: false, error: null, success: true });
-
-      // Reset form after successful submission
-      setFormData({
+      setStatus({
+        loading: false,
+        error: null,
+        success: "Student added successfully!",
+      });
+      setForm({
         name: "",
         stdId: "",
         dept: "",
@@ -210,202 +262,347 @@ export function AddIndividualStudentModel({ onSuccess }) {
         degree: "",
         cgpa: "",
       });
-
-      // Notify parent to refresh student list
       if (onSuccess) onSuccess();
     } catch (error) {
-      setSubmitStatus({ loading: false, error: error.message, success: false });
+      setStatus({ loading: false, error: error.message, success: null });
     }
   };
 
   return (
-    <div className="bg-white p-4 md:p-6 rounded shadow">
-      <h2 className="text-xl font-bold text-gray-900 mb-1">
-        Add Individual Student
-      </h2>
-      <p className="text-sm text-gray-500 mb-6">
-        Add a single student to your section
-      </p>
-      <form className="space-y-4" onSubmit={handleSubmit}>
-        {/* Student Name */}
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Student Name *
-          </label>
-          <input
-            id="name"
-            value={formData.name}
-            onChange={(e) => handleChange("name", e.target.value)}
-            type="text"
-            placeholder="Enter student name"
-            className="w-full border border-gray-50 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+    <GenericFormModal
+      title="Add Individual Student"
+      icon={<FaUserPlus className="w-4 h-4" />}
+      fields={[
+        { name: "name", label: "Student Name*", type: "text", required: true },
+        { name: "stdId", label: "Roll Number*", type: "text", required: true },
+        { name: "cgpa", label: "CGPA*", type: "text", required: true },
+        {
+          name: "degree",
+          label: "Degree*",
+          type: "select",
+          required: true,
+          options: ["B.Tech", "MCA"],
+        },
+        {
+          name: "dept",
+          label: "Branch*",
+          type: "select",
+          required: true,
+          options:
+            depts?.map((dept) => ({
+              value: dept.dept_code,
+              label: dept.dept_name,
+            })) || [],
+        },
+        {
+          name: "year",
+          label: "Year*",
+          type: "select",
+          required: true,
+          options: [1, 2, 3, 4].map((year) => ({
+            value: year,
+            label: `${year}${
+              year === 1 ? "st" : year === 2 ? "nd" : year === 3 ? "rd" : "th"
+            }`,
+          })),
+        },
+        {
+          name: "section",
+          label: "Section*",
+          type: "select",
+          required: true,
+          options: ["A", "B", "C", "D"],
+        },
+      ]}
+      onSubmit={handleSubmit}
+      loading={status.loading}
+      error={status.error}
+      success={status.success}
+      initialValues={{
+        name: "",
+        stdId: "",
+        dept: "",
+        year: "",
+        section: "",
+        degree: "",
+        cgpa: "",
+      }}
+    />
+  );
+}
 
-        {/* Roll Number */}
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Roll Number *
-          </label>
-          <input
-            id="stdId"
-            value={formData.stdId}
-            onChange={(e) => handleChange("stdId", e.target.value)}
-            type="text"
-            placeholder="Enter roll number"
-            className="w-full border border-gray-50 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+// Add Faculty Modal
+export function AddFacultyModal() {
+  const { depts } = useDepts();
+  const [status, setStatus] = useState({
+    loading: false,
+    error: null,
+    success: null,
+  });
 
-        {/* CGPA */}
-        <div>
-          <label className="block text-sm font-medium mb-1">CGPA *</label>
-          <input
-            id="cgpa"
-            value={formData.cgpa}
-            onChange={(e) => handleChange("cgpa", e.target.value)}
-            type="text"
-            placeholder="Enter CGPA"
-            className="w-full border border-gray-50 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+  const handleSubmit = async (form, setForm) => {
+    setStatus({ loading: true, error: null, success: null });
+    if (!form.name || !form.facultyId || !form.email || !form.dept) {
+      setStatus({
+        loading: false,
+        error: "Please fill all required fields",
+        success: null,
+      });
+      return;
+    }
+    try {
+      const response = await fetch(`/api/add-faculty`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await response.json();
+      if (!response.ok)
+        throw new Error(data.message || "Failed to add faculty");
+      setStatus({
+        loading: false,
+        error: null,
+        success: "Faculty added successfully!",
+      });
+      setForm({
+        name: "",
+        facultyId: "",
+        email: "",
+        dept: "",
+      });
+    } catch (error) {
+      setStatus({ loading: false, error: error.message, success: null });
+    }
+  };
 
-        {/* Degree */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Degree *</label>
-          <select
-            id="degree"
-            value={formData.degree}
-            onChange={(e) => handleChange("degree", e.target.value)}
-            className="w-full border border-gray-50 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Select degree</option>
-            <option value="B.Tech">B.Tech</option>
-            <option value="MCA">MCA</option>
-          </select>
-        </div>
+  return (
+    <GenericFormModal
+      title="Add New Faculty"
+      icon={<FaUserPlus className="w-4 h-4" />}
+      fields={[
+        { name: "name", label: "Faculty Name*", type: "text", required: true },
+        {
+          name: "facultyId",
+          label: "Employee ID*",
+          type: "text",
+          required: true,
+        },
+        { name: "email", label: "Email*", type: "email", required: true },
+        {
+          name: "dept",
+          label: "Department*",
+          type: "select",
+          required: true,
+          options:
+            depts?.map((dept) => ({
+              value: dept.dept_code,
+              label: dept.dept_name,
+            })) || [],
+        },
+      ]}
+      onSubmit={handleSubmit}
+      loading={status.loading}
+      error={status.error}
+      success={status.success}
+      initialValues={{
+        name: "",
+        facultyId: "",
+        email: "",
+        dept: "",
+      }}
+    />
+  );
+}
 
-        {/* Department */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Branch *</label>
-          <select
-            id="dept"
-            value={formData.dept}
-            onChange={(e) => handleChange("dept", e.target.value)}
-            className="w-full border border-gray-50 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Select branch</option>
-            {depts?.map((dept) => (
-              <option key={dept.dept_code} value={dept.dept_code}>
-                {dept.dept_name}
-              </option>
-            ))}
-          </select>
-        </div>
+// Add HOD Modal
+export function AddHODModal() {
+  const { depts } = useDepts();
+  const [status, setStatus] = useState({
+    loading: false,
+    error: null,
+    success: null,
+  });
 
-        {/* Year */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Year *</label>
-          <select
-            id="year"
-            value={formData.year}
-            onChange={(e) => handleChange("year", e.target.value)}
-            className="w-full border border-gray-50 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Select year</option>
-            {[1, 2, 3, 4].map((year) => (
-              <option key={year} value={year}>
-                {year}
-                {year === 1
-                  ? "st"
-                  : year === 2
-                    ? "nd"
-                    : year === 3
-                      ? "rd"
-                      : "th"}
-              </option>
-            ))}
-          </select>
-        </div>
+  const handleSubmit = async (form, setForm) => {
+    setStatus({ loading: true, error: null, success: null });
+    if (!form.name || !form.hodId || !form.email || !form.dept) {
+      setStatus({
+        loading: false,
+        error: "Please fill all required fields",
+        success: null,
+      });
+      return;
+    }
+    try {
+      const response = await fetch(`/api/add-hod`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Failed to add hod");
+      setStatus({
+        loading: false,
+        error: null,
+        success: "HOD added successfully!",
+      });
+      setForm({
+        name: "",
+        hodId: "",
+        email: "",
+        dept: "",
+      });
+    } catch (error) {
+      setStatus({ loading: false, error: error.message, success: null });
+    }
+  };
 
-        {/* Section */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Section *</label>
-          <select
-            id="section"
-            value={formData.section}
-            onChange={(e) => handleChange("section", e.target.value)}
-            className="w-full border border-gray-50 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Select section</option>
-            {["A", "B", "C", "D"].map((section) => (
-              <option key={section} value={section}>
-                {section}
-              </option>
-            ))}
-          </select>
-        </div>
+  return (
+    <GenericFormModal
+      title="Add New HOD"
+      icon={<FaUserPlus className="w-4 h-4" />}
+      fields={[
+        { name: "name", label: "HOD Name*", type: "text", required: true },
+        { name: "hodId", label: "Employee ID*", type: "text", required: true },
+        { name: "email", label: "Email*", type: "email", required: true },
+        {
+          name: "dept",
+          label: "Department*",
+          type: "select",
+          required: true,
+          options:
+            depts?.map((dept) => ({
+              value: dept.dept_code,
+              label: dept.dept_name,
+            })) || [],
+        },
+      ]}
+      onSubmit={handleSubmit}
+      loading={status.loading}
+      error={status.error}
+      success={status.success}
+      initialValues={{
+        name: "",
+        hodId: "",
+        email: "",
+        dept: "",
+      }}
+    />
+  );
+}
 
+// Delete Confirm Modal
+export function DeleteConfirmModal({ onClose, user, onSuccess }) {
+  const [status, setStatus] = useState({
+    loading: false,
+    error: null,
+    success: null,
+  });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus({ loading: true, error: null, success: null });
+    try {
+      const response = await fetch(`/api/delete-user`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user?.student_id, role: "student" }),
+      });
+      const data = await response.json();
+      if (!response.ok)
+        throw new Error(data.message || "Failed to delete student");
+      setStatus({
+        loading: false,
+        error: null,
+        success: "Student deleted successfully!",
+      });
+      if (onSuccess) onSuccess();
+      onClose();
+    } catch (error) {
+      setStatus({ loading: false, error: error.message, success: null });
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-sm p-6 relative">
         <button
-          type="submit"
-          disabled={submitStatus.loading}
-          className={`w-full mt-4 flex justify-center items-center gap-2 ${submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
-            } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
+          onClick={onClose}
+          className="absolute top-2 right-3 text-2xl text-gray-600 hover:text-black  cursor-pointer"
         >
-          {submitStatus.loading ? (
-            <>
-              <svg
-                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              Processing...
-            </>
-          ) : (
-            <>
-              <FaUserPlus className="w-4 h-4" />
-              Add Student
-            </>
-          )}
+          x
         </button>
-
-        {submitStatus.error && (
-          <div className="text-red-500 text-sm mt-2">{submitStatus.error}</div>
-        )}
-        {submitStatus.success && (
-          <div className="text-green-500 text-sm mt-2">
-            Student added successfully!
-          </div>
-        )}
-      </form>
+        <h2 className="text-xl font-semibold mb-2">Personal Information</h2>
+        <form onSubmit={handleSubmit} className="space-y-2">
+          <label className="block text-sm font-medium mb-1">Name</label>
+          <input
+            name="name"
+            disabled
+            value={user?.name}
+            className="flex-1 border border-blue-50 rounded px-2 py-1 w-full"
+            placeholder="Name"
+          />
+          <label className="block text-sm font-medium mb-1">Roll Number</label>
+          <input
+            name="roll"
+            value={user?.student_id}
+            disabled
+            className="flex-1 border border-blue-100 rounded px-2 py-1 w-full cursor-not-allowed"
+            placeholder="Registration Number"
+          />
+          <label className="block text-sm font-medium mb-1">Year</label>
+          <input
+            name="year"
+            value={user?.year}
+            disabled
+            className="flex-1 border border-blue-100 rounded px-2 py-1 w-full cursor-not-allowed"
+            placeholder="Year"
+          />
+          <label className="block text-sm font-medium mb-1">Section</label>
+          <input
+            name="section"
+            value={user?.section}
+            disabled
+            className="flex-1 border border-blue-100 rounded px-2 py-1 w-full cursor-not-allowed"
+            placeholder="Section"
+          />
+          <button
+            type="submit"
+            disabled={status.loading}
+            className={`w-full mt-4 flex justify-center items-center gap-2 ${
+              status.loading ? "bg-red-300" : "bg-red-500"
+            } text-white font-medium py-2 rounded hover:bg-red-600 transition`}
+          >
+            {status.loading ? (
+              <>
+                <Spinner />
+                Processing...
+              </>
+            ) : (
+              <>Confirm Delete</>
+            )}
+          </button>
+          {status.error && (
+            <div className="text-red-500 text-sm mt-2">{status.error}</div>
+          )}
+          {status.success && (
+            <div className="text-green-500 text-sm mt-2">{status.success}</div>
+          )}
+        </form>
+      </div>
     </div>
   );
 }
-export function DElIndividualStudentModel({ onSuccess }) {
-  const { depts } = useDepts();
-  const [formData, setFormData] = useState({
-    stdId: "",
-  });
 
-  const [submitStatus, setSubmitStatus] = useState({
+// Delete Individual Student Modal
+export function DeleteIndividualStudentModal({ onSuccess }) {
+  const [user, setUser] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [formData, setFormData] = useState({ userId: "" });
+  const [status, setStatus] = useState({
     loading: false,
     error: null,
-    success: false,
+    success: null,
   });
 
   const handleChange = (key, value) => {
@@ -414,450 +611,102 @@ export function DElIndividualStudentModel({ onSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitStatus({ loading: true, error: null, success: false });
-
-    // Basic validation
-    if (
-      !formData.stdId
-    ) {
-      setSubmitStatus({
+    if (!formData.userId) {
+      setStatus({
         loading: false,
-        error: "Please fill all required fields",
-        success: false,
+        error: "Please enter a roll number",
+        success: null,
       });
       return;
     }
-
     try {
-      const response = await fetch(`/api/add-student`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to add student");
-      }
-
-      setSubmitStatus({ loading: false, error: null, success: true });
-
-      // Reset form after successful submission
-      setFormData({
-        stdId: "",
-      });
-
-      // Notify parent to refresh student list
-      if (onSuccess) onSuccess();
+      const response = await fetch(
+        `/api/student/profile?userId=${formData.userId}`
+      );
+      if (!response.ok) throw new Error("Failed to fetch user profile");
+      setUser(await response.json());
+      setConfirmDelete(true);
     } catch (error) {
-      setSubmitStatus({ loading: false, error: error.message, success: false });
+      setStatus({
+        loading: false,
+        error: "Error fetching user profile.",
+        success: null,
+      });
     }
   };
 
   return (
-    <div className="bg-white p-4 md:p-6 rounded shadow">
-      <h2 className="text-xl font-bold text-gray-900 mb-1">
-        Add Individual Student
-      </h2>
-      <p className="text-sm text-gray-500 mb-6">
-        Add a single student to your section
-      </p>
-      <form className="space-y-4" onSubmit={handleSubmit}>
-
-        {/* Roll Number */}
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Roll Number *
-          </label>
-          <input
-            id="stdId"
-            value={formData.stdId}
-            onChange={(e) => handleChange("stdId", e.target.value)}
-            type="text"
-            placeholder="Enter roll number"
-            className="w-full border border-gray-50 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
-          />
-        </div>
-
-
-        <button
-          type="submit"
-          disabled={submitStatus.loading}
-          className={`w-full mt-4 flex justify-center items-center gap-2 ${submitStatus.loading ? "bg-red-300" : "bg-red-500"
+    <>
+      {confirmDelete && (
+        <DeleteConfirmModal
+          onClose={() => setConfirmDelete(false)}
+          user={user}
+          onSuccess={onSuccess}
+        />
+      )}
+      <div className="bg-white p-4 md:p-6 rounded shadow">
+        <h2 className="text-xl font-bold text-gray-900 mb-1">Delete Student</h2>
+        <p className="text-sm text-gray-500 mb-6">
+          Delete a student from the system
+        </p>
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Roll Number *
+            </label>
+            <input
+              id="userId"
+              value={formData.userId}
+              onChange={(e) => handleChange("userId", e.target.value)}
+              type="text"
+              placeholder="Enter roll number"
+              className="w-full border border-gray-50 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={status.loading}
+            className={`w-full mt-4 flex justify-center items-center gap-2 ${
+              status.loading ? "bg-red-300" : "bg-red-500"
             } text-white font-medium py-2 rounded hover:bg-red-600 transition`}
-        >
-          {submitStatus.loading ? (
-            <>
-              <svg
-                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              Processing...
-            </>
-          ) : (
-            <>
-              <FaUserMinus className="w-4 h-4" />
-              Delete Student
-            </>
+          >
+            {status.loading ? (
+              <>
+                <Spinner />
+                Processing...
+              </>
+            ) : (
+              <>
+                <FaUserMinus className="w-4 h-4" />
+                Delete Student
+              </>
+            )}
+          </button>
+          {status.error && (
+            <div className="text-red-500 text-sm mt-2">{status.error}</div>
           )}
-        </button>
-
-        {submitStatus.error && (
-          <div className="text-red-500 text-sm mt-2">{submitStatus.error}</div>
-        )}
-        {submitStatus.success && (
-          <div className="text-green-500 text-sm mt-2">
-            Student delete successfully!
-          </div>
-        )}
-      </form>
-    </div>
-  );
-}
-// Add Faculty Modal
-export function AddFacultyModal() {
-  const { depts } = useDepts();
-  const [form, setForm] = useState({
-    name: "",
-    facultyId: "",
-    email: "",
-    dept: "",
-  });
-  const [submitStatus, setSubmitStatus] = useState({
-    loading: false,
-    error: null,
-    success: false,
-  });
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSubmitStatus({ loading: true, error: null, success: false });
-
-    // Basic validation
-    if (!form.name || !form.facultyId || !form.email || !form.dept) {
-      setSubmitStatus({
-        loading: false,
-        error: "Please fill all required fields",
-        success: false,
-      });
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/add-faculty`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to add faculty");
-      }
-
-      setSubmitStatus({ loading: false, error: null, success: true });
-
-      // Reset form after successful submission
-      setForm({
-        name: "",
-        facultyId: "",
-        email: "",
-        dept: "",
-      });
-
-      // // Notify parent to refresh student list
-      // if (onSuccess) onSuccess();
-    } catch (error) {
-      setSubmitStatus({ loading: false, error: error.message, success: false });
-    }
-  };
-
-  return (
-    <div className="w-full">
-      <form className="space-y-4" onSubmit={handleSubmit}>
-        <h3>Add New Faculty</h3>
-        <input
-          name="name"
-          value={form.name}
-          onChange={handleChange}
-          type="text"
-          className="w-full px-3 py-2 border border-gray-200 rounded"
-          placeholder="Faculty Name *"
-        />
-        <input
-          name="facultyId"
-          value={form.facultyId}
-          onChange={handleChange}
-          type="text"
-          className="w-full px-3 py-2 border border-gray-200 rounded"
-          placeholder="Employee ID *"
-        />
-        <input
-          name="email"
-          value={form.email}
-          onChange={handleChange}
-          type="email"
-          className="w-full px-3 py-2 border border-gray-200 rounded"
-          placeholder="Email *"
-        />
-        <select
-          name="dept"
-          value={form.dept}
-          onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-200 rounded"
-          required
-        >
-          <option value="">Select department</option>
-          {depts?.map((dept) => (
-            <option key={dept.dept_code} value={dept.dept_code}>
-              {dept.dept_name}
-            </option>
-          ))}
-        </select>
-
-        <button
-          type="submit"
-          disabled={submitStatus.loading}
-          className={`w-full mt-4 flex justify-center items-center gap-2 ${submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
-            } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
-        >
-          {submitStatus.loading ? (
-            <>
-              <svg
-                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              Processing...
-            </>
-          ) : (
-            <>
-              <FaUserPlus className="w-4 h-4" />
-              Add Faculty
-            </>
+          {status.success && (
+            <div className="text-green-500 text-sm mt-2">{status.success}</div>
           )}
-        </button>
-
-        {submitStatus.error && (
-          <div className="text-red-500 text-sm mt-2">{submitStatus.error}</div>
-        )}
-        {submitStatus.success && (
-          <div className="text-green-500 text-sm mt-2">
-            Faculty added successfully!
-          </div>
-        )}
-      </form>
-    </div>
-  );
-}
-
-// Add HOD Modal
-export function AddHODModal() {
-  const { depts } = useDepts();
-  const [form, setForm] = useState({
-    name: "",
-    hodId: "",
-    email: "",
-    dept: "",
-  });
-  const [submitStatus, setSubmitStatus] = useState({
-    loading: false,
-    error: null,
-    success: false,
-  });
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSubmitStatus({ loading: true, error: null, success: false });
-
-    // Basic validation
-    if (!form.name || !form.hodId || !form.email || !form.dept) {
-      setSubmitStatus({
-        loading: false,
-        error: "Please fill all required fields",
-        success: false,
-      });
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/add-hod`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to add hod");
-      }
-
-      setSubmitStatus({ loading: false, error: null, success: true });
-
-      // Reset form after successful submission
-      setForm({
-        name: "",
-        hodId: "",
-        email: "",
-        dept: "",
-      });
-
-      // // Notify parent to refresh student list
-      // if (onSuccess) onSuccess();
-    } catch (error) {
-      setSubmitStatus({ loading: false, error: error.message, success: false });
-    }
-  };
-
-  return (
-    <div className="w-full">
-      <form className="space-y-4" onSubmit={handleSubmit}>
-        <h3>Add New Faculty</h3>
-        <input
-          name="name"
-          value={form.name}
-          onChange={handleChange}
-          type="text"
-          className="w-full px-3 py-2 border border-gray-200 rounded"
-          placeholder="HOD Name *"
-        />
-        <input
-          name="hodId"
-          value={form.hodId}
-          onChange={handleChange}
-          type="text"
-          className="w-full px-3 py-2 border border-gray-200 rounded"
-          placeholder="Employee ID *"
-        />
-        <input
-          name="email"
-          value={form.email}
-          onChange={handleChange}
-          type="email"
-          className="w-full px-3 py-2 border border-gray-200 rounded"
-          placeholder="Email *"
-        />
-        <select
-          name="dept"
-          value={form.dept}
-          onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-200 rounded"
-          required
-        >
-          <option value="">Select department</option>
-          {depts?.map((dept) => (
-            <option key={dept.dept_code} value={dept.dept_code}>
-              {dept.dept_name}
-            </option>
-          ))}
-        </select>
-
-        <button
-          type="submit"
-          disabled={submitStatus.loading}
-          className={`w-full mt-4 flex justify-center items-center gap-2 ${submitStatus.loading ? "bg-blue-400" : "bg-blue-600"
-            } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
-        >
-          {submitStatus.loading ? (
-            <>
-              <svg
-                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              Processing...
-            </>
-          ) : (
-            <>
-              <FaUserPlus className="w-4 h-4" />
-              Add HOD
-            </>
-          )}
-        </button>
-
-        {submitStatus.error && (
-          <div className="text-red-500 text-sm mt-2">{submitStatus.error}</div>
-        )}
-        {submitStatus.success && (
-          <div className="text-green-500 text-sm mt-2">
-            HOD added successfully!
-          </div>
-        )}
-      </form>
-    </div>
+        </form>
+      </div>
+    </>
   );
 }
 
 // Reset Password Modal
 export function ResetPasswordModal() {
+  const [status, setStatus] = useState({
+    loading: false,
+    error: null,
+    success: null,
+  });
   const [form, setForm] = useState({
     userId: "",
     role: "",
     password: "",
     confirmPassword: "",
   });
-  const [submitStatus, setSubmitStatus] = useState({
-    loading: false,
-    error: null,
-    success: false,
-  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -866,26 +715,23 @@ export function ResetPasswordModal() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitStatus({ loading: true, error: null, success: false });
-
-    // Validation
+    setStatus({ loading: true, error: null, success: null });
     if (!form.userId || !form.role || !form.password || !form.confirmPassword) {
-      setSubmitStatus({
+      setStatus({
         loading: false,
         error: "Please fill all required fields",
-        success: false,
+        success: null,
       });
       return;
     }
     if (form.password !== form.confirmPassword) {
-      setSubmitStatus({
+      setStatus({
         loading: false,
         error: "Passwords do not match",
-        success: false,
+        success: null,
       });
       return;
     }
-
     try {
       const response = await fetch(`/api/reset-password`, {
         method: "POST",
@@ -897,10 +743,13 @@ export function ResetPasswordModal() {
         }),
       });
       const data = await response.json();
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(data.message || "Failed to reset password");
-      }
-      setSubmitStatus({ loading: false, error: null, success: true });
+      setStatus({
+        loading: false,
+        error: null,
+        success: "Password reset successful!",
+      });
       setForm({
         userId: "",
         role: "",
@@ -908,9 +757,10 @@ export function ResetPasswordModal() {
         confirmPassword: "",
       });
     } catch (error) {
-      setSubmitStatus({ loading: false, error: error.message, success: false });
+      setStatus({ loading: false, error: error.message, success: null });
     }
   };
+
   return (
     <div className="w-full">
       <h2 className="text-lg font-semibold mb-4">Reset Password</h2>
@@ -960,18 +810,16 @@ export function ResetPasswordModal() {
           <button
             type="submit"
             className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded"
-            disabled={submitStatus.loading}
+            disabled={status.loading}
           >
-            {submitStatus.loading ? "Processing..." : "Reset Password"}
+            {status.loading ? "Processing..." : "Reset Password"}
           </button>
         </div>
-        {submitStatus.error && (
-          <div className="text-red-500 text-sm mt-2">{submitStatus.error}</div>
+        {status.error && (
+          <div className="text-red-500 text-sm mt-2">{status.error}</div>
         )}
-        {submitStatus.success && (
-          <div className="text-green-500 text-sm mt-2">
-            Password reset successful!
-          </div>
+        {status.success && (
+          <div className="text-green-500 text-sm mt-2">{status.success}</div>
         )}
       </form>
     </div>
@@ -1004,15 +852,14 @@ export function BulkImportModal() {
           <p className="text-gray-600">Please Select the type of import</p>
         </div>
       )}
-      {/* Render different components based on import type */}
       {importType === "student" && (
-        <div className="p-10 border border-gray-200 felx flex-col rounded-2xl">
+        <div className="p-10 border border-gray-200 flex flex-col rounded-2xl">
           <p className="text-2xl text-gray-800">Student Bulk Upload</p>
           <BulkImportStudent />
         </div>
       )}
       {importType === "faculty" && (
-        <div className="p-10 border border-gray-200 felx flex-col rounded-2xl">
+        <div className="p-10 border border-gray-200 flex flex-col rounded-2xl">
           <p className="text-2xl text-gray-800">Faculty Bulk Upload</p>
           <BulkImportFaculty />
         </div>
@@ -1046,7 +893,6 @@ export function EditModal({ onClose, user }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Save logic here
     onClose();
   };
 
@@ -1070,35 +916,35 @@ export function EditModal({ onClose, user }) {
             name="name"
             value={form.name}
             onChange={handleChange}
-            className="flex-1 border border-blue-50 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200 w-full"
+            className="flex-1 border border-blue-50 rounded px-2 py-1 w-full"
             placeholder="Name"
           />
           <input
             name="roll"
             value={form.roll}
             disabled
-            className="flex-1 border border-blue-100 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200 w-full cursor-not-allowed"
+            className="flex-1 border border-blue-100 rounded px-2 py-1 w-full cursor-not-allowed"
             placeholder="Registration Number"
           />
           <input
             name="year"
             value={form.year}
             disabled
-            className="flex-1 border border-blue-100 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200 w-full cursor-not-allowed"
+            className="flex-1 border border-blue-100 rounded px-2 py-1 w-full cursor-not-allowed"
             placeholder="Year"
           />
           <input
             name="section"
             value={form.section}
             disabled
-            className="flex-1 border border-blue-100 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200 w-full cursor-not-allowed"
+            className="flex-1 border border-blue-100 rounded px-2 py-1 w-full cursor-not-allowed"
             placeholder="Section"
           />
           <input
             name="email"
             value={form.email}
             disabled
-            className="flex-1 border border-blue-100 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200 w-full cursor-not-allowed"
+            className="flex-1 border border-blue-100 rounded px-2 py-1 w-full cursor-not-allowed"
             placeholder="Email"
           />
           <div className="flex justify-end gap-2 mt-4">
@@ -1122,7 +968,14 @@ export function EditModal({ onClose, user }) {
   );
 }
 
-// Update Profile Modal (coding profiles)
+// Coding Profile Update Modal
+const optionList = [
+  { label: "Leetcode", key: "leetcode" },
+  { label: "CodeChef", key: "codechef" },
+  { label: "GeeksforGeeks", key: "geekforgeeks" },
+  { label: "HackerRank", key: "hackerrank" },
+];
+
 export function UpdateProfileModal({ onClose, user }) {
   const initialUsernames = optionList.reduce((acc, opt) => {
     acc[opt.key] = user.coding_profiles?.[`${opt.key}_id`] || "";
@@ -1253,12 +1106,13 @@ export function UpdateProfileModal({ onClose, user }) {
   );
 }
 
+// User Reset Password Modal
 export function UserResetPasswordModal({ onClose, user }) {
   const [form, setForm] = useState({
     password: "",
     confirmPassword: "",
   });
-  const [submitStatus, setSubmitStatus] = useState({
+  const [status, setStatus] = useState({
     loading: false,
     error: null,
     success: false,
@@ -1271,11 +1125,11 @@ export function UserResetPasswordModal({ onClose, user }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitStatus({ loading: true, error: null, success: false });
+    setStatus({ loading: true, error: null, success: false });
 
     // Validation
     if (!form.password || !form.confirmPassword) {
-      setSubmitStatus({
+      setStatus({
         loading: false,
         error: "Please fill all required fields",
         success: false,
@@ -1283,7 +1137,7 @@ export function UserResetPasswordModal({ onClose, user }) {
       return;
     }
     if (form.password !== form.confirmPassword) {
-      setSubmitStatus({
+      setStatus({
         loading: false,
         error: "Passwords do not match",
         success: false,
@@ -1305,13 +1159,13 @@ export function UserResetPasswordModal({ onClose, user }) {
       if (!response.ok) {
         throw new Error(data.message || "Failed to reset password");
       }
-      setSubmitStatus({ loading: false, error: null, success: true });
+      setStatus({ loading: false, error: null, success: true });
       setForm({
         password: "",
         confirmPassword: "",
       });
     } catch (error) {
-      setSubmitStatus({ loading: false, error: error.message, success: false });
+      setStatus({ loading: false, error: error.message, success: false });
     }
   };
   return (
@@ -1329,7 +1183,7 @@ export function UserResetPasswordModal({ onClose, user }) {
             id="userId"
             name="userId"
             type="text"
-            className="flex-1 border border-blue-50 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200 w-full"
+            className="flex-1 border border-blue-50 rounded px-2 py-1 w-full"
             placeholder="User ID *"
             value={user.student_id}
             disabled
@@ -1337,7 +1191,7 @@ export function UserResetPasswordModal({ onClose, user }) {
           <input
             name="password"
             type="password"
-            className="flex-1 border border-blue-50 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200 w-full"
+            className="flex-1 border border-blue-50 rounded px-2 py-1 w-full"
             placeholder="New Password *"
             required
             value={form.password}
@@ -1346,7 +1200,7 @@ export function UserResetPasswordModal({ onClose, user }) {
           <input
             name="confirmPassword"
             type="password"
-            className="flex-1 border border-blue-50 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200 w-full"
+            className="flex-1 border border-blue-50 rounded px-2 py-1 w-full"
             placeholder="Confirm Password *"
             required
             value={form.confirmPassword}
@@ -1356,17 +1210,15 @@ export function UserResetPasswordModal({ onClose, user }) {
             <button
               type="submit"
               className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded"
-              disabled={submitStatus.loading}
+              disabled={status.loading}
             >
-              {submitStatus.loading ? "Processing..." : "Reset Password"}
+              {status.loading ? "Processing..." : "Reset Password"}
             </button>
           </div>
-          {submitStatus.error && (
-            <div className="text-red-500 text-sm mt-2">
-              {submitStatus.error}
-            </div>
+          {status.error && (
+            <div className="text-red-500 text-sm mt-2">{status.error}</div>
           )}
-          {submitStatus.success && (
+          {status.success && (
             <div className="text-green-500 text-sm mt-2">
               Password reset successful!
             </div>

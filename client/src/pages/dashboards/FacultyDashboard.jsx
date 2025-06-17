@@ -6,12 +6,15 @@ import React, {
   lazy,
   Suspense,
 } from "react";
-import { FaUser } from "react-icons/fa6";
 import { useAuth } from "../../context/AuthContext";
 import Navbar from "../../components/Navbar";
 import axios from "axios";
 import LoadingSpinner from "../../common/LoadingSpinner";
-import { AddIndividualStudentModel, DElIndividualStudentModel, ResetPasswordModal } from "../../components/Modals";
+import {
+  AddIndividualStudentModel,
+  DeleteIndividualStudentModal,
+  ResetPasswordModal,
+} from "../../components/Modals";
 import UserProfile from "../../components/ui/UserProfile";
 
 // Lazy-loaded components
@@ -57,8 +60,6 @@ function FacultyDashboard() {
 
   const memoizedStudents = useMemo(() => students, [students]);
 
-
-
   const DashboardTabs = () => (
     <div className="grid grid-cols-2 md:grid-cols-4 justify-around rounded bg-gray-100 border-gray-200 border gap-2 md:gap-4 p-1 mb-4 text-base">
       {[
@@ -70,8 +71,9 @@ function FacultyDashboard() {
         <button
           key={tab}
           onClick={() => setSelectedTab(tab)}
-          className={`flex-1 min-w-[120px] py-1 rounded ${selectedTab === tab ? "bg-white text-black" : ""
-            }`}
+          className={`flex-1 min-w-[120px] py-1 rounded ${
+            selectedTab === tab ? "bg-white text-black" : ""
+          }`}
         >
           {tab.replace(/([A-Z])/g, " $1").trim()}
         </button>
@@ -178,10 +180,11 @@ function FacultyDashboard() {
                     <ul className="space-y-2">
                       <li>
                         <button
-                          className={`w-full text-left px-3 py-2 rounded ${addStudentMenu === "individual"
-                            ? "bg-blue-600 text-white"
-                            : "bg-gray-100 text-gray-900"
-                            }`}
+                          className={`w-full text-left px-3 py-2 rounded ${
+                            addStudentMenu === "individual"
+                              ? "bg-blue-600 text-white"
+                              : "bg-gray-100 text-gray-900"
+                          }`}
                           onClick={() => setAddStudentMenu("individual")}
                         >
                           Add Individual Student
@@ -189,10 +192,11 @@ function FacultyDashboard() {
                       </li>
                       <li>
                         <button
-                          className={`w-full text-left px-3 py-2 rounded ${addStudentMenu === "bulk"
-                            ? "bg-blue-600 text-white"
-                            : "bg-gray-100 text-gray-900"
-                            }`}
+                          className={`w-full text-left px-3 py-2 rounded ${
+                            addStudentMenu === "bulk"
+                              ? "bg-blue-600 text-white"
+                              : "bg-gray-100 text-gray-900"
+                          }`}
                           onClick={() => setAddStudentMenu("bulk")}
                         >
                           Bulk Import Students
@@ -200,10 +204,11 @@ function FacultyDashboard() {
                       </li>
                       <li>
                         <button
-                          className={`w-full text-left px-3 py-2 rounded ${addStudentMenu === "delete"
-                            ? "bg-blue-600 text-white"
-                            : "bg-gray-100 text-gray-900"
-                            }`}
+                          className={`w-full text-left px-3 py-2 rounded ${
+                            addStudentMenu === "delete"
+                              ? "bg-blue-600 text-white"
+                              : "bg-gray-100 text-gray-900"
+                          }`}
                           onClick={() => setAddStudentMenu("delete")}
                         >
                           Delete Student
@@ -211,12 +216,15 @@ function FacultyDashboard() {
                       </li>
                       <li>
                         <button
-                          className={`w-full text-left px-3 py-2 rounded ${addStudentMenu === "resetpassword"
-                            ? "bg-blue-600 text-white"
-                            : "bg-gray-100 text-gray-900"
-                            }`}
+                          className={`w-full text-left px-3 py-2 rounded ${
+                            addStudentMenu === "resetpassword"
+                              ? "bg-blue-600 text-white"
+                              : "bg-gray-100 text-gray-900"
+                          }`}
                           onClick={() => setAddStudentMenu("resetpassword")}
-                        >Reset Password</button>
+                        >
+                          Reset Password
+                        </button>
                       </li>
                     </ul>
                   </div>
@@ -242,17 +250,11 @@ function FacultyDashboard() {
                       </div>
                     )}
                     {addStudentMenu === "delete" && (
-                      <div className="bg-white p-4 md:p-6 h-fit rounded shadow">
-                        <h2 className="text-xl font-bold text-gray-900 mb-1">
-                          Delete Student
-                        </h2>
-                        <p className="text-sm text-gray-500 mb-6">
-                          Delete a student from the system
-                        </p>
-                        <Suspense fallback={<LoadingSpinner />}>
-                          <DElIndividualStudentModel onSuccess={fetchStudents} />
-                        </Suspense>
-                      </div>
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <DeleteIndividualStudentModal
+                          onSuccess={fetchStudents}
+                        />
+                      </Suspense>
                     )}
                     {addStudentMenu === "resetpassword" && (
                       <div className="bg-white p-4 md:p-6 h-fit rounded shadow">
