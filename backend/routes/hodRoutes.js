@@ -1,10 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../config/db"); // MySQL connection
+const { logger } = require("../utils"); // <-- Add logger
 
 // GET /hod/profile
 router.get("/profile", async (req, res) => {
   const { userId } = req.query;
+  logger.info(`Fetching HOD profile for userId: ${userId}`);
   try {
     // Get HOD profile
     const [profileResult] = await db.query(
@@ -15,6 +17,7 @@ router.get("/profile", async (req, res) => {
       [userId]
     );
     if (profileResult.length === 0) {
+      logger.warn(`HOD profile not found for userId: ${userId}`);
       return res.status(404).json({ message: "HOD profile not found" });
     }
     const profile = profileResult[0];
@@ -39,6 +42,7 @@ router.get("/profile", async (req, res) => {
       [dept]
     );
 
+    logger.info(`HOD profile fetched for userId: ${userId}`);
     res.json({
       ...profile,
       total_students,
@@ -46,7 +50,9 @@ router.get("/profile", async (req, res) => {
       total_sections,
     });
   } catch (err) {
-    console.error(err);
+    logger.error(
+      `Error fetching HOD profile for userId=${userId}: ${err.message}`
+    );
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -54,14 +60,20 @@ router.get("/profile", async (req, res) => {
 // PUT /hod/profile
 router.put("/profile", async (req, res) => {
   const { userId, name, department, section } = req.body;
+  logger.info(
+    `Updating HOD profile: userId=${userId}, name=${name}, department=${department}, section=${section}`
+  );
   try {
     await db.query(
       "UPDATE hod_profiles SET name = ?, dept = ? WHERE hod_id = ?",
       [name, department, section, userId]
     );
+    logger.info(`HOD profile updated for userId: ${userId}`);
     res.json({ message: "Profile updated successfully" });
   } catch (err) {
-    console.error(err);
+    logger.error(
+      `Error updating HOD profile for userId=${userId}: ${err.message}`
+    );
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -69,6 +81,9 @@ router.put("/profile", async (req, res) => {
 // GET /hod/students?dept=CSE&year=3&section=A
 router.get("/students", async (req, res) => {
   const { dept, year, section } = req.query;
+  logger.info(
+    `Fetching students: dept=${dept}, year=${year}, section=${section}`
+  );
   try {
     let query = `
       SELECT 
@@ -154,9 +169,10 @@ router.get("/students", async (req, res) => {
       }
     }
 
+    logger.info(`Fetched ${students.length} students`);
     res.json(students);
   } catch (err) {
-    console.error(err);
+    logger.error(`Error fetching students: ${err.message}`);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -164,6 +180,7 @@ router.get("/students", async (req, res) => {
 // GET /hod/faculty?dept=CSE
 router.get("/faculty", async (req, res) => {
   const { dept } = req.query;
+  logger.info(`Fetching faculty: dept=${dept}`);
   try {
     let query = `
       SELECT fp.*,
@@ -181,9 +198,10 @@ router.get("/faculty", async (req, res) => {
     }
 
     const [faculty] = await db.query(query, params);
+    logger.info(`Fetched ${faculty.length} faculty`);
     res.json(faculty);
   } catch (err) {
-    console.error(err);
+    logger.error(`Error fetching faculty: ${err.message}`);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -191,7 +209,11 @@ router.get("/faculty", async (req, res) => {
 // POST /hod/assign-faculty
 router.post("/assign-faculty", async (req, res) => {
   const { faculty_id, dept_code, year, section } = req.body;
+  logger.info(
+    `Assign faculty: faculty_id=${faculty_id}, dept_code=${dept_code}, year=${year}, section=${section}`
+  );
   if (!faculty_id || !dept_code || !year || !section) {
+    logger.warn("Missing fields in assign-faculty");
     return res.status(400).json({ message: "All fields are required" });
   }
   try {
@@ -200,9 +222,10 @@ router.post("/assign-faculty", async (req, res) => {
       "UPDATE faculty_section_assignment SET year=?, section=? WHERE faculty_id=?",
       [year, section, faculty_id]
     );
+    logger.info(`Faculty assigned successfully: faculty_id=${faculty_id}`);
     res.json({ message: "Faculty assigned successfully" });
   } catch (err) {
-    console.error(err);
+    logger.error(`Error assigning faculty: ${err.message}`);
     res.status(500).json({ message: "Server error" });
   }
 });

@@ -31,7 +31,7 @@ const StudentTable = ({
             >
               <td className="py-3 px-4">{i + 1}</td>
               <td className="py-3 px-4 text-left flex items-center gap-2">
-                <div className="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center text-sm justify-center font-bold">
+                <div className="bg-blue-100 text-blue-800 rounded-full w-8 h-8 hidden md:flex items-center text-sm justify-center font-bold">
                   {student.name
                     ?.split(" ")
                     .map((n) => n[0])
@@ -41,7 +41,9 @@ const StudentTable = ({
                 {student.name}
               </td>
               <td className="py-3 px-4">{student.student_id}</td>
-              {showBranch && <td className="py-3 px-4">{student.dept_name}</td>}
+              {showBranch && (
+                <td className="py-3 px-4 ">{student.dept_name}</td>
+              )}
               {showYear && <td className="py-3 px-4">{student.year}</td>}
               {showSection && <td className="py-3 px-4">{student.section}</td>}
               <td className="py-3 px-4">
@@ -49,7 +51,7 @@ const StudentTable = ({
                   onClick={() => onProfileClick(student)}
                   className="text-gray-700 px-2 py-1 justify-center rounded hover:text-blue-700 flex items-center gap-1 cursor-pointer"
                 >
-                  <TbUserShare /> Profile
+                  <TbUserShare />
                 </div>
               </td>
             </tr>

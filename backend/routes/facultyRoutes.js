@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../config/db"); // MySQL connection
+const { logger } = require("../utils"); // <-- Add logger
 
 const scrapeHackerRankProfile = require("../scrapers/hackerrank");
 const scrapeCodeChefProfile = require("../scrapers/codechef");
@@ -10,87 +11,100 @@ const scrapeLeetCodeProfile = require("../scrapers/leetcode");
 // Helper function to scrape and update performance
 async function scrapeAndUpdatePerformance(student_id, platform, username) {
   let performanceData = null;
-  if (platform === "leetcode") {
-    performanceData = await scrapeLeetCodeProfile(
-      `https://leetcode.com/u/${username}`
-    );
-    if (performanceData) {
-      await db
-        .query(
-          `UPDATE student_performance SET easy_lc = ?,medium_lc=?,hard_lc=?,contests_lc=? WHERE student_id = ?`,
-          [
-            performanceData?.Problems?.Easy,
-            performanceData?.Problems?.Medium,
-            performanceData?.Problems?.Hard,
-            performanceData?.Contests_Attended,
-            student_id,
-          ]
-        )
-        .then(() => {
-          console.log("performance updated: ", performanceData);
-        });
+  try {
+    if (platform === "leetcode") {
+      performanceData = await scrapeLeetCodeProfile(
+        `https://leetcode.com/u/${username}`
+      );
+      if (performanceData) {
+        await db
+          .query(
+            `UPDATE student_performance SET easy_lc = ?,medium_lc=?,hard_lc=?,contests_lc=? WHERE student_id = ?`,
+            [
+              performanceData?.Problems?.Easy,
+              performanceData?.Problems?.Medium,
+              performanceData?.Problems?.Hard,
+              performanceData?.Contests_Attended,
+              student_id,
+            ]
+          )
+          .then(() => {
+            logger.info(
+              `LeetCode performance updated for student_id=${student_id}`
+            );
+          });
+      }
+    } else if (platform === "codechef") {
+      performanceData = await scrapeCodeChefProfile(
+        `https://www.codechef.com/users/${username}`
+      );
+      if (performanceData) {
+        await db
+          .query(
+            `UPDATE student_performance SET contests_cc = ?,stars_cc=?,problems_cc=?,badges_cc=? WHERE student_id = ?`,
+            [
+              performanceData?.Contests_Participated,
+              performanceData?.Star,
+              performanceData?.problemsSolved,
+              performanceData?.Badges,
+              student_id,
+            ]
+          )
+          .then(() => {
+            logger.info(
+              `CodeChef performance updated for student_id=${student_id}`
+            );
+          });
+      }
+    } else if (platform === "geekforgeeks") {
+      performanceData = await scrapeGeeksForGeeksProfile(
+        `https://www.geeksforgeeks.org/user/${username}`
+      );
+      if (performanceData) {
+        await db
+          .query(
+            `UPDATE student_performance SET school_gfg = ?,basic_gfg=?,easy_gfg=?,medium_gfg=?,hard_gfg=? WHERE student_id = ?`,
+            [
+              performanceData?.School,
+              performanceData?.Basic,
+              performanceData?.Easy,
+              performanceData?.Medium,
+              performanceData?.Hard,
+              student_id,
+            ]
+          )
+          .then(() => {
+            logger.info(`GFG performance updated for student_id=${student_id}`);
+          });
+      }
+    } else if (platform === "hackerrank") {
+      performanceData = await scrapeHackerRankProfile(
+        `https://www.hackerrank.com/profile/${username}`
+      );
+      if (performanceData) {
+        await db
+          .query(
+            `UPDATE student_performance SET stars_hr = ? WHERE student_id = ?`,
+            [performanceData?.Total_stars, student_id]
+          )
+          .then(() => {
+            logger.info(
+              `HackerRank performance updated for student_id=${student_id}`
+            );
+          });
+      }
     }
-  } else if (platform === "codechef") {
-    performanceData = await scrapeCodeChefProfile(
-      `https://www.codechef.com/users/${username}`
+  } catch (err) {
+    logger.error(
+      `Error scraping/updating performance for student_id=${student_id}, platform=${platform}: ${err.message}`
     );
-    if (performanceData) {
-      await db
-        .query(
-          `UPDATE student_performance SET contests_cc = ?,stars_cc=?,problems_cc=?,badges_cc=? WHERE student_id = ?`,
-          [
-            performanceData?.Contests_Participated,
-            performanceData?.Star,
-            performanceData?.problemsSolved,
-            performanceData?.Badges,
-            student_id,
-          ]
-        )
-        .then(() => {
-          console.log("performance updated: ", performanceData);
-        });
-    }
-  } else if (platform === "geekforgeeks") {
-    performanceData = await scrapeGeeksForGeeksProfile(
-      `https://www.geeksforgeeks.org/user/${username}`
-    );
-    if (performanceData) {
-      await db
-        .query(
-          `UPDATE student_performance SET school_gfg = ?,basic_gfg=?,easy_gfg=?,medium_gfg=?,hard_gfg=?, WHERE student_id = ?`,
-          [
-            performanceData?.School,
-            performanceData?.Basic,
-            performanceData?.Easy,
-            performanceData?.Medium,
-            performanceData?.Hard,
-            student_id,
-          ]
-        )
-        .then(() => {
-          console.log("performance updated: ", performanceData);
-        });
-    }
-  } else if (platform === "hackerrank") {
-    performanceData = await scrapeHackerRankProfile(
-      `https://www.hackerrank.com/profile/${username}`
-    );
-    if (performanceData) {
-      await db
-        .query(
-          `UPDATE student_performance SET stars_hr = ? WHERE student_id = ?`,
-          [performanceData?.Total_stars, student_id]
-        )
-        .then(() => {
-          console.log("performance updated: ", performanceData);
-        });
-    }
   }
 }
 
 // GET /faculty/profile
 router.get("/profile", async (req, res) => {
   const { userId } = req.query;
+  logger.info(`Fetching faculty profile for userId: ${userId}`);
   try {
     const [profileResult] = await db.query(
       `SELECT fp.*, d.dept_name
@@ -100,14 +114,13 @@ router.get("/profile", async (req, res) => {
       [userId]
     );
     if (profileResult.length === 0) {
+      logger.warn(`Faculty profile not found for userId: ${userId}`);
       return res.status(404).json({ message: "Faculty profile not found" });
     }
     const [assignedSections] = await db.query(
       "SELECT year, section FROM faculty_section_assignment WHERE faculty_id = ?",
       [userId]
     );
-
-    // let total_students = 0;
 
     const [[{ total_students }]] = await db.query(
       "SELECT COUNT(*) AS total_students FROM student_profiles WHERE dept_code = ? AND year = ? AND section = ?",
@@ -118,9 +131,12 @@ router.get("/profile", async (req, res) => {
       ]
     );
 
+    logger.info(`Faculty profile fetched for userId: ${userId}`);
     res.json({ ...profileResult[0], ...assignedSections[0], total_students });
   } catch (err) {
-    console.error(err);
+    logger.error(
+      `Error fetching faculty profile for userId=${userId}: ${err.message}`
+    );
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -128,14 +144,20 @@ router.get("/profile", async (req, res) => {
 // PUT /faculty/profile
 router.put("/profile", async (req, res) => {
   const { userId, name, department, section } = req.body;
+  logger.info(
+    `Updating faculty profile: userId=${userId}, name=${name}, department=${department}, section=${section}`
+  );
   try {
     await db.query(
       "UPDATE faculty_profiles SET name = ?, department = ?, section = ? WHERE faculty_id = ?",
       [name, department, section, userId]
     );
+    logger.info(`Faculty profile updated for userId: ${userId}`);
     res.json({ message: "Profile updated successfully" });
   } catch (err) {
-    console.error(err);
+    logger.error(
+      `Error updating faculty profile for userId=${userId}: ${err.message}`
+    );
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -143,6 +165,9 @@ router.put("/profile", async (req, res) => {
 // GET /faculty/students?dept=CSE&year=3&section=A
 router.get("/students", async (req, res) => {
   const { dept, year, section } = req.query;
+  logger.info(
+    `Fetching students: dept=${dept}, year=${year}, section=${section}`
+  );
   try {
     let query = `
       SELECT 
@@ -226,9 +251,10 @@ router.get("/students", async (req, res) => {
       }
     }
 
+    logger.info(`Fetched ${students.length} students`);
     res.json(students);
   } catch (err) {
-    console.error(err);
+    logger.error(`Error fetching students: ${err.message}`);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -236,6 +262,9 @@ router.get("/students", async (req, res) => {
 // GET /faculty/coding-profile-requests?dept=CSE&year=3&section=A
 router.get("/coding-profile-requests", async (req, res) => {
   const { dept, year, section } = req.query;
+  logger.info(
+    `Fetching coding profile requests: dept=${dept}, year=${year}, section=${section}`
+  );
   try {
     const [requests] = await db.query(
       `SELECT 
@@ -256,9 +285,10 @@ router.get("/coding-profile-requests", async (req, res) => {
         )`,
       [dept, year, section]
     );
+    logger.info(`Fetched ${requests.length} coding profile requests`);
     res.json(requests);
   } catch (err) {
-    console.error(err);
+    logger.error(`Error fetching coding profile requests: ${err.message}`);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -266,6 +296,9 @@ router.get("/coding-profile-requests", async (req, res) => {
 // POST /faculty/verify-coding-profile
 router.post("/verify-coding-profile", async (req, res) => {
   const { student_id, platform, action, faculty_id, comment } = req.body;
+  logger.info(
+    `Verify coding profile: student_id=${student_id}, platform=${platform}, action=${action}, faculty_id=${faculty_id}`
+  );
   try {
     let status = action === "accept" ? "accepted" : "rejected";
     let is_verified = action === "accept" ? 1 : 0;
@@ -280,6 +313,8 @@ router.post("/verify-coding-profile", async (req, res) => {
       [status, is_verified, faculty_id, student_id]
     );
 
+    logger.info(`Profile ${platform} ${status} for student_id=${student_id}`);
+
     // Respond immediately
     res.json({ message: `Profile ${platform} ${status}` });
 
@@ -293,13 +328,19 @@ router.post("/verify-coding-profile", async (req, res) => {
       if (username) {
         // Run in background, don't await
         scrapeAndUpdatePerformance(student_id, platform, username).catch(
-          (err) => console.error("Scraping error:", err)
+          (err) =>
+            logger.error(
+              `Scraping error for student_id=${student_id}, platform=${platform}: ${err.message}`
+            )
         );
       }
     }
   } catch (err) {
-    console.error(err);
+    logger.error(
+      `Error verifying coding profile for student_id=${student_id}, platform=${platform}: ${err.message}`
+    );
     res.status(500).json({ message: "Server error" });
   }
 });
+
 module.exports = router;

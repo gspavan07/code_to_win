@@ -4,6 +4,7 @@ require("dotenv").config();
 const http = require("http");
 const socketIo = require("socket.io");
 const setupProfileScraperRoutes = require("./profileScraperRoutes");
+const { logger } = require("./utils"); // <-- Add this line
 
 const app = express();
 app.use(cors());
@@ -22,6 +23,14 @@ const io = socketIo(server, {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Log every request globally
+app.use((req, res, next) => {
+  logger.info(
+    `[${req.method}] ${req.originalUrl} | query: ${JSON.stringify(req.query)}`
+  );
+  next();
+});
+
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/student", require("./routes/studentRoutes"));
 app.use("/api/faculty", require("./routes/facultyRoutes"));
@@ -36,5 +45,5 @@ app.use("/api/profile-scraper", setupProfileScraperRoutes(io));
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, "0.0.0.0", () =>
-  console.log(`Server is running on http://0.0.0.0:${PORT}`)
+  console.log(`Server is running on http://localhost:${PORT}`)
 );

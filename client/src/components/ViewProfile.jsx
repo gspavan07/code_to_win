@@ -20,8 +20,9 @@ const ViewProfile = ({ student, onClose }) => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `${student?.name + "_" + student?.student_id || "profile"
-        }.pdf`;
+      link.download = `${
+        student?.name + "_" + student?.student_id || "profile"
+      }.pdf`;
       link.click();
       URL.revokeObjectURL(url);
       setIsGeneratingPDF(false);
@@ -33,7 +34,7 @@ const ViewProfile = ({ student, onClose }) => {
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center h-screen bg-[#00000055]"
+      className="fixed inset-0 z-70 flex items-center justify-center h-screen  bg-[#00000055]"
     >
       <div
         className="bg-[#f7f7f7] rounded-xl space-y-4 p-6 w-full flex flex-col items-center max-w-3xl shadow-lg relative"
@@ -114,7 +115,8 @@ const ViewProfile = ({ student, onClose }) => {
                 Easy: student?.performance?.platformWise?.leetcode?.easy,
                 Medium: student?.performance?.platformWise?.leetcode?.medium,
                 Hard: student?.performance?.platformWise?.leetcode?.hard,
-                Contests: student?.performance?.platformWise?.leetcode?.contests,
+                Contests:
+                  student?.performance?.platformWise?.leetcode?.contests,
                 Badges: student?.performance?.platformWise?.leetcode?.badges,
               }}
             />
@@ -125,7 +127,8 @@ const ViewProfile = ({ student, onClose }) => {
               total={student?.performance?.platformWise?.codechef?.contests}
               subtitle="Contests Participated"
               breakdown={{
-                "problems Solved": student?.performance?.platformWise?.codechef?.problems,
+                "problems Solved":
+                  student?.performance?.platformWise?.codechef?.problems,
                 Stars: student?.performance?.platformWise?.codechef?.stars,
                 Badges: student?.performance?.platformWise?.codechef?.badges,
               }}

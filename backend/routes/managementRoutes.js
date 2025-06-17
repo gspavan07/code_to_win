@@ -7,21 +7,25 @@ const multer = require("multer");
 const csv = require("csv-parse");
 const fs = require("fs");
 const path = require("path");
+const { logger } = require("../utils"); // <-- Add logger
 
 // Configure multer for CSV uploads
 const upload = multer({
   dest: "uploads/",
   fileFilter: (req, file, cb) => {
     if (file.mimetype !== "text/csv") {
+      logger.warn(`Rejected file upload: Not a CSV (${file.originalname})`);
       return cb(new Error("Only CSV files are allowed"));
     }
     cb(null, true);
   },
 });
-//Add branch
+
+// Add branch
 router.post("/add-branch", async (req, res) => {
   const { dept_code, dept_name } = req.body;
   if (!dept_code || !dept_name) {
+    logger.warn("Missing dept_code or dept_name in add-branch");
     return res
       .status(400)
       .json({ message: "dept_code and dept_name are required" });
@@ -30,6 +34,7 @@ router.post("/add-branch", async (req, res) => {
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
+    logger.info(`Adding branch: ${dept_code}, ${dept_name}`);
 
     await connection.query(
       "INSERT INTO dept (dept_code, dept_name) VALUES (?, ?)",
@@ -37,10 +42,11 @@ router.post("/add-branch", async (req, res) => {
     );
 
     await connection.commit();
+    logger.info(`Branch added successfully: ${dept_code}`);
     res.status(200).json({ message: "Branch added successfully" });
   } catch (err) {
     await connection.rollback();
-    console.error(err);
+    logger.error(`Error adding branch: ${err.message}`);
     res.status(500).json({
       message:
         err.code === "ER_DUP_ENTRY"
@@ -52,15 +58,18 @@ router.post("/add-branch", async (req, res) => {
     connection.release();
   }
 });
+
 // Add a new student (first to users, then to student_profiles)
 router.post("/add-student", async (req, res) => {
   const { stdId, name, dept, year, section, degree, cgpa } = req.body;
-  console.log(req.body);
-  console.log(req.body.stdId);
+  logger.info(`Add student request: ${JSON.stringify(req.body)}`);
   const connection = await db.getConnection(); // Use a connection from the pool
 
   try {
     await connection.beginTransaction();
+    logger.info(
+      `Adding student: ${stdId}, ${name}, ${dept}, ${year}, ${section}, ${degree}, ${cgpa}`
+    );
 
     const hashed = await bcrypt.hash("student@aditya", 10);
 
@@ -85,10 +94,11 @@ router.post("/add-student", async (req, res) => {
     );
 
     await connection.commit();
+    logger.info(`Student added successfully: ${stdId}`);
     res.status(200).json({ message: "Student added successfully" });
   } catch (err) {
     await connection.rollback();
-    console.error(err);
+    logger.error(`Error adding student: ${err.message}`);
     res.status(500).json({
       message:
         err.code === "ER_DUP_ENTRY"
@@ -100,14 +110,17 @@ router.post("/add-student", async (req, res) => {
     connection.release();
   }
 });
+
 // Add a new faculty
 router.post("/add-faculty", async (req, res) => {
   const { facultyId, name, dept, email } = req.body;
+  logger.info(`Add faculty request: ${JSON.stringify(req.body)}`);
 
   const connection = await db.getConnection(); // Use a connection from the pool
 
   try {
     await connection.beginTransaction();
+    logger.info(`Adding faculty: ${facultyId}, ${name}, ${dept}, ${email}`);
 
     const hashed = await bcrypt.hash("faculty@aditya", 10);
 
@@ -117,7 +130,7 @@ router.post("/add-faculty", async (req, res) => {
       [facultyId, email, hashed, "faculty"]
     );
 
-    // 2. Insert into student_profiles table
+    // 2. Insert into faculty_profiles table
     await connection.query(
       `INSERT INTO faculty_profiles 
         (faculty_id, name, dept_code)
@@ -130,10 +143,11 @@ router.post("/add-faculty", async (req, res) => {
     );
 
     await connection.commit();
+    logger.info(`Faculty added successfully: ${facultyId}`);
     res.status(200).json({ message: "Faculty added successfully" });
   } catch (err) {
     await connection.rollback();
-    console.error(err);
+    logger.error(`Error adding faculty: ${err.message}`);
     res.status(500).json({
       message:
         err.code === "ER_DUP_ENTRY"
@@ -149,11 +163,13 @@ router.post("/add-faculty", async (req, res) => {
 // Add a new hod
 router.post("/add-hod", async (req, res) => {
   const { hodId, name, dept, email } = req.body;
+  logger.info(`Add HOD request: ${JSON.stringify(req.body)}`);
 
   const connection = await db.getConnection(); // Use a connection from the pool
 
   try {
     await connection.beginTransaction();
+    logger.info(`Adding HOD: ${hodId}, ${name}, ${dept}, ${email}`);
 
     const hashed = await bcrypt.hash("hod@aditya", 10);
 
@@ -163,7 +179,7 @@ router.post("/add-hod", async (req, res) => {
       [hodId, email, hashed, "hod"]
     );
 
-    // 2. Insert into student_profiles table
+    // 2. Insert into hod_profiles table
     await connection.query(
       `INSERT INTO hod_profiles 
         (hod_id, name, dept_code)
@@ -172,10 +188,11 @@ router.post("/add-hod", async (req, res) => {
     );
 
     await connection.commit();
+    logger.info(`HOD added successfully: ${hodId}`);
     res.status(200).json({ message: "HOD added successfully" });
   } catch (err) {
     await connection.rollback();
-    console.error(err);
+    logger.error(`Error adding HOD: ${err.message}`);
     res.status(500).json({
       message:
         err.code === "ER_DUP_ENTRY"
@@ -191,10 +208,14 @@ router.post("/add-hod", async (req, res) => {
 //P0ST /api/bulk-import-student
 router.post("/bulk-import-student", upload.single("file"), async (req, res) => {
   const { dept, year, section } = req.body;
+  logger.info(
+    `Bulk import students: dept=${dept}, year=${year}, section=${section}`
+  );
   const connection = await db.getConnection();
 
   try {
     if (!req.file) {
+      logger.warn("No file uploaded for bulk-import-student");
       return res.status(400).json({ message: "No file uploaded" });
     }
 
@@ -211,7 +232,7 @@ router.post("/bulk-import-student", upload.single("file"), async (req, res) => {
         .on("end", () => resolve(rows));
     });
 
-    // console.log(fileRows);
+    logger.info(`Parsed ${fileRows.length} student rows from CSV`);
     await connection.beginTransaction();
 
     for (const row of fileRows) {
@@ -226,6 +247,7 @@ router.post("/bulk-import-student", upload.single("file"), async (req, res) => {
           [stdId, email, hashed, "student"]
         );
         if (stdId === "" || name == "" || row.Degree == "" || row.CGPA == "") {
+          logger.warn(`Missing fields in CSV row: ${JSON.stringify(row)}`);
           errors.push({
             error: `Check the fields in CSV and upload.`,
           });
@@ -243,8 +265,9 @@ router.post("/bulk-import-student", upload.single("file"), async (req, res) => {
         );
 
         results.push({ stdId: stdId, status: "success" });
+        logger.info(`Student imported: ${stdId}`);
       } catch (err) {
-        console.error(err);
+        logger.error(`Error importing student ${stdId}: ${err.message}`);
         errors.push({
           error:
             err.code === "ER_DUP_ENTRY"
@@ -262,6 +285,7 @@ router.post("/bulk-import-student", upload.single("file"), async (req, res) => {
     if (errors.length === fileRows.length) {
       // If all entries failed, rollback
       await connection.rollback();
+      logger.warn("Bulk import students failed: all entries failed");
       return res.status(400).json({
         message: "Bulk import failed",
         errors,
@@ -270,6 +294,9 @@ router.post("/bulk-import-student", upload.single("file"), async (req, res) => {
 
     // Commit if at least some entries succeeded
     await connection.commit();
+    logger.info(
+      `Bulk import students completed: ${results.length} succeeded, ${errors.length} failed`
+    );
 
     res.json({
       message: "Bulk import completed",
@@ -280,7 +307,7 @@ router.post("/bulk-import-student", upload.single("file"), async (req, res) => {
     });
   } catch (err) {
     await connection.rollback();
-    console.error(err);
+    logger.error(`Bulk import students error: ${err.message}`);
 
     // Delete the temporary file in case of error
     if (req.file) {
@@ -296,10 +323,12 @@ router.post("/bulk-import-student", upload.single("file"), async (req, res) => {
 //P0ST /api/bulk-import-faculty
 router.post("/bulk-import-faculty", upload.single("file"), async (req, res) => {
   const { dept } = req.body;
+  logger.info(`Bulk import faculty: dept=${dept}`);
   const connection = await db.getConnection();
 
   try {
     if (!req.file) {
+      logger.warn("No file uploaded for bulk-import-faculty");
       return res.status(400).json({ message: "No file uploaded" });
     }
 
@@ -316,7 +345,7 @@ router.post("/bulk-import-faculty", upload.single("file"), async (req, res) => {
         .on("end", () => resolve(rows));
     });
 
-    // console.log(fileRows);
+    logger.info(`Parsed ${fileRows.length} faculty rows from CSV`);
     await connection.beginTransaction();
 
     for (const row of fileRows) {
@@ -331,7 +360,7 @@ router.post("/bulk-import-faculty", upload.single("file"), async (req, res) => {
           [facultyId, email, hashed, "faculty"]
         );
 
-        // Insert into student_profiles table
+        // Insert into faculty_profiles table
         await connection.query(
           `INSERT INTO faculty_profiles 
            (faculty_id, name, dept_code)
@@ -340,8 +369,9 @@ router.post("/bulk-import-faculty", upload.single("file"), async (req, res) => {
         );
 
         results.push({ facultyId: facultyId, status: "success" });
+        logger.info(`Faculty imported: ${facultyId}`);
       } catch (err) {
-        console.error(err);
+        logger.error(`Error importing faculty ${facultyId}: ${err.message}`);
         errors.push({
           error:
             err.code === "ER_DUP_ENTRY"
@@ -359,6 +389,7 @@ router.post("/bulk-import-faculty", upload.single("file"), async (req, res) => {
     if (errors.length === fileRows.length) {
       // If all entries failed, rollback
       await connection.rollback();
+      logger.warn("Bulk import faculty failed: all entries failed");
       return res.status(400).json({
         message: "Bulk import failed",
         errors,
@@ -367,6 +398,9 @@ router.post("/bulk-import-faculty", upload.single("file"), async (req, res) => {
 
     // Commit if at least some entries succeeded
     await connection.commit();
+    logger.info(
+      `Bulk import faculty completed: ${results.length} succeeded, ${errors.length} failed`
+    );
 
     res.json({
       message: "Bulk import completed",
@@ -377,7 +411,7 @@ router.post("/bulk-import-faculty", upload.single("file"), async (req, res) => {
     });
   } catch (err) {
     await connection.rollback();
-    console.error(err);
+    logger.error(`Bulk import faculty error: ${err.message}`);
 
     // Delete the temporary file in case of error
     if (req.file) {
@@ -392,8 +426,9 @@ router.post("/bulk-import-faculty", upload.single("file"), async (req, res) => {
 
 //P0ST /api/reset-password
 router.post("/reset-password", async (req, res) => {
-  const { userId, role, password } = req.body;
-  if (!userId || !role || !password) {
+  const { userId, password } = req.body;
+  if (!userId || !password) {
+    logger.warn("Missing required fields in reset-password");
     return res.status(400).json({ message: "Missing required fields" });
   }
 
@@ -401,15 +436,17 @@ router.post("/reset-password", async (req, res) => {
   try {
     const hashed = await bcrypt.hash(password, 10);
     const [result] = await connection.query(
-      "UPDATE users SET password = ? WHERE user_id = ? AND role = ?",
-      [hashed, userId, role]
+      "UPDATE users SET password = ? WHERE user_id = ?",
+      [hashed, userId]
     );
     if (result.affectedRows === 0) {
+      logger.warn(`User not found for reset-password: ${userId}`);
       return res.status(404).json({ message: "User not found" });
     }
+    logger.info(`Password reset successful for user: ${userId}`);
     res.json({ message: "Password reset successful" });
   } catch (err) {
-    console.error(err);
+    logger.error(`Error resetting password for user ${userId}: ${err.message}`);
     res.status(500).json({ message: "Server error", error: err.message });
   } finally {
     connection.release();
@@ -420,12 +457,14 @@ router.post("/reset-password", async (req, res) => {
 router.post("/delete-user", async (req, res) => {
   const { userId, role } = req.body;
   if (!userId || !role) {
+    logger.warn("Missing userId or role in delete-user");
     return res.status(400).json({ message: "Missing userId or role" });
   }
 
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
+    logger.info(`Deleting user: ${userId}, role: ${role}`);
 
     // Delete from role-specific profile table first
     if (role === "student") {
@@ -464,16 +503,19 @@ router.post("/delete-user", async (req, res) => {
     await connection.commit();
 
     if (result.affectedRows === 0) {
+      logger.warn(`User not found for delete-user: ${userId}, role: ${role}`);
       return res.status(404).json({ message: "User not found" });
     }
 
+    logger.info(`User deleted successfully: ${userId}, role: ${role}`);
     res.json({ message: "User deleted successfully" });
   } catch (err) {
     await connection.rollback();
-    console.error(err);
+    logger.error(`Error deleting user ${userId}, role ${role}: ${err.message}`);
     res.status(500).json({ message: "Server error", error: err.message });
   } finally {
     connection.release();
   }
 });
+
 module.exports = router;

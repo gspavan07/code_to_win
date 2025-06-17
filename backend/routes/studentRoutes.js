@@ -1,11 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../config/db"); // MySQL connection
+const { logger } = require("../utils"); // <-- Add logger
 
 // Profile routes
 router.get("/profile", async (req, res) => {
   const userId = req.query.userId;
-
+  logger.info(`Fetching student profile for userId: ${userId}`);
   try {
     // 1. Get student profile
     const [profileResult] = await db.query(
@@ -16,6 +17,7 @@ router.get("/profile", async (req, res) => {
       [userId]
     );
     if (profileResult.length === 0) {
+      logger.warn(`Profile not found for userId: ${userId}`);
       return res.status(404).json({ message: "Profile not found" });
     }
     const profile = profileResult[0];
@@ -40,8 +42,10 @@ router.get("/profile", async (req, res) => {
       `SELECT * FROM student_performance WHERE student_id = ?`,
       [userId]
     );
-    if (data.length === 0)
+    if (data.length === 0) {
+      logger.warn(`No performance data found for userId: ${userId}`);
       return res.status(404).json({ message: "No performance data found" });
+    }
 
     const p = data[0];
     const totalSolved =
@@ -89,6 +93,7 @@ router.get("/profile", async (req, res) => {
         badges: p.stars_hr,
       },
     };
+    logger.info(`Student profile fetched for userId: ${userId}`);
     res.json({
       ...profile,
       coding_profiles,
@@ -98,14 +103,16 @@ router.get("/profile", async (req, res) => {
       },
     });
   } catch (err) {
-    console.error(err);
+    logger.error(
+      `Error fetching student profile for userId=${userId}: ${err.message}`
+    );
     res.status(500).json({ message: "Server error" });
   }
 });
 
 router.put("/update-profile", async (req, res) => {
   const { userId, name } = req.body;
-
+  logger.info(`Updating student profile: userId=${userId}, name=${name}`);
   try {
     await db.promise().query(
       `UPDATE student_profiles 
@@ -113,9 +120,12 @@ router.put("/update-profile", async (req, res) => {
              WHERE student_id = ?`,
       [name, userId]
     );
+    logger.info(`Student profile updated for userId: ${userId}`);
     res.json({ message: "Profile updated" });
   } catch (err) {
-    console.error(err);
+    logger.error(
+      `Error updating student profile for userId=${userId}: ${err.message}`
+    );
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -124,6 +134,7 @@ router.put("/update-profile", async (req, res) => {
 router.post("/coding-profile", async (req, res) => {
   const { userId, leetcode_id, codechef_id, geekforgeeks_id, hackerrank_id } =
     req.body;
+  logger.info(`Submitting coding profiles for verification: userId=${userId}`);
   try {
     // Check if the student already has a coding profile row
     const [existing] = await db.query(
@@ -176,6 +187,7 @@ router.post("/coding-profile", async (req, res) => {
           )} WHERE student_id = ?`,
           [...values, userId]
         );
+        logger.info(`Updated coding profiles for userId: ${userId}`);
       }
     } else {
       // Insert all fields, missing ones as null
@@ -194,12 +206,16 @@ router.post("/coding-profile", async (req, res) => {
           hackerrank_id || null,
         ]
       );
+      logger.info(`Inserted coding profiles for userId: ${userId}`);
     }
 
     res.json({ message: "Coding profiles submitted for verification" });
   } catch (err) {
-    console.error(err);
+    logger.error(
+      `Error submitting coding profiles for userId=${userId}: ${err.message}`
+    );
     res.status(500).json({ message: "Server error" });
   }
 });
+
 module.exports = router;

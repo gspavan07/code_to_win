@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../config/db"); // MySQL connection
+const { logger } = require("../utils"); // <-- Add logger
 
 // Calculate score expression for ranking
 async function getScoreExpression() {
@@ -13,9 +14,9 @@ async function getScoreExpression() {
 
 // GET /ranking/overall
 router.get("/overall", async (req, res) => {
+  logger.info("Fetching overall ranking");
   try {
     const scoreExpr = await getScoreExpression();
-    // console.log(scoreExpr);
     const limit = Math.max(1, Math.min(parseInt(req.query.limit) || 100)); // max 1000
     const [rows] = await db.query(
       `SELECT 
@@ -109,9 +110,10 @@ LIMIT ?`,
       }
     }
 
+    logger.info(`Fetched overall ranking, count=${rows.length}`);
     res.json(rows);
   } catch (err) {
-    console.error(err);
+    logger.error(`Error fetching overall ranking: ${err.message}`);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -119,6 +121,9 @@ LIMIT ?`,
 // GET /ranking/filter?department=CSE&section=A&year=3
 router.get("/filter", async (req, res) => {
   const { dept, section, year } = req.query;
+  logger.info(
+    `Fetching filtered ranking: dept=${dept}, section=${section}, year=${year}`
+  );
   try {
     const scoreExpr = await getScoreExpression();
     let where = "WHERE 1=1";
@@ -218,9 +223,10 @@ LIMIT ?`,
         };
       }
     }
+    logger.info(`Fetched filtered ranking, count=${rows.length}`);
     res.json(rows);
   } catch (err) {
-    console.error(err);
+    logger.error(`Error fetching filtered ranking: ${err.message}`);
     res.status(500).json({ message: "Server error" });
   }
 });

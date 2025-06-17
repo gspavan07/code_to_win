@@ -5,7 +5,13 @@ import { useAuth } from "../../context/AuthContext";
 import Navbar from "../../components/Navbar";
 import axios from "axios";
 import LoadingSpinner from "../../common/LoadingSpinner";
-import { AddIndividualStudentModel } from "../../components/Modals";
+import {
+  AddFacultyModal,
+  AddIndividualStudentModel,
+  BulkImportModal,
+  DeleteIndividualStudentModal,
+  ResetPasswordModal,
+} from "../../components/Modals";
 import BulkImportStudent from "../../components/ui/BulkImportStudent";
 import UserProfile from "../../components/ui/UserProfile";
 
@@ -13,7 +19,6 @@ import UserProfile from "../../components/ui/UserProfile";
 const RankingTable = lazy(() => import("../../components/Ranking"));
 const ViewProfile = lazy(() => import("../../components/ViewProfile"));
 const StudentTable = lazy(() => import("../../components/ui/StudentTable"));
-
 
 // Stats Cards
 function StatsCards({ currentUser }) {
@@ -49,8 +54,9 @@ function DashboardTabs({ selectedTab, setSelectedTab }) {
         <button
           key={tab.key}
           onClick={() => setSelectedTab(tab.key)}
-          className={`flex-1 min-w-[120px] py-1 rounded ${selectedTab === tab.key ? "bg-white text-black" : ""
-            }`}
+          className={`flex-1 min-w-[120px] py-1 rounded ${
+            selectedTab === tab.key ? "bg-white text-black" : ""
+          }`}
         >
           {tab.label}
         </button>
@@ -264,8 +270,9 @@ function FacultyManagementTab({ years, sections, facultyList }) {
           </button>
           {message && (
             <div
-              className={`mt-2 text-center text-sm ${message.type === "success" ? "text-green-600" : "text-red-600"
-                }`}
+              className={`mt-2 text-center text-sm ${
+                message.type === "success" ? "text-green-600" : "text-red-600"
+              }`}
             >
               {message.text}
             </div>
@@ -278,7 +285,7 @@ function FacultyManagementTab({ years, sections, facultyList }) {
 
 // Add Student Tab
 function AddStudentTab() {
-  const [addStudentMenu, setAddStudentMenu] = useState("individual");
+  const [menu, setMenu] = useState("individual");
   return (
     <div className="flex flex-col lg:flex-row gap-6 p-0 md:p-6 bg-gray-50">
       {/* Sidebar Menu */}
@@ -289,24 +296,62 @@ function AddStudentTab() {
         <ul className="space-y-2">
           <li>
             <button
-              className={`w-full text-left px-3 py-2 rounded ${addStudentMenu === "individual"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-100 text-gray-900"
-                }`}
-              onClick={() => setAddStudentMenu("individual")}
+              className={`w-full text-left px-3 py-2 rounded ${
+                menu === "individual"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 text-gray-900"
+              }`}
+              onClick={() => setMenu("individual")}
             >
-              Add Individual Student
+              Add Student
             </button>
           </li>
           <li>
             <button
-              className={`w-full text-left px-3 py-2 rounded ${addStudentMenu === "bulk"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-100 text-gray-900"
-                }`}
-              onClick={() => setAddStudentMenu("bulk")}
+              className={`w-full text-left px-3 py-2 rounded ${
+                menu === "addFaculty"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 text-gray-900"
+              }`}
+              onClick={() => setMenu("addFaculty")}
             >
-              Bulk Import Students
+              Add Faculty
+            </button>
+          </li>
+          <li>
+            <button
+              className={`w-full text-left px-3 py-2 rounded ${
+                menu === "bulk"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 text-gray-900"
+              }`}
+              onClick={() => setMenu("bulk")}
+            >
+              Bulk Import
+            </button>
+          </li>
+          <li>
+            <button
+              className={`w-full text-left px-3 py-2 rounded ${
+                menu === "reset"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 text-gray-900"
+              }`}
+              onClick={() => setMenu("reset")}
+            >
+              Reset Password
+            </button>
+          </li>
+          <li>
+            <button
+              className={`w-full text-left px-3 py-2 rounded ${
+                menu === "delete"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 text-gray-900"
+              }`}
+              onClick={() => setMenu("delete")}
+            >
+              Delete
             </button>
           </li>
         </ul>
@@ -314,21 +359,38 @@ function AddStudentTab() {
 
       {/* Dynamic Content Area */}
       <div className="w-full lg:w-3/4">
-        {addStudentMenu === "individual" && (
-          <Suspense fallback={<LoadingSpinner />}>
-            <AddIndividualStudentModel />
-          </Suspense>
-        )}
-        {addStudentMenu === "bulk" && (
+        {menu === "individual" && (
           <div className="bg-white p-4 md:p-6 h-fit rounded shadow">
-            <h2 className="text-xl font-bold text-gray-900 mb-1">
-              Bulk Import Students
-            </h2>
-            <p className="text-sm text-gray-500 mb-6">
-              Import multiple students from CSV file
-            </p>
             <Suspense fallback={<LoadingSpinner />}>
-              <BulkImportStudent />
+              <AddIndividualStudentModel />
+            </Suspense>
+          </div>
+        )}
+        {menu === "addFaculty" && (
+          <div className="bg-white p-4 md:p-6 h-fit rounded shadow">
+            <Suspense fallback={<LoadingSpinner />}>
+              <AddFacultyModal />
+            </Suspense>
+          </div>
+        )}
+        {menu === "bulk" && (
+          <div className="bg-white p-4 md:p-6 h-fit rounded shadow">
+            <Suspense fallback={<LoadingSpinner />}>
+              <BulkImportModal />
+            </Suspense>
+          </div>
+        )}
+        {menu === "reset" && (
+          <div className="bg-white p-4 md:p-6 h-fit rounded shadow">
+            <Suspense fallback={<LoadingSpinner />}>
+              <ResetPasswordModal />
+            </Suspense>
+          </div>
+        )}
+        {menu === "delete" && (
+          <div className="bg-white p-4 md:p-6 h-fit rounded shadow">
+            <Suspense fallback={<LoadingSpinner />}>
+              <DeleteIndividualStudentModal />
             </Suspense>
           </div>
         )}
