@@ -550,9 +550,10 @@ export function DeleteConfirmModal({ onClose, user, onSuccess }) {
       <div className="bg-white rounded-lg shadow-lg w-full max-w-sm p-6 relative">
         <button
           onClick={onClose}
-          className="absolute top-2 right-3 text-2xl text-gray-600 hover:text-black  cursor-pointer"
+          className="absolute top-4 right-4 text-xl font-bold text-gray-400 hover:text-gray-600"
+          aria-label="Close"
         >
-          x
+          &times;
         </button>
         <h2 className="text-xl font-semibold mb-2">Personal Information</h2>
         <form onSubmit={handleSubmit} className="space-y-2">
@@ -910,9 +911,10 @@ export function EditModal({ onClose, user }) {
       <div className="bg-white rounded-lg shadow-lg w-full max-w-sm p-6 relative">
         <button
           onClick={onClose}
-          className="absolute top-2 right-3 text-2xl text-gray-600 hover:text-black  cursor-pointer"
+          className="absolute top-4 right-4 text-xl font-bold text-gray-400 hover:text-gray-600"
+          aria-label="Close"
         >
-          x
+          &times;
         </button>
         <h2 className="text-xl font-semibold mb-2">Personal Information</h2>
         <form onSubmit={handleSubmit} className="space-y-2">
@@ -1177,9 +1179,10 @@ export function UserResetPasswordModal({ onClose, user }) {
       <div className="bg-white rounded-lg shadow-lg w-full max-w-sm p-6 relative">
         <button
           onClick={onClose}
-          className="absolute top-2 right-3 text-2xl text-gray-600 hover:text-black"
+          className="absolute top-4 right-4 text-xl font-bold text-gray-400 hover:text-gray-600"
+          aria-label="Close"
         >
-          x
+          &times;
         </button>
         <h2 className="text-lg font-semibold mb-4">Reset Password</h2>
         <form className="space-y-4" onSubmit={handleSubmit}>

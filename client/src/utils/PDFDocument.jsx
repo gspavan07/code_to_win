@@ -6,22 +6,23 @@ import {
   StyleSheet,
   Image,
 } from "@react-pdf/renderer";
-import logo from "/title_head.jpg"; // ✅ Ensure image is imported
+import logo from "/title_head.jpg";
 
 const styles = StyleSheet.create({
   page: {
     padding: 20,
     fontFamily: "Helvetica",
+    backgroundColor: "#f0f4f8",
   },
   logoContainer: {
     alignItems: "center",
     marginBottom: 20,
   },
   headerContainer: {
-    backgroundColor: "#3370ff",
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 15,
+    backgroundColor: "#1e3a8a",
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 20,
   },
   header: {
     flexDirection: "row",
@@ -31,39 +32,41 @@ const styles = StyleSheet.create({
   avatarContainer: {
     width: 70,
     height: 70,
-    backgroundColor: "#ffffff4e",
+    backgroundColor: "#3b82f6",
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 50,
-    marginRight: 10,
+    marginRight: 15,
+    border: "2 solid white",
   },
   avatar: {
     color: "white",
     fontWeight: "bold",
-    fontSize: 25,
+    fontSize: 28,
   },
   info: {
     justifyContent: "center",
   },
   name: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
     color: "white",
   },
   roll: {
     fontSize: 10,
     paddingHorizontal: 10,
-    paddingVertical: 3,
+    paddingVertical: 4,
     borderRadius: 50,
-    backgroundColor: "#ffffff4e",
+    backgroundColor: "#60a5fa",
     fontWeight: "bold",
     color: "white",
-    width: 80,
+    width: 85,
     textAlign: "center",
     marginTop: 5,
   },
   infoTable: {
     marginLeft: 10,
+    marginTop: 10,
   },
   tableRow: {
     flexDirection: "row",
@@ -71,72 +74,79 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   tableHeader: {
-    fontSize: 13,
-    color: "#ffffffd6",
+    fontSize: 12,
+    color: "#cbd5e1",
     width: "20%",
   },
   tableCell: {
-    fontSize: 13,
-    color: "#fff",
+    fontSize: 12,
+    color: "#e0f2fe",
     width: "20%",
   },
   statsContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 15,
+    marginBottom: 20,
   },
   statBox: {
-    backgroundColor: "#eff6ff",
-    padding: 10,
-    borderRadius: 10,
+    backgroundColor: "#3b82f6",
+    padding: 12,
+    borderRadius: 12,
     width: "32%",
     alignItems: "center",
+    color: "white",
   },
   statValue: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "bold",
+    color: "white",
   },
   statLabel: {
     fontSize: 12,
+    color: "#dbeafe",
+  },
+  statsCard: {
+    flexDirection: "row",
+    width: "100%",
+    gap: 12,
+    marginBottom: 20,
   },
   section: {
-    marginBottom: 10,
-    backgroundColor: "#eff6ff",
-    padding: 10,
-    borderRadius: 10,
+    flex: 1,
+    backgroundColor: "#fef9c3",
+    padding: 12,
+    borderRadius: 12,
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    marginBottom: 8,
+    color: "#ca8a04",
+    marginBottom: 6,
   },
   breakdown: {
     fontSize: 12,
     marginTop: 5,
+    color: "#78350f",
   },
 });
 
-const PDFDocument = ({ student, stdDetails }) => {
-  const leet = stdDetails?.performance?.platformWise?.leetcode || {};
-  const gfg = stdDetails?.performance?.platformWise?.gfg || {};
-  const codechef = stdDetails?.performance?.platformWise?.codechef || {};
-  const hackerrank = stdDetails?.performance?.platformWise?.hackerrank || {};
+const PDFDocument = ({ student }) => {
+  const leet = student?.performance?.platformWise?.leetcode || {};
+  const gfg = student?.performance?.platformWise?.gfg || {};
+  const codechef = student?.performance?.platformWise?.codechef || {};
+  const hackerrank = student?.performance?.platformWise?.hackerrank || {};
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {/* Title Image */}
         <View style={styles.logoContainer}>
           <Image src={logo} />
         </View>
 
-        {/* Header */}
         <View style={styles.headerContainer}>
           <View style={styles.header}>
             <View style={styles.avatarContainer}>
-              <Text style={styles.avatar}>
-                {student?.name?.charAt(0) || "S"}
-              </Text>
+              <Text style={styles.avatar}>{student?.name?.charAt(0) || "S"}</Text>
             </View>
             <View style={styles.info}>
               <Text style={styles.name}>{student?.name}</Text>
@@ -155,28 +165,19 @@ const PDFDocument = ({ student, stdDetails }) => {
               <Text style={styles.tableCell}>{student?.college || "AEC"}</Text>
               <Text style={styles.tableCell}>{student?.section || "A"}</Text>
               <Text style={styles.tableCell}>{student?.year || "3"}</Text>
-              <Text style={styles.tableCell}>
-                {student?.dept_name || "AML"}
-              </Text>
-              <Text style={styles.tableCell}>
-                {student?.degree || "B Tech"}
-              </Text>
+              <Text style={styles.tableCell}>{student?.dept_name || "AML"}</Text>
+              <Text style={styles.tableCell}>{student?.degree || "B Tech"}</Text>
             </View>
           </View>
         </View>
 
-        {/* Summary Stats */}
         <View style={styles.statsContainer}>
           <View style={styles.statBox}>
-            <Text style={styles.statValue}>
-              {stdDetails?.performance?.combined?.totalSolved ?? 0}
-            </Text>
+            <Text style={styles.statValue}>{student?.performance?.combined?.totalSolved || 0}</Text>
             <Text style={styles.statLabel}>Total Problems</Text>
           </View>
           <View style={styles.statBox}>
-            <Text style={styles.statValue}>
-              {stdDetails?.performance?.combined?.totalContests ?? 0}
-            </Text>
+            <Text style={styles.statValue}>{student?.performance?.combined?.totalContests || 0}</Text>
             <Text style={styles.statLabel}>Total Contests</Text>
           </View>
           <View style={styles.statBox}>
@@ -185,51 +186,41 @@ const PDFDocument = ({ student, stdDetails }) => {
           </View>
         </View>
 
-        {/* LeetCode Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>LeetCode</Text>
-          <Text style={styles.statValue}>
-            {(leet.easy || 0) + (leet.medium || 0) + (leet.hard || 0)}
-          </Text>
-          <Text style={styles.statLabel}>Problems Solved</Text>
-          <Text style={styles.breakdown}>
-            Easy: {leet.easy || 0}, Medium: {leet.medium || 0}, Hard:{" "}
-            {leet.hard || 0}
-          </Text>
+        <View style={styles.statsCard}>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>LeetCode</Text>
+            <Text style={styles.statValue}>{(leet.easy || 0) + (leet.medium || 0) + (leet.hard || 0)}</Text>
+            <Text style={styles.statLabel}>Problems Solved</Text>
+            <Text style={styles.breakdown}>
+              Easy: {leet?.easy || 0}, Medium: {leet.medium || 0}, Hard: {leet.hard || 0}, Contest: {leet.contests || 0}, Badges: {leet.badges || 0}
+            </Text>
+          </View>
+
+          <View style={{ ...styles.section, backgroundColor: "#fce7f3" }}>
+            <Text style={{ ...styles.sectionTitle, color: "#db2777" }}>CodeChef</Text>
+            <Text style={styles.statValue}>{codechef.contests ?? 0}</Text>
+            <Text style={styles.statLabel}>Contests Participated</Text>
+            <Text style={styles.breakdown}>
+              Problems Solved: {codechef.problems || 0}, Star: {codechef.stars || 0}, Badges: {codechef.badges || 0}
+            </Text>
+          </View>
         </View>
 
-        {/* CodeChef Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>CodeChef</Text>
-          <Text style={styles.statValue}>{codechef.contests ?? 0}</Text>
-          <Text style={styles.statLabel}>Contests Participated</Text>
-          <Text style={styles.breakdown}>
-            Problems Solved: {codechef.problems || 0}
-          </Text>
-        </View>
+        <View style={styles.statsCard}>
+          <View style={{ ...styles.section, backgroundColor: "#dcfce7" }}>
+            <Text style={{ ...styles.sectionTitle, color: "#15803d" }}>GeeksforGeeks</Text>
+            <Text style={styles.statValue}>{(gfg.school || 0) + (gfg.basic || 0) + (gfg.easy || 0) + (gfg.medium || 0) + (gfg.hard || 0)}</Text>
+            <Text style={styles.statLabel}>Problems Solved</Text>
+            <Text style={styles.breakdown}>
+              School: {gfg.school || 0}, Basic: {gfg.basic || 0}, Easy: {gfg.easy || 0}, Medium: {gfg.medium || 0}, Hard: {gfg.hard || 0}
+            </Text>
+          </View>
 
-        {/* GeeksforGeeks Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>GeeksforGeeks</Text>
-          <Text style={styles.statValue}>
-            {(gfg.school || 0) +
-              (gfg.basic || 0) +
-              (gfg.easy || 0) +
-              (gfg.medium || 0) +
-              (gfg.hard || 0)}
-          </Text>
-          <Text style={styles.statLabel}>Problems Solved</Text>
-          <Text style={styles.breakdown}>
-            School: {gfg.school || 0}, Basic: {gfg.basic || 0}, Easy:{" "}
-            {gfg.easy || 0}, Medium: {gfg.medium || 0}, Hard: {gfg.hard || 0}
-          </Text>
-        </View>
-
-        {/* HackerRank Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>GeeksforGeeks Badges</Text>
-          <Text style={styles.statValue}>{hackerrank.badges || 0}</Text>
-          <Text style={styles.statLabel}>Badges Gained</Text>
+          <View style={{ ...styles.section, backgroundColor: "#dbeafe" }}>
+            <Text style={{ ...styles.sectionTitle, color: "#1d4ed8" }}>Hacker Rank</Text>
+            <Text style={styles.statValue}>{hackerrank.badges || 0}</Text>
+            <Text style={styles.statLabel}>Badges Gained</Text>
+          </View>
         </View>
       </Page>
     </Document>
