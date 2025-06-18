@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FiCheck, FiClock, FiCode, FiX } from "react-icons/fi";
+import { FiCheck, FiClock, FiCode, FiRefreshCw, FiX } from "react-icons/fi";
 
 import { useAuth } from "../../context/AuthContext";
 import dayjs from "dayjs";
@@ -12,6 +12,7 @@ import {
   UserResetPasswordModal,
 } from "../../components/Modals";
 import Footer from "../../components/Footer";
+import { IoRefreshCircleOutline } from "react-icons/io5";
 const StudentDashboard = () => {
   const [editProfile, setEditprofile] = useState(false);
   const [updateProfile, setUpdateProfile] = useState(false);
@@ -94,10 +95,10 @@ const StudentDashboard = () => {
                       {currentUser.overall_rank}
                     </p>
                   </div>
-                  <div className="bg-green-200 rounded-full w-18 h-18 flex flex-col items-center p-2">
-                    <p className="text-sm text-gray-500  mt-2">Score</p>
+                  <div className="bg-green-200 rounded-full md:w-16 md:h-16  w-14 h-14 flex flex-col items-center p-3 justify-center">
+                    <p className="text-sm text-gray-500  ">Score</p>
 
-                    <p className="text-lg text-gray-900">
+                    <p className="md:text-lg text-base  text-gray-900">
                       {currentUser.score}
                     </p>
                   </div>
@@ -201,8 +202,11 @@ const StudentDashboard = () => {
                 Section:{" "}
                 <span className="font-semibold">{currentUser.section}</span>
               </span>
-            </div>
 
+            </div>
+            <button className="px-4 py-2 bg-white rounded-xl shadow-sm flex items-center gap-3">
+              <FiRefreshCw /> Refresh
+            </button>
             {/* Stats Cards */}
             <div className="grid grid-cols-2 mb-4 xl:grid-cols-4 gap-3 md:border-0 border border-gray-200 p-4 rounded-xl ">
               <StatsCard
@@ -264,7 +268,7 @@ const StudentDashboard = () => {
               />
               <PlatformCard
                 name="GeeksforGeeks"
-                color=" hover:text-green-600 hover:shadow-green-600"
+                color=" hover:text-green-800 hover:shadow-green-800"
                 icon="/GeeksForGeeks_logo.png"
                 total={
                   currentUser.performance.platformWise.gfg.school +
