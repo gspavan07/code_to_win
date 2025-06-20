@@ -125,6 +125,7 @@ export function AuthProvider({ children }) {
       loading,
       login,
       logout,
+      checkAuth,
     }),
     [currentUser, userRole, loading]
   );

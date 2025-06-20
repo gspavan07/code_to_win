@@ -12,13 +12,13 @@ const { logger, safeRequest, extractUsername } = require("../utils");
  */
 async function scrapeHackerRankProfile(url) {
   if (!url || url.trim() === "") {
-    return { Total_Score: 0 };
+    throw new Error("Invalid URL");
   }
 
   try {
     const response = await safeRequest(url);
     if (!response) {
-      return { error: "Invalid URL", Total_Score: 0 };
+      throw new Error("Failed to fetch HackerRank profile");
     }
 
     const $ = cheerio.load(response.data);
@@ -61,9 +61,10 @@ async function scrapeHackerRankProfile(url) {
       Total_stars: totalStars,
     };
   } catch (error) {
-    logger.error(`Error scraping HackerRank profile: ${error.message}`);
-    return { error: error.message, Total_Score: 0 };
+    logger.error(
+      `[SCRAPING] Error scraping HackerRank profile: ${error.message}`
+    );
+    throw error;
   }
 }
-
 module.exports = scrapeHackerRankProfile;

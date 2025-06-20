@@ -14,7 +14,7 @@ const config = require("../config");
  */
 async function scrapeGeeksForGeeksProfile(url) {
   if (!url || url.trim() === "") {
-    return { Total_Score: 0 };
+    throw new Error("Invalid URL");
   }
 
   try {
@@ -26,7 +26,7 @@ async function scrapeGeeksForGeeksProfile(url) {
     });
 
     if (response.status !== 200) {
-      return { Error: "Invalid or inaccessible URL", Total_Score: 0 };
+      throw new Error(`Non-200 status code: ${response.status}`);
     }
 
     const $ = cheerio.load(response.data);
@@ -79,8 +79,10 @@ async function scrapeGeeksForGeeksProfile(url) {
       Hard: problemsDict.Hard,
     };
   } catch (error) {
-    logger.error(`Error scraping GeeksForGeeks profile: ${error.message}`);
-    return { Error: error.message };
+    logger.error(
+      `[SCRAPING] Error scraping GeeksForGeeks profile: ${error.message}`
+    );
+    throw error;
   }
 }
 

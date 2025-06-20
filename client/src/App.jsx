@@ -1,5 +1,6 @@
 import React, { Suspense, lazy } from "react";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import LoadingSpinner from "./common/LoadingSpinner";
 import { useAuth } from "./context/AuthContext";
 
@@ -35,61 +36,64 @@ const ProtectedRoute = ({ children, role }) => {
 
 const App = () => {
   return (
-    <BrowserRouter>
-      <Suspense fallback={<LoadingSpinner fullPage />}>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/dev" element={<Dev />} />
-          <Route path="/contact" element={<ContactUs />} />
-          <Route path="/rank" element={<RankingTable />} />
+    <>
+      <Toaster position="top-right" />
+      <BrowserRouter>
+        <Suspense fallback={<LoadingSpinner fullPage />}>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/dev" element={<Dev />} />
+            <Route path="/contact" element={<ContactUs />} />
+            <Route path="/rank" element={<RankingTable />} />
 
-          {/* Protected routes - Student */}
-          <Route
-            path="/student/*"
-            element={
-              <ProtectedRoute role="student">
-                <StudentDashboard />
-              </ProtectedRoute>
-            }
-          />
+            {/* Protected routes - Student */}
+            <Route
+              path="/student/*"
+              element={
+                <ProtectedRoute role="student">
+                  <StudentDashboard />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Protected routes - Faculty */}
-          <Route
-            path="/faculty/*"
-            element={
-              <ProtectedRoute role="faculty">
-                <FacultyDashboard />
-              </ProtectedRoute>
-            }
-          />
+            {/* Protected routes - Faculty */}
+            <Route
+              path="/faculty/*"
+              element={
+                <ProtectedRoute role="faculty">
+                  <FacultyDashboard />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Protected routes - HOD */}
-          <Route
-            path="/hod/*"
-            element={
-              <ProtectedRoute role="hod">
-                <HeadDashboard />
-              </ProtectedRoute>
-            }
-          />
+            {/* Protected routes - HOD */}
+            <Route
+              path="/hod/*"
+              element={
+                <ProtectedRoute role="hod">
+                  <HeadDashboard />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Protected routes - Admin */}
-          <Route
-            path="/admin/*"
-            element={
-              <ProtectedRoute role="admin">
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
+            {/* Protected routes - Admin */}
+            <Route
+              path="/admin/*"
+              element={
+                <ProtectedRoute role="admin">
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* 404 route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Suspense>
-    </BrowserRouter>
+            {/* 404 route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
+      </BrowserRouter>
+    </>
   );
 };
 

@@ -2,7 +2,9 @@ const express = require("express");
 const router = express.Router();
 const db = require("../config/db"); // MySQL connection
 const { logger } = require("../utils"); // <-- Add logger
-
+const {
+  scrapeAndUpdatePerformance,
+} = require("../scrapers/scrapeAndUpdatePerformance");
 // Profile routes
 router.get("/profile", async (req, res) => {
   const userId = req.query.userId;
@@ -213,6 +215,77 @@ router.post("/coding-profile", async (req, res) => {
   } catch (err) {
     logger.error(
       `Error submitting coding profiles for userId=${userId}: ${err.message}`
+    );
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// POST /student/refresh-coding-profiles
+router.post("/refresh-coding-profiles", async (req, res) => {
+  const { userId } = req.body;
+  logger.info(`Refreshing coding profiles for userId: ${userId}`);
+  try {
+    const [profiles] = await db.query(
+      `SELECT leetcode_id, leetcode_status, codechef_id, codechef_status, geekforgeeks_id, geekforgeeks_status, hackerrank_id, hackerrank_status
+       FROM student_coding_profiles WHERE student_id = ?`,
+      [userId]
+    );
+
+    if (!profiles.length) {
+      return res.status(404).json({ message: "No coding profiles found" });
+    }
+
+    const profile = profiles[0];
+    const tasks = [];
+
+    if (profile.leetcode_id && profile.leetcode_status === "accepted") {
+      tasks.push(
+        scrapeAndUpdatePerformance(
+          userId,
+          "leetcode",
+          profile.leetcode_id
+        ).catch((err) => logger.error(`[REFRESH] LeetCode: ${err.message}`))
+      );
+    }
+    if (profile.codechef_id && profile.codechef_status === "accepted") {
+      tasks.push(
+        scrapeAndUpdatePerformance(
+          userId,
+          "codechef",
+          profile.codechef_id
+        ).catch((err) => logger.error(`[REFRESH] CodeChef: ${err.message}`))
+      );
+    }
+    if (profile.geekforgeeks_id && profile.geekforgeeks_status === "accepted") {
+      tasks.push(
+        scrapeAndUpdatePerformance(
+          userId,
+          "geekforgeeks",
+          profile.geekforgeeks_id
+        ).catch((err) => logger.error(`[REFRESH] GFG: ${err.message}`))
+      );
+    }
+    if (profile.hackerrank_id && profile.hackerrank_status === "accepted") {
+      tasks.push(
+        scrapeAndUpdatePerformance(
+          userId,
+          "hackerrank",
+          profile.hackerrank_id
+        ).catch((err) => logger.error(`[REFRESH] HackerRank: ${err.message}`))
+      );
+    }
+
+    const results = await Promise.all(tasks);
+
+    logger.info(
+      `Completed refresh for ${tasks.length} coding profiles for userId: ${userId}`
+    );
+    res.json({
+      message: `Refreshed ${tasks.length} coding profiles`,
+    });
+  } catch (err) {
+    logger.error(
+      `Error refreshing coding profiles for userId=${userId}: ${err.message}`
     );
     res.status(500).json({ message: "Server error" });
   }

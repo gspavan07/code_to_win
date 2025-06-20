@@ -14,7 +14,7 @@ const config = require("../config");
  */
 async function scrapeCodeChefProfile(url) {
   if (!url || url.trim() === "") {
-    return { Total_Score: 0 };
+    throw new Error("Invalid URL");
   }
 
   try {
@@ -23,28 +23,10 @@ async function scrapeCodeChefProfile(url) {
 
     // Use rotating user agents and add more headers to avoid detection
     const headers = {
-      "User-Agent": `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${
-        Math.floor(Math.random() * 10) + 90
-      }.0.${Math.floor(Math.random() * 1000) + 4000}.${Math.floor(
-        Math.random() * 100
-      )} Safari/537.36`,
-      Accept:
-        "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-      "Accept-Language": "en-US,en;q=0.9",
-      "Accept-Encoding": "gzip, deflate, br",
-      Connection: "keep-alive",
-      "Cache-Control": "max-age=0",
-      "Sec-Ch-Ua":
-        '"Chromium";v="92", " Not A;Brand";v="99", "Google Chrome";v="92"',
-      "Sec-Ch-Ua-Mobile": "?0",
-      "Sec-Fetch-Dest": "document",
-      "Sec-Fetch-Mode": "navigate",
-      "Sec-Fetch-Site": "none",
-      "Sec-Fetch-User": "?1",
-      "Upgrade-Insecure-Requests": "1",
+      // ...existing headers...
     };
 
-    logger.info(`Fetching CodeChef profile: ${url}`);
+    logger.info(`[SCRAPING] Fetching CodeChef profile: ${url}`);
 
     const response = await axios.get(url, {
       headers,
@@ -52,8 +34,10 @@ async function scrapeCodeChefProfile(url) {
     });
 
     if (response.status !== 200) {
-      logger.error(`CodeChef returned status code: ${response.status}`);
-      return { error: "Failed to fetch profile", Total_Score: 0 };
+      logger.error(
+        `[SCRAPING] CodeChef returned status code: ${response.status}`
+      );
+      throw new Error(`Non-200 status code: ${response.status}`);
     }
 
     const $ = cheerio.load(response.data);
@@ -100,7 +84,9 @@ async function scrapeCodeChefProfile(url) {
       }
     }
 
-    logger.info(`Successfully scraped CodeChef profile for ${username}`);
+    logger.info(
+      `[SCRAPING] Successfully scraped CodeChef profile for ${username}`
+    );
     return {
       Username: username,
       Star: star,
@@ -110,11 +96,10 @@ async function scrapeCodeChefProfile(url) {
       Badges: badges.length,
     };
   } catch (error) {
-    logger.error(`Error scraping CodeChef profile: ${error.message}`);
-    return {
-      Username: extractUsername(url),
-      Error: error.message,
-    };
+    logger.error(
+      `[SCRAPING] Error scraping CodeChef profile: ${error.message}`
+    );
+    throw error;
   }
 }
 

@@ -65,11 +65,13 @@ async function fetchLeetCodeData(username) {
       }
       return data.data;
     } else {
-      logger.error(`LeetCode API returned status code: ${response.status}`);
+      logger.error(
+        `[SCRAPING] LeetCode API returned status code: ${response.status}`
+      );
       return null;
     }
   } catch (error) {
-    logger.error(`Error fetching LeetCode data: ${error.message}`);
+    logger.error(`[SCRAPING] Error fetching LeetCode data: ${error.message}`);
     return null;
   }
 }
@@ -81,16 +83,13 @@ async function fetchLeetCodeData(username) {
  */
 async function scrapeLeetCodeProfile(url) {
   if (!url || url.trim() === "") {
-    return { Total_Score: 0 };
+    throw new Error("Invalid URL");
   }
 
   const username = extractUsername(url);
 
   if (username === "N/A") {
-    return {
-      Username: "N/A",
-      Total_Score: 0,
-    };
+    throw new Error("Invalid Username");
   }
 
   try {
@@ -98,32 +97,14 @@ async function scrapeLeetCodeProfile(url) {
 
     // If API fails, return default values
     if (!data) {
-      return {
-        Username: username,
-        Problems: {
-          Easy: 0,
-          Medium: 0,
-          Hard: 0,
-          Total: 0,
-        },
-        Contests_Attended: 0,
-      };
+      throw new Error("Failed to fetch data from LeetCode");
     }
 
     const user = data.matchedUser || {};
     const contest = data.userContestRanking || {};
 
     if (!user && !contest) {
-      return {
-        Username: username,
-        Problems: {
-          Easy: 0,
-          Medium: 0,
-          Hard: 0,
-          Total: 0,
-        },
-        Contests_Attended: 0,
-      };
+      throw new Error("No user or contest data found");
     }
 
     // Extract problem counts
@@ -153,11 +134,8 @@ async function scrapeLeetCodeProfile(url) {
       badges: badges.length,
     };
   } catch (error) {
-    logger.error(`Error in get_leetcode_profile: ${error.message}`);
-    return {
-      Username: username,
-      Total_Score: 0,
-    };
+    logger.error(`[SCRAPING] Error in get_leetcode_profile: ${error.message}`);
+    throw error;
   }
 }
 

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FiCheck, FiClock, FiCode, FiRefreshCw, FiX } from "react-icons/fi";
-
+import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
 import dayjs from "dayjs";
 import Navbar from "../../components/Navbar";
@@ -12,16 +12,15 @@ import {
   UserResetPasswordModal,
 } from "../../components/Modals";
 import Footer from "../../components/Footer";
-import { IoRefreshCircleOutline } from "react-icons/io5";
 const StudentDashboard = () => {
+  const [refreshing, setRefreshing] = useState(false);
   const [editProfile, setEditprofile] = useState(false);
   const [updateProfile, setUpdateProfile] = useState(false);
   const [changepassword, setChangepassword] = useState(false);
-  const { currentUser } = useAuth();
+  const { currentUser, checkAuth } = useAuth();
   const formattedDate = dayjs(
     currentUser.performance.combined.last_updated
   ).format("DD/MM/YYYY | hh:mm A");
-  console.log(currentUser);
   const easyProblems =
     currentUser.performance.platformWise.leetcode.easy +
     currentUser.performance.platformWise.gfg.school +
@@ -36,6 +35,32 @@ const StudentDashboard = () => {
   const hardProblems =
     currentUser.performance.platformWise.leetcode.hard +
     currentUser.performance.platformWise.gfg.hard;
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    const toastId = toast.loading("Refreshing coding profiles...");
+    try {
+      const res = await fetch("/api/student/refresh-coding-profiles", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId: currentUser.student_id }),
+      });
+      if (!res.ok) {
+        throw new Error("Failed to refresh coding profiles");
+      }
+      await checkAuth();
+      toast.success(
+        "Coding profiles refreshed! Please wait a moment for updates.",
+        { id: toastId }
+      );
+    } catch (err) {
+      toast.error("Failed to refresh coding profiles.", { id: toastId });
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   return (
     <>
@@ -90,7 +115,9 @@ const StudentDashboard = () => {
                 <h2 className="text-lg font-bold">{currentUser.name}</h2>
                 <div className="flex gap-10">
                   <div>
-                    <p className="text-sm text-gray-500  mt-2">University Rank</p>
+                    <p className="text-sm text-gray-500  mt-2">
+                      University Rank
+                    </p>
                     <p className="text-xl font-semibold text-gray-800">
                       {currentUser.overall_rank}
                     </p>
@@ -202,10 +229,14 @@ const StudentDashboard = () => {
                 Section:{" "}
                 <span className="font-semibold">{currentUser.section}</span>
               </span>
-
             </div>
-            <button className="px-4 py-2 bg-white rounded-xl shadow-sm flex items-center gap-3">
-              <FiRefreshCw /> Refresh
+            <button
+              onClick={handleRefresh}
+              className="px-4 py-2 bg-white rounded-xl shadow-sm flex items-center gap-3 cursor-pointer"
+              disabled={refreshing}
+            >
+              <FiRefreshCw className={refreshing ? "animate-spin" : ""} />
+              {refreshing ? "Refreshing..." : "Refresh"}
             </button>
             {/* Stats Cards */}
             <div className="grid grid-cols-2 mb-4 xl:grid-cols-4 gap-3 md:border-0 border border-gray-200 p-4 rounded-xl ">
@@ -250,7 +281,8 @@ const StudentDashboard = () => {
                   Easy: currentUser.performance.platformWise.leetcode.easy,
                   Medium: currentUser.performance.platformWise.leetcode.medium,
                   Hard: currentUser.performance.platformWise.leetcode.hard,
-                  contests: currentUser.performance.platformWise.leetcode.contests,
+                  contests:
+                    currentUser.performance.platformWise.leetcode.contests,
                   Badges: currentUser.performance.platformWise.leetcode.badges,
                 }}
               />
@@ -261,7 +293,8 @@ const StudentDashboard = () => {
                 total={currentUser.performance.platformWise.codechef.contests}
                 subtitle="Contests Participated"
                 breakdown={{
-                  "Problems Solved": currentUser.performance.platformWise.codechef.problems,
+                  "Problems Solved":
+                    currentUser.performance.platformWise.codechef.problems,
                   Star: currentUser.performance.platformWise.codechef.stars,
                   Badges: currentUser.performance.platformWise.codechef.badges,
                 }}
