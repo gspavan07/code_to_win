@@ -2,10 +2,8 @@ import React, { useEffect, useState, useRef } from "react";
 import PlatformCard from "./ui/PlatformCard";
 import StatsCard from "./ui/StatsCard";
 import { FiCheck, FiCode, FiDownload } from "react-icons/fi";
-import axios from "axios";
 import { pdf } from "@react-pdf/renderer";
 import { IoCloseCircle } from "react-icons/io5";
-import html2canvas from "html2canvas";
 import PDFDocument from "../utils/PDFDocument";
 
 const ViewProfile = ({ student, onClose }) => {
@@ -20,9 +18,8 @@ const ViewProfile = ({ student, onClose }) => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `${
-        student?.name + "_" + student?.student_id || "profile"
-      }.pdf`;
+      link.download = `${student?.name + "_" + student?.student_id || "profile"
+        }.pdf`;
       link.click();
       URL.revokeObjectURL(url);
       setIsGeneratingPDF(false);
@@ -34,7 +31,7 @@ const ViewProfile = ({ student, onClose }) => {
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-70 flex items-center justify-center h-screen  bg-[#00000055]"
+      className="fixed inset-0 z-70 flex items-start justify-center h-screen overflow-scroll bg-[#00000055]  "
     >
       <div
         className="bg-[#f7f7f7] rounded-xl space-y-4 p-6 w-full flex flex-col items-center max-w-3xl shadow-lg relative"
@@ -42,42 +39,35 @@ const ViewProfile = ({ student, onClose }) => {
       >
         {/* Profile Content */}
         <div className="w-full flex flex-col items-center space-y-4">
-          <div className="rounded-xl p-4 flex flex-col items-start gap-6 justify-between bg-[#3370ff] text-[#ffffff] shadow-lg w-full">
+          <div className="rounded-xl p-3 flex flex-col items-start gap-3 md:gap-6 justify-between bg-[#3370ff] text-[#ffffff] shadow-lg w-full">
             {/* Avatar + Name */}
             <div className="flex items-center gap-4">
-              <div className="bg-[#ffffff4e] w-20 h-20 rounded-full flex items-center justify-center text-2xl font-semibold">
+              <div className="bg-[#ffffff4e] md:w-20 md:h-20 w-16 h-16 rounded-full flex items-center justify-center md:text-2xl text-xl font-semibold">
                 {student?.name?.charAt(0)}
               </div>
               <div>
-                <h2 className="text-lg font-semibold">{student?.name}</h2>
-                <span className="text-xs bg-[#ffffff] text-[#9810fa] px-2 py-0.5 rounded-full font-medium">
+                <h2 className="md:text-lg text-md max-w-44 md:max-w-full font-semibold">{student?.name}</h2>
+                <span className="text-xs bg-[#ffffff] text-[#3370ff] px-2 py-0.5 rounded-full font-medium">
                   {student?.student_id}
                 </span>
               </div>
             </div>
             {/* Info Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-x-8 w-full text-sm font-medium text-[#ffffff] gap-y-3">
-              <div>
-                <div className="text-[#ffffffd6]">Campus</div>
-                <div>{student?.college}</div>
-              </div>
-              <div>
-                <div className="text-[#ffffffd6]">Section</div>
-                <div>{student?.section}</div>
-              </div>
-              <div>
-                <div className="text-[#ffffffd6]">Year</div>
-                <div>{student?.year}</div>
-              </div>
-              <div>
-                <div className="text-[#ffffffd6]">Department</div>
-                <div>{student?.dept_name}</div>
-              </div>
-              <div>
-                <div className="text-[#ffffffd6]">Degree</div>
-                <div>{student?.degree}</div>
-              </div>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-x-8 w-full text-sm font-medium text-[#ffffff] md:gap-y-3 gap-y-1">
+
+              {[
+                { label: "Campus", value: student?.college },
+                { label: "Section", value: student?.section },
+                { label: "Year", value: student?.year },
+                { label: "Department", value: student?.dept_name },
+                { label: "Degree", value: student?.degree },
+              ].map((label, value, index) => (
+                <div key={index} className="text-[#ffffffd6] flex md:flex-col flex-row gap-x-1">
+                  {label.label}:<span>{label.value}</span>
+                </div>
+              ))}
             </div>
+
           </div>
           {/* Stats Cards */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 w-full">
@@ -180,7 +170,7 @@ const ViewProfile = ({ student, onClose }) => {
           <IoCloseCircle />
         </button>
       </div>
-    </div>
+    </div >
   );
 };
 

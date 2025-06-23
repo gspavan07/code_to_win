@@ -12,17 +12,18 @@ const styles = StyleSheet.create({
   page: {
     padding: 20,
     fontFamily: "Helvetica",
-    backgroundColor: "#f0f4f8",
+    backgroundColor: "#f4f7fa",
   },
   logoContainer: {
     alignItems: "center",
     marginBottom: 20,
   },
   headerContainer: {
-    backgroundColor: "#1e3a8a",
+    backgroundColor: "#004aad",
     borderRadius: 12,
     padding: 15,
     marginBottom: 20,
+    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
   },
   header: {
     flexDirection: "row",
@@ -32,12 +33,11 @@ const styles = StyleSheet.create({
   avatarContainer: {
     width: 70,
     height: 70,
-    backgroundColor: "#3b82f6",
+    backgroundColor: "#ffffff33",
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 50,
-    marginRight: 15,
-    border: "2 solid white",
+    marginRight: 12,
   },
   avatar: {
     color: "white",
@@ -53,34 +53,33 @@ const styles = StyleSheet.create({
     color: "white",
   },
   roll: {
-    fontSize: 10,
+    fontSize: 11,
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 50,
-    backgroundColor: "#60a5fa",
+    borderRadius: 20,
+    backgroundColor: "#ffffff3d",
     fontWeight: "bold",
     color: "white",
-    width: 85,
+    width: 90,
     textAlign: "center",
     marginTop: 5,
   },
   infoTable: {
     marginLeft: 10,
-    marginTop: 10,
   },
   tableRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 5,
+    marginBottom: 6,
   },
   tableHeader: {
-    fontSize: 12,
-    color: "#cbd5e1",
+    fontSize: 13,
+    color: "#c9e1ff",
     width: "20%",
   },
   tableCell: {
-    fontSize: 12,
-    color: "#e0f2fe",
+    fontSize: 13,
+    color: "#ffffff",
     width: "20%",
   },
   statsContainer: {
@@ -89,44 +88,44 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   statBox: {
-    backgroundColor: "#3b82f6",
+    backgroundColor: "#ffffff",
     padding: 12,
     borderRadius: 12,
     width: "32%",
     alignItems: "center",
-    color: "white",
+    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
   },
   statValue: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "bold",
-    color: "white",
+    color: "#004aad",
   },
   statLabel: {
-    fontSize: 12,
-    color: "#dbeafe",
+    fontSize: 13,
+    color: "#555",
   },
   statsCard: {
     flexDirection: "row",
     width: "100%",
     gap: 12,
-    marginBottom: 20,
   },
   section: {
     flex: 1,
-    backgroundColor: "#fef9c3",
+    backgroundColor: "#e8f0fe",
     padding: 12,
     borderRadius: 12,
+    marginBottom: 20,
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#ca8a04",
+    color: "#004aad",
     marginBottom: 6,
   },
   breakdown: {
     fontSize: 12,
-    marginTop: 5,
-    color: "#78350f",
+    marginTop: 6,
+    color: "#333",
   },
 });
 
@@ -153,6 +152,7 @@ const PDFDocument = ({ student }) => {
               <Text style={styles.roll}>{student?.student_id}</Text>
             </View>
           </View>
+
           <View style={styles.infoTable}>
             <View style={styles.tableRow}>
               <Text style={styles.tableHeader}>Campus</Text>
@@ -196,8 +196,8 @@ const PDFDocument = ({ student }) => {
             </Text>
           </View>
 
-          <View style={{ ...styles.section, backgroundColor: "#fce7f3" }}>
-            <Text style={{ ...styles.sectionTitle, color: "#db2777" }}>CodeChef</Text>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>CodeChef</Text>
             <Text style={styles.statValue}>{codechef.contests ?? 0}</Text>
             <Text style={styles.statLabel}>Contests Participated</Text>
             <Text style={styles.breakdown}>
@@ -207,17 +207,19 @@ const PDFDocument = ({ student }) => {
         </View>
 
         <View style={styles.statsCard}>
-          <View style={{ ...styles.section, backgroundColor: "#dcfce7" }}>
-            <Text style={{ ...styles.sectionTitle, color: "#15803d" }}>GeeksforGeeks</Text>
-            <Text style={styles.statValue}>{(gfg.school || 0) + (gfg.basic || 0) + (gfg.easy || 0) + (gfg.medium || 0) + (gfg.hard || 0)}</Text>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>GeeksforGeeks</Text>
+            <Text style={styles.statValue}>
+              {(gfg.school || 0) + (gfg.basic || 0) + (gfg.easy || 0) + (gfg.medium || 0) + (gfg.hard || 0)}
+            </Text>
             <Text style={styles.statLabel}>Problems Solved</Text>
             <Text style={styles.breakdown}>
               School: {gfg.school || 0}, Basic: {gfg.basic || 0}, Easy: {gfg.easy || 0}, Medium: {gfg.medium || 0}, Hard: {gfg.hard || 0}
             </Text>
           </View>
 
-          <View style={{ ...styles.section, backgroundColor: "#dbeafe" }}>
-            <Text style={{ ...styles.sectionTitle, color: "#1d4ed8" }}>Hacker Rank</Text>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>HackerRank</Text>
             <Text style={styles.statValue}>{hackerrank.badges || 0}</Text>
             <Text style={styles.statLabel}>Badges Gained</Text>
           </View>

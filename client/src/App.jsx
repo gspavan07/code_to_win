@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import LoadingSpinner from "./common/LoadingSpinner";
 import { useAuth } from "./context/AuthContext";
+import HODDashboard from "./pages/dashboards/HODDashboard";
 
 // Lazy-loaded components
 const Login = lazy(() => import("./pages/Login"));

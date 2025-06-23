@@ -11,8 +11,8 @@ const PlatformCard = ({
   <div
     className={`bg-[#ffffff] p-4 rounded-xl shadow-sm hover:shadow-md duration-300 trasition-all w-full ${color}`}
   >
-    <div className="flex justify-between items-center mb-2">
-      <h2 className="font-semibold text-base md:text-lg">{name}</h2>
+    <div className="flex  justify-between items-center md:mb-2 ">
+      <h2 className="font-semibold text-base md:text-lg overflow-hidden max-w-lg">{name}</h2>
       <div >
         <img src={icon} alt={`${name} logo`} className="md:max-w-20 md:h-20 max-w-12 h-12 object-contain" />
       </div>

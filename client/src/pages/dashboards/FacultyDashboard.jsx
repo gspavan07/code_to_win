@@ -16,7 +16,6 @@ import {
   ResetPasswordModal,
 } from "../../components/Modals";
 import UserProfile from "../../components/ui/UserProfile";
-import Footer from "../../components/Footer";
 
 // Lazy-loaded components
 const RankingTable = lazy(() => import("../../components/Ranking"));
@@ -34,9 +33,11 @@ function FacultyDashboard() {
   const [addStudentMenu, setAddStudentMenu] = useState("individual");
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [selectedTab, setSelectedTab] = useState("StudentRanking");
 
   const fetchStudents = useCallback(async () => {
+    setLoading(true);
     try {
       const { data } = await axios.get(`/api/faculty/students`, {
         params: {
@@ -49,6 +50,7 @@ function FacultyDashboard() {
     } catch (error) {
       console.error("Error fetching students:", error);
     } finally {
+      setLoading(false);
     }
   }, [currentUser?.dept_code, currentUser?.year, currentUser?.section]);
 
@@ -60,19 +62,21 @@ function FacultyDashboard() {
 
   const DashboardTabs = () => (
     <div className="grid grid-cols-2 md:grid-cols-4 justify-around rounded bg-gray-100 border-gray-200 border gap-2 md:gap-4 p-1 mb-4 text-base">
-      {["StudentRanking", "StudentManagment", "StudentRequests", "More"].map(
-        (tab) => (
-          <button
-            key={tab}
-            onClick={() => setSelectedTab(tab)}
-            className={`flex-1 min-w-[120px] py-1 rounded ${
-              selectedTab === tab ? "bg-white text-black" : ""
+      {[
+        "StudentRanking",
+        "StudentManagment",
+        "StudentRequests",
+        "AddStudent",
+      ].map((tab) => (
+        <button
+          key={tab}
+          onClick={() => setSelectedTab(tab)}
+          className={`flex-1 min-w-[120px] py-1 rounded ${selectedTab === tab ? "bg-white text-black" : ""
             }`}
-          >
-            {tab.replace(/([A-Z])/g, " $1").trim()}
-          </button>
-        )
-      )}
+        >
+          {tab.replace(/([A-Z])/g, " $1").trim()}
+        </button>
+      ))}
     </div>
   );
 
@@ -100,165 +104,173 @@ function FacultyDashboard() {
           <UserProfile user={currentUser} />
           <DashboardTabs />
 
-          <>
-            {selectedTab === "StudentRanking" && (
-              <Suspense fallback={<LoadingSpinner />}>
-                <RankingTable filter={true} />
-              </Suspense>
-            )}
-
-            {selectedTab === "StudentManagment" && (
-              <div className="bg-white p-2 md:p-6 rounded-lg shadow overflow-x-auto">
-                <h2 className="text-xl font-semibold mb-4">
-                  Student Management
-                </h2>
-                <p className="text-gray-500 mb-4">
-                  Manage student records, update details, and more.
-                </p>
-                <Suspense
-                  fallback={
-                    <>
-                      <LoadingSpinner />
-                      <p className="text-center">Loading Student Table...</p>
-                    </>
-                  }
-                >
-                  <StudentTable
-                    students={memoizedStudents}
-                    showBranch={false}
-                    showYear={false}
-                    showSection={false}
-                    onProfileClick={setSelectedStudent}
-                  />
+          {loading ? (
+            <LoadingSpinner />
+          ) : (
+            <>
+              {selectedTab === "StudentRanking" && (
+                <Suspense fallback={<LoadingSpinner />}>
+                  <RankingTable filter={true} />
                 </Suspense>
-              </div>
-            )}
+              )}
 
-            {selectedTab === "StudentRequests" && (
-              <div className="bg-white p-2 md:p-6 rounded-lg shadow">
-                <h2 className="text-xl font-semibold mb-4">Student Requests</h2>
-                <p className="text-gray-500 mb-4">
-                  Review and manage student coding profile requests.
-                </p>
-                <Suspense
-                  fallback={
-                    <>
-                      <LoadingSpinner />
-                      <p className="text-center">Loading Student Requests...</p>
-                    </>
-                  }
-                >
-                  <CodingProfileRequests
-                    dept={currentUser?.dept_code}
-                    year={currentUser?.year}
-                    section={currentUser?.section}
-                    facultyId={currentUser?.faculty_id}
-                  />
-                </Suspense>
-              </div>
-            )}
-
-            {selectedTab === "AddStudent" && (
-              <div className="flex flex-col lg:flex-row gap-6 p-0 md:p-6 bg-gray-50">
-                {/* Sidebar Menu */}
-                <div className="w-full lg:w-1/4 bg-white p-4 md:p-6 rounded shadow mb-4 lg:mb-0">
-                  <ul className="space-y-2">
-                    <li>
-                      <button
-                        className={`w-full text-left px-3 py-2 rounded ${
-                          addStudentMenu === "individual"
-                            ? "bg-blue-600 text-white"
-                            : "bg-gray-100 text-gray-900"
-                        }`}
-                        onClick={() => setAddStudentMenu("individual")}
-                      >
-                        Add Individual Student
-                      </button>
-                    </li>
-                    <li>
-                      <button
-                        className={`w-full text-left px-3 py-2 rounded ${
-                          addStudentMenu === "bulk"
-                            ? "bg-blue-600 text-white"
-                            : "bg-gray-100 text-gray-900"
-                        }`}
-                        onClick={() => setAddStudentMenu("bulk")}
-                      >
-                        Bulk Import Students
-                      </button>
-                    </li>
-                    <li>
-                      <button
-                        className={`w-full text-left px-3 py-2 rounded ${
-                          addStudentMenu === "delete"
-                            ? "bg-blue-600 text-white"
-                            : "bg-gray-100 text-gray-900"
-                        }`}
-                        onClick={() => setAddStudentMenu("delete")}
-                      >
-                        Delete Student
-                      </button>
-                    </li>
-                    <li>
-                      <button
-                        className={`w-full text-left px-3 py-2 rounded ${
-                          addStudentMenu === "resetpassword"
-                            ? "bg-blue-600 text-white"
-                            : "bg-gray-100 text-gray-900"
-                        }`}
-                        onClick={() => setAddStudentMenu("resetpassword")}
-                      >
-                        Reset Password
-                      </button>
-                    </li>
-                  </ul>
+              {selectedTab === "StudentManagment" && (
+                <div className="bg-white p-2 md:p-6 rounded-lg shadow overflow-x-auto">
+                  <h2 className="text-xl font-semibold mb-4">
+                    Student Management
+                  </h2>
+                  <p className="text-gray-500 mb-4">
+                    Manage student records, update details, and more.
+                  </p>
+                  <Suspense
+                    fallback={
+                      <>
+                        <LoadingSpinner />
+                        <p className="text-center">Loading Student Table...</p>
+                      </>
+                    }
+                  >
+                    <StudentTable
+                      students={memoizedStudents}
+                      showBranch={true}
+                      showYear={false}
+                      showSection={true}
+                      onProfileClick={setSelectedStudent}
+                    />
+                  </Suspense>
                 </div>
+              )}
 
-                {/* Dynamic Content Area */}
-                <div className="w-full lg:w-3/4">
-                  {addStudentMenu === "individual" && (
-                    <Suspense fallback={<LoadingSpinner />}>
-                      <AddIndividualStudentModel onSuccess={fetchStudents} />
-                    </Suspense>
-                  )}
-                  {addStudentMenu === "bulk" && (
-                    <div className="bg-white p-4 md:p-6 h-fit rounded shadow">
-                      <h2 className="text-xl font-bold text-gray-900 mb-1">
-                        Bulk Import Students
-                      </h2>
-                      <p className="text-sm text-gray-500 mb-6">
-                        Import multiple students from CSV file
-                      </p>
-                      <Suspense fallback={<LoadingSpinner />}>
-                        <BulkImportStudent onSuccess={fetchStudents} />
-                      </Suspense>
-                    </div>
-                  )}
-                  {addStudentMenu === "delete" && (
-                    <Suspense fallback={<LoadingSpinner />}>
-                      <DeleteIndividualStudentModal onSuccess={fetchStudents} />
-                    </Suspense>
-                  )}
-                  {addStudentMenu === "resetpassword" && (
-                    <div className="bg-white p-4 md:p-6 h-fit rounded shadow">
-                      <h2 className="text-xl font-bold text-gray-900 mb-1">
-                        Reset Student Password
-                      </h2>
-                      <p className="text-sm text-gray-500 mb-6">
-                        Reset the password for a student
-                      </p>
-                      <Suspense fallback={<LoadingSpinner />}>
-                        <ResetPasswordModal onSuccess={fetchStudents} />
-                      </Suspense>
-                    </div>
-                  )}
+              {selectedTab === "StudentRequests" && (
+                <div className="bg-white p-2 md:p-6 rounded-lg shadow">
+                  <h2 className="text-xl font-semibold mb-4">
+                    Student Requests
+                  </h2>
+                  <p className="text-gray-500 mb-4">
+                    Review and manage student coding profile requests.
+                  </p>
+                  <Suspense
+                    fallback={
+                      <>
+                        <LoadingSpinner />
+                        <p className="text-center">
+                          Loading Student Requests...
+                        </p>
+                      </>
+                    }
+                  >
+                    <CodingProfileRequests
+                      dept={currentUser?.dept_code}
+                      year={currentUser?.year}
+                      section={currentUser?.section}
+                      facultyId={currentUser?.faculty_id}
+                    />
+                  </Suspense>
                 </div>
-              </div>
-            )}
-          </>
+              )}
+
+              {selectedTab === "AddStudent" && (
+                <div className="flex flex-col lg:flex-row gap-6 p-0 md:p-6 bg-gray-50">
+                  {/* Sidebar Menu */}
+                  <div className="w-full lg:w-1/4 bg-white p-4 md:p-6 rounded shadow mb-4 lg:mb-0">
+                    <h2 className="text-lg font-bold text-gray-900 mb-4">
+                      More
+                    </h2>
+                    <ul className="space-y-2">
+                      <li>
+                        <button
+                          className={`w-full text-left px-3 py-2 rounded ${addStudentMenu === "individual"
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-100 text-gray-900"
+                            }`}
+                          onClick={() => setAddStudentMenu("individual")}
+                        >
+                          Add Individual Student
+                        </button>
+                      </li>
+                      <li>
+                        <button
+                          className={`w-full text-left px-3 py-2 rounded ${addStudentMenu === "bulk"
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-100 text-gray-900"
+                            }`}
+                          onClick={() => setAddStudentMenu("bulk")}
+                        >
+                          Bulk Import Students
+                        </button>
+                      </li>
+                      <li>
+                        <button
+                          className={`w-full text-left px-3 py-2 rounded ${addStudentMenu === "delete"
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-100 text-gray-900"
+                            }`}
+                          onClick={() => setAddStudentMenu("delete")}
+                        >
+                          Delete Student
+                        </button>
+                      </li>
+                      <li>
+                        <button
+                          className={`w-full text-left px-3 py-2 rounded ${addStudentMenu === "resetpassword"
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-100 text-gray-900"
+                            }`}
+                          onClick={() => setAddStudentMenu("resetpassword")}
+                        >
+                          Reset Password
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* Dynamic Content Area */}
+                  <div className="w-full lg:w-3/4">
+                    {addStudentMenu === "individual" && (
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <AddIndividualStudentModel onSuccess={fetchStudents} />
+                      </Suspense>
+                    )}
+                    {addStudentMenu === "bulk" && (
+                      <div className="bg-white p-4 md:p-6 h-fit rounded shadow">
+                        <h2 className="text-xl font-bold text-gray-900 mb-1">
+                          Bulk Import Students
+                        </h2>
+                        <p className="text-sm text-gray-500 mb-6">
+                          Import multiple students from CSV file
+                        </p>
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <BulkImportStudent onSuccess={fetchStudents} />
+                        </Suspense>
+                      </div>
+                    )}
+                    {addStudentMenu === "delete" && (
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <DeleteIndividualStudentModal
+                          onSuccess={fetchStudents}
+                        />
+                      </Suspense>
+                    )}
+                    {addStudentMenu === "resetpassword" && (
+                      <div className="bg-white p-4 md:p-6 h-fit rounded shadow">
+                        <h2 className="text-xl font-bold text-gray-900 mb-1">
+                          Reset Student Password
+                        </h2>
+                        <p className="text-sm text-gray-500 mb-6">
+                          Reset the password for a student
+                        </p>
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <ResetPasswordModal onSuccess={fetchStudents} />
+                        </Suspense>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
-      <Footer />
     </>
   );
 }

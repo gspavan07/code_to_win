@@ -5,9 +5,8 @@ const StudentTable = ({
   showBranch = true,
   showYear = true,
   showSection = true, // 👈 new prop
-  onProfileClick = () => {},
+  onProfileClick = () => { },
 }) => {
-  console.log(students);
   return (
     <table className="min-w-full bg-white border rounded-lg overflow-hidden shadow text-sm">
       <thead className="bg-gray-100 text-center">

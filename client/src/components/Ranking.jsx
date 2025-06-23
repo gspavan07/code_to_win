@@ -149,9 +149,8 @@ const RankingTable = ({ filter }) => {
       depts.find((d) => d.dept_code === filters.dept)?.dept_name ||
       filters.dept;
     const filenamePrefix =
-      `${deptName || ""}${filters?.year ? " " + filters.year + "_year" : ""}${
-        filters?.section ? " " + filters.section + "_sec" : ""
-      }`.trim() || "overall";
+      `${deptName || ""}${filters?.year ? " " + filters.year + "_year" : ""}${filters?.section ? " " + filters.section + "_sec" : ""
+        }`.trim() || "overall";
     // 2. Convert array of arrays to worksheet
     const worksheet = XLSX.utils.aoa_to_sheet(largeData);
 
@@ -283,7 +282,7 @@ const RankingTable = ({ filter }) => {
                   </select>
                 </div>
               </div>
-              <div className=" max-w-xs flex gap-x-5 mr-15 py-3">
+              <div className=" flex gap-x-5 mr-15 py-3">
                 <div className="relative">
                   <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 opacity-85 text-blue-800" />
                   <input
@@ -291,11 +290,11 @@ const RankingTable = ({ filter }) => {
                     placeholder="Search students..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="pl-10 pr-3 py-2 border border-gray-300 rounded-lg hover:bg-blue-50  focus:ring-1   transition outline-none "
+                    className="pl-10 pr-3 py-2 border border-gray-300 rounded-lg hover:bg-blue-50  focus:ring-1  w-[240px] max-w-xs transition outline-none "
                   />
                 </div>
                 <button
-                  className="px-2 items-center rounded-lg bg-blue-600 flex gap-2 text-white "
+                  className="px-2 items-center rounded-lg bg-blue-600 flex gap-2 text-white  "
                   onClick={downloadSampleXLSX}
                 >
                   <FaDownload /> Download
@@ -306,23 +305,23 @@ const RankingTable = ({ filter }) => {
         )}
 
         {/* Table */}
-        <table className="min-w-full bg-white border rounded-lg overflow-hidden shadow text-sm md:text-base">
+        <table className="min-w-full bg-white border rounded-lg overflow-hidden shadow text-xs md:text-base">
           <thead className="bg-gray-100 text-center">
             <tr>
-              <th className="py-3 lg:px-4 px-2">Rank</th>
-              <th className="py-3 lg:px-4 px-2 text-left">Student</th>
-              <th className="py-3 lg:px-4 px-2">Roll Number</th>
-              <th className="py-3 lg:px-4 px-2 sr-only md:not-sr-only">
+              <th className="py-3 lg:px-4 px-1">Rank</th>
+              <th className="py-3 lg:px-4 px-1 text-left">Student</th>
+              <th className="py-3 lg:px-4 px-1">Roll Number</th>
+              <th className="py-3 lg:px-4 px-1 sr-only md:not-sr-only">
                 Branch
               </th>
-              <th className="py-3 lg:px-4 px-2  sr-only md:not-sr-only">
+              <th className="py-3 lg:px-4 px-1  sr-only md:not-sr-only">
                 Year
               </th>
-              <th className="py-3 lg:px-4 px-2  sr-only md:not-sr-only">
+              <th className="py-3 lg:px-4 px-1  sr-only md:not-sr-only">
                 Section
               </th>
-              <th className="py-3 lg:px-4 px-2">Score</th>
-              <th className="py-3 lg:px-4 px-2">Actions</th>
+              <th className="py-3 lg:px-4 px-1">Score</th>
+              <th className="py-3 lg:px-4 px-1">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -335,10 +334,10 @@ const RankingTable = ({ filter }) => {
             ) : (
               filteredRanks.map((s) => (
                 <tr key={s.student_id} className="hover:bg-gray-50 text-center">
-                  <td className="py-3 px-2 md:px-4 ">
+                  <td className="py-3 px-1 md:px-4 ">
                     <RankBadge rank={s.rank} />
                   </td>
-                  <td className="py-3 px-4 text-left flex items-center gap-2">
+                  <td className="py-3 md:px-4  px-1 text-left flex items-center gap-2">
                     <div className=" hidden bg-blue-100 text-blue-800 rounded-full w-8 h-8 md:flex items-center text-sm justify-center font-bold">
                       {s.name
                         ?.split(" ")
@@ -349,20 +348,20 @@ const RankingTable = ({ filter }) => {
                     {s.name}
                   </td>
                   <td className="py-3 px-4">{s.student_id}</td>
-                  <td className="py-3 md:px-4 px-2 sr-only md:not-sr-only">
+                  <td className="py-3 md:px-4 px-1 sr-only md:not-sr-only">
                     {s.dept_name}
                   </td>
-                  <td className="py-3 md:px-4 px-2 sr-only md:not-sr-only">
+                  <td className="py-3 md:px-4 px-1 sr-only md:not-sr-only">
                     {s.year}
                   </td>
-                  <td className="py-3 md:px-4 px-2 sr-only md:not-sr-only">
+                  <td className="py-3 md:px-4 px-1 sr-only md:not-sr-only">
                     {s.section}
                   </td>
-                  <td className="py-3 md:px-4 px-2 font-semibold">{s.score}</td>
-                  <td className="py-3 md:px-4 px-2 ">
+                  <td className="py-3 md:px-4 px-1 font-semibold">{s.score}</td>
+                  <td className="py-3 md:px-4 px-1 ">
                     <div
                       onClick={() => setSelectedStudent(s)}
-                      className="text-gray-700 px-2 py-1 justify-center rounded hover:text-blue-700 flex items-center gap-1 cursor-pointer"
+                      className="text-gray-700 px-1 py-1 justify-center rounded hover:text-blue-700 flex items-center gap-1 cursor-pointer"
                     >
                       <TbUserShare />
                     </div>

@@ -15,21 +15,20 @@ const Navbar = () => {
       : "text-gray-800 hover:text-blue-600 pb-1";
   return (
     <nav
-      className={`${
-        currentUser
-          ? "bg-white shadow-lg border-b border-gray-200 sticky top-0 py-1 z-50"
-          : "py-5"
-      }`}
+      className={`${currentUser
+        ? "bg-white shadow-lg border-b border-gray-200 sticky top-0 py-1 z-50"
+        : "py-5"
+        }`}
     >
       <div className={`mx-auto px-4 sm:px-6 lg:px-10 xl:px-40`}>
         <div className="flex justify-between h-16 items-center">
           {/* Logo */}
           <NavLink to={`/${currentUser?.role || ""}`}>
             <div className="flex flex-row items-center gap-3">
-              <img src="/logo.svg" alt="" />
+              <img src="/logo.svg" alt="" className="w-9 md:w-15" />
               <div className="border border-gray-500 h-10" />
-              <img src="/au_logo.svg" alt="" className="w-14" />
-              <h1 className="text-xl font-bold text-gray-800">CodeTracker</h1>
+              <img src="/au_logo.svg" alt="" className="md:w-14 w-8" />
+              <h1 className="md:text-xl text-lg font-bold text-gray-800">CodeTracker</h1>
             </div>
           </NavLink>
           {/* Desktop Menu */}

@@ -23,7 +23,7 @@ const StatsCard = ({ icon, title, value, color }) => {
         </div>
         <div className="ml-4">
           <h3 className="text-sm font-medium text-gray-500">{title}</h3>
-          <div className="text-2xl font-semibold text-gray-900">{value}</div>
+          <div className="md:text-2xl text-lg font-semibold text-gray-900">{value}</div>
         </div>
       </div>
     </motion.div>
