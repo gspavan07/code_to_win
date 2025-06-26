@@ -4,6 +4,7 @@ import { Toaster } from "react-hot-toast";
 import LoadingSpinner from "./common/LoadingSpinner";
 import { useAuth } from "./context/AuthContext";
 import HODDashboard from "./pages/dashboards/HODDashboard";
+import StdDashboard from "./pages/dashboards/StdDashboard";
 
 // Lazy-loaded components
 const Login = lazy(() => import("./pages/Login"));

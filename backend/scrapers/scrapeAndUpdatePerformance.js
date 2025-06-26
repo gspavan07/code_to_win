@@ -20,12 +20,13 @@ async function scrapeAndUpdatePerformance(student_id, platform, username) {
         );
         if (performanceData) {
           await db.query(
-            `UPDATE student_performance SET easy_lc = ?, medium_lc = ?, hard_lc = ?, contests_lc = ?, last_updated = NOW() WHERE student_id = ?`,
+            `UPDATE student_performance SET easy_lc = ?, medium_lc = ?, hard_lc = ?, contests_lc = ?,badges_lc=?, last_updated = NOW() WHERE student_id = ?`,
             [
               performanceData?.Problems?.Easy,
               performanceData?.Problems?.Medium,
               performanceData?.Problems?.Hard,
               performanceData?.Contests_Attended,
+              performanceData?.Badges,
               student_id,
             ]
           );

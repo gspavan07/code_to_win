@@ -127,11 +127,12 @@ async function scrapeLeetCodeProfile(url) {
     // Extract contest data
     const contestsAttended = contest.attendedContestsCount || 0;
     const badges = user.badges || 0;
+    console.log(badges.length);
     return {
       Username: username,
       Problems: problems,
       Contests_Attended: contestsAttended,
-      badges: badges.length,
+      Badges: badges.length,
     };
   } catch (error) {
     logger.error(`[SCRAPING] Error in get_leetcode_profile: ${error.message}`);

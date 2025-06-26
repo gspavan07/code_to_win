@@ -21,20 +21,17 @@ const StudentDashboard = () => {
   const formattedDate = dayjs(
     currentUser.performance.combined.last_updated
   ).format("DD/MM/YYYY | hh:mm A");
-  const easyProblems =
-    currentUser.performance.platformWise.leetcode.easy +
-    currentUser.performance.platformWise.gfg.school +
-    currentUser.performance.platformWise.gfg.basic +
-    currentUser.performance.platformWise.gfg.easy;
+  const totalContests =
+    currentUser.performance.platformWise.leetcode.contests +
+    currentUser.performance.platformWise.codechef.contests;
 
-  const mediumProblems =
-    currentUser.performance.platformWise.leetcode.medium +
-    currentUser.performance.platformWise.codechef.problems +
-    currentUser.performance.platformWise.gfg.medium;
+  const totalBadges =
+    currentUser.performance.platformWise.leetcode.badges +
+    currentUser.performance.platformWise.codechef.badges;
 
-  const hardProblems =
-    currentUser.performance.platformWise.leetcode.hard +
-    currentUser.performance.platformWise.gfg.hard;
+  const totalStars =
+    currentUser.performance.platformWise.hackerrank.badges +
+    currentUser.performance.platformWise.codechef.stars;
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -81,7 +78,7 @@ const StudentDashboard = () => {
       )}
       <Navbar />
 
-      <div className=" bg-gray-50 p-6 lg:px-10 xl:px-40">
+      <div className=" bg-gray-100/50 p-6 lg:px-10 xl:px-40">
         <div className="text-right text-sm text-gray-500 mb-2">
           Last Updated on {formattedDate}
         </div>
@@ -208,60 +205,63 @@ const StudentDashboard = () => {
 
           {/* Main Section */}
           <div className="w-full rounded-xl">
-            <div className="flex flex-wrap gap-1 mb-4">
-              <span className="px-4 py-2 bg-white rounded-xl shadow-sm">
-                Campus:{" "}
-                <span className="font-semibold">{currentUser.college}</span>
-              </span>
-              <span className="px-4 py-2 bg-white rounded-xl shadow-sm">
-                Degree:{" "}
-                <span className="font-semibold">{currentUser.degree}</span>
-              </span>
+            <div className="md:flex justify-between items-center">
+              <div className="flex flex-wrap gap-1">
+                <span className="px-4 py-2 bg-white rounded-xl shadow-sm">
+                  Campus:{" "}
+                  <span className="font-semibold">{currentUser.college}</span>
+                </span>
+                <span className="px-4 py-2 bg-white rounded-xl shadow-sm">
+                  Degree:{" "}
+                  <span className="font-semibold">{currentUser.degree}</span>
+                </span>
 
-              <span className="px-4 py-2 bg-white rounded-xl shadow-sm">
-                Department:{" "}
-                <span className="font-semibold">{currentUser.dept_name}</span>
-              </span>
-              <span className="px-4 py-2 bg-white rounded-xl shadow-sm">
-                Year: <span className="font-semibold">{currentUser.year}</span>
-              </span>
-              <span className="px-4 py-2 bg-white rounded-xl shadow-sm">
-                Section:{" "}
-                <span className="font-semibold">{currentUser.section}</span>
-              </span>
+                <span className="px-4 py-2 bg-white rounded-xl shadow-sm">
+                  Department:{" "}
+                  <span className="font-semibold">{currentUser.dept_name}</span>
+                </span>
+                <span className="px-4 py-2 bg-white rounded-xl shadow-sm">
+                  Year:{" "}
+                  <span className="font-semibold">{currentUser.year}</span>
+                </span>
+                <span className="px-4 py-2 bg-white rounded-xl shadow-sm">
+                  Section:{" "}
+                  <span className="font-semibold">{currentUser.section}</span>
+                </span>
+              </div>
+              <button
+                onClick={handleRefresh}
+                className="px-4 py-2 bg-white rounded-xl shadow-sm flex items-center gap-3 cursor-pointer"
+                disabled={refreshing}
+              >
+                <FiRefreshCw className={refreshing ? "animate-spin" : ""} />
+                {refreshing ? "Refreshing..." : "Refresh"}
+              </button>
             </div>
-            <button
-              onClick={handleRefresh}
-              className="px-4 py-2 bg-white rounded-xl shadow-sm flex items-center gap-3 cursor-pointer"
-              disabled={refreshing}
-            >
-              <FiRefreshCw className={refreshing ? "animate-spin" : ""} />
-              {refreshing ? "Refreshing..." : "Refresh"}
-            </button>
             {/* Stats Cards */}
             <div className="grid grid-cols-2 mb-4 xl:grid-cols-4 gap-3 md:border-0 border border-gray-200 p-4 rounded-xl ">
               <StatsCard
                 icon={<FiCode />}
-                title="Total Problems"
+                title="Problems"
                 value={currentUser?.performance?.combined?.totalSolved || 0}
                 color="blue"
               />
               <StatsCard
                 icon={<FiCode />}
-                title="Easy Problems"
-                value={easyProblems}
+                title="Contests"
+                value={totalContests}
                 color="success"
               />
               <StatsCard
                 icon={<FiCode />}
-                title="Medium Problems"
-                value={mediumProblems}
+                title="Stars"
+                value={totalStars}
                 color="warning"
               />
               <StatsCard
                 icon={<FiCode />}
-                title="Hard Problems"
-                value={hardProblems}
+                title="Badges"
+                value={totalBadges}
                 color="error"
               />
             </div>
@@ -323,7 +323,7 @@ const StudentDashboard = () => {
                 color=" hover:text-gray-900 hover:shadow-gray-900"
                 icon="/HackerRank_logo.png"
                 total={currentUser.performance.platformWise.hackerrank.badges}
-                subtitle="Badges Gained"
+                subtitle="Stars Gained"
               />
             </div>
           </div>
