@@ -6,6 +6,7 @@ import StatsCard from '../../components/ui/StatsCard';
 import PlatformCard from '../../components/ui/PlatformCard';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from 'src/contexts/ThemeContext';
+import { apiFetch } from 'src/utils';
 export default function StudentDashboard() {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
@@ -30,7 +31,7 @@ export default function StudentDashboard() {
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      const res = await fetch('http://10.50.25.99:5000/api/student/refresh-coding-profiles', {
+      const res = await apiFetch('/student/refresh-coding-profiles', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: currentUser.student_id }),

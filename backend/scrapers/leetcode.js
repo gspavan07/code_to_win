@@ -127,7 +127,7 @@ async function scrapeLeetCodeProfile(url) {
     // Extract contest data
     const contestsAttended = contest.attendedContestsCount || 0;
     const badges = user.badges || 0;
-    console.log(badges.length);
+    // console.log(badges.length);
     return {
       Username: username,
       Problems: problems,

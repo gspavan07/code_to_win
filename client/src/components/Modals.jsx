@@ -73,7 +73,6 @@ function GenericFormModal({
           <div key={field.name}>
             {field.label && (
               <RequiredLabel label={field.label} htmlFor={field.name} />
-
             )}
             {field.type === "select" ? (
               <select
@@ -117,8 +116,9 @@ function GenericFormModal({
         <button
           type="submit"
           disabled={loading}
-          className={`w-full mt-4 flex justify-center items-center gap-2 ${loading ? "bg-blue-400" : "bg-blue-600"
-            } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
+          className={`w-full mt-4 flex justify-center items-center gap-2 ${
+            loading ? "bg-blue-400" : "bg-blue-600"
+          } text-white font-medium py-2 rounded hover:bg-blue-700 transition`}
         >
           {loading ? (
             <>
@@ -306,8 +306,9 @@ export function AddIndividualStudentModel({ onSuccess }) {
           required: true,
           options: [1, 2, 3, 4].map((year) => ({
             value: year,
-            label: `${year}${year === 1 ? "st" : year === 2 ? "nd" : year === 3 ? "rd" : "th"
-              }`,
+            label: `${year}${
+              year === 1 ? "st" : year === 2 ? "nd" : year === 3 ? "rd" : "th"
+            }`,
           })),
         },
         {
@@ -592,8 +593,9 @@ export function DeleteConfirmModal({ onClose, user, onSuccess }) {
           <button
             type="submit"
             disabled={status.loading}
-            className={`w-full mt-4 flex justify-center items-center gap-2 ${status.loading ? "bg-red-300" : "bg-red-500"
-              } text-white font-medium py-2 rounded hover:bg-red-600 transition`}
+            className={`w-full mt-4 flex justify-center items-center gap-2 ${
+              status.loading ? "bg-red-300" : "bg-red-500"
+            } text-white font-medium py-2 rounded hover:bg-red-600 transition`}
           >
             {status.loading ? (
               <>
@@ -688,8 +690,9 @@ export function DeleteIndividualStudentModal({ onSuccess }) {
           <button
             type="submit"
             disabled={status.loading}
-            className={`w-full mt-4 flex justify-center items-center gap-2 ${status.loading ? "bg-red-300" : "bg-red-500"
-              } text-white font-medium py-2 rounded hover:bg-red-600 transition`}
+            className={`w-full mt-4 flex justify-center items-center gap-2 ${
+              status.loading ? "bg-red-300" : "bg-red-500"
+            } text-white font-medium py-2 rounded hover:bg-red-600 transition`}
           >
             {status.loading ? (
               <>

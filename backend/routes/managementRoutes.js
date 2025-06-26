@@ -8,6 +8,9 @@ const csv = require("csv-parse");
 const fs = require("fs");
 const path = require("path");
 const { logger } = require("../utils"); // <-- Add logger
+const {
+  scrapeAndUpdatePerformance,
+} = require("../scrapers/scrapeAndUpdatePerformance");
 
 // Configure multer for CSV uploads
 const upload = multer({
@@ -200,6 +203,100 @@ router.post("/add-hod", async (req, res) => {
           : err.message,
       error: err.errno,
     });
+  } finally {
+    connection.release();
+  }
+});
+
+//P0ST /api/reset-password
+router.post("/reset-password", async (req, res) => {
+  const { userId, password } = req.body;
+  if (!userId || !password) {
+    logger.warn("Missing required fields in reset-password");
+    return res.status(400).json({ message: "Missing required fields" });
+  }
+
+  const connection = await db.getConnection();
+  try {
+    const hashed = await bcrypt.hash(password, 10);
+    const [result] = await connection.query(
+      "UPDATE users SET password = ? WHERE user_id = ?",
+      [hashed, userId]
+    );
+    if (result.affectedRows === 0) {
+      logger.warn(`User not found for reset-password: ${userId}`);
+      return res.status(404).json({ message: "User not found" });
+    }
+    logger.info(`Password reset successful for user: ${userId}`);
+    res.json({ message: "Password reset successful" });
+  } catch (err) {
+    logger.error(`Error resetting password for user ${userId}: ${err.message}`);
+    res.status(500).json({ message: "Server error", error: err.message });
+  } finally {
+    connection.release();
+  }
+});
+
+//P0ST /api/delete-user
+router.post("/delete-user", async (req, res) => {
+  const { userId, role } = req.body;
+  if (!userId || !role) {
+    logger.warn("Missing userId or role in delete-user");
+    return res.status(400).json({ message: "Missing userId or role" });
+  }
+
+  const connection = await db.getConnection();
+  try {
+    await connection.beginTransaction();
+    logger.info(`Deleting user: ${userId}, role: ${role}`);
+
+    // Delete from role-specific profile table first
+    if (role === "student") {
+      await connection.query(
+        "DELETE FROM student_coding_profiles WHERE student_id = ?",
+        [userId]
+      );
+      await connection.query(
+        "DELETE FROM student_performance WHERE student_id = ?",
+        [userId]
+      );
+      await connection.query(
+        "DELETE FROM student_profiles WHERE student_id = ?",
+        [userId]
+      );
+    } else if (role === "faculty") {
+      await connection.query(
+        "DELETE FROM faculty_section_assignment WHERE faculty_id = ?",
+        [userId]
+      );
+      await connection.query(
+        "DELETE FROM faculty_profiles WHERE faculty_id = ?",
+        [userId]
+      );
+    } else if (role === "hod") {
+      await connection.query("DELETE FROM hod_profiles WHERE hod_id = ?", [
+        userId,
+      ]);
+    }
+
+    // Delete from users table
+    const [result] = await connection.query(
+      "DELETE FROM users WHERE user_id = ? AND role = ?",
+      [userId, role]
+    );
+    await connection.commit();
+
+    if (result.affectedRows === 0) {
+      logger.warn(`User not found for delete-user: ${userId}, role: ${role}`);
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    logger.info(`User deleted successfully: ${userId}, role: ${role}`);
+    res.json({ message: "User deleted successfully" });
+  } catch (err) {
+    await connection.rollback();
+    logger.error(`Error deleting user ${userId}, role ${role}: ${err.message}`);
+    res.status(500).json({ message: "Server error", error: err.message });
   } finally {
     connection.release();
   }
@@ -424,98 +521,157 @@ router.post("/bulk-import-faculty", upload.single("file"), async (req, res) => {
   }
 });
 
-//P0ST /api/reset-password
-router.post("/reset-password", async (req, res) => {
-  const { userId, password } = req.body;
-  if (!userId || !password) {
-    logger.warn("Missing required fields in reset-password");
-    return res.status(400).json({ message: "Missing required fields" });
-  }
-
+router.post("/bulk-import-with-cp", upload.single("file"), async (req, res) => {
+  const { dept, year, section } = req.body;
+  logger.info(
+    `Bulk import with CP: dept=${dept}, year=${year}, section=${section}`
+  );
   const connection = await db.getConnection();
+
   try {
-    const hashed = await bcrypt.hash(password, 10);
-    const [result] = await connection.query(
-      "UPDATE users SET password = ? WHERE user_id = ?",
-      [hashed, userId]
-    );
-    if (result.affectedRows === 0) {
-      logger.warn(`User not found for reset-password: ${userId}`);
-      return res.status(404).json({ message: "User not found" });
+    if (!req.file) {
+      logger.warn("No file uploaded for bulk-import-with-cp");
+      return res.status(400).json({ message: "No file uploaded" });
     }
-    logger.info(`Password reset successful for user: ${userId}`);
-    res.json({ message: "Password reset successful" });
-  } catch (err) {
-    logger.error(`Error resetting password for user ${userId}: ${err.message}`);
-    res.status(500).json({ message: "Server error", error: err.message });
-  } finally {
-    connection.release();
-  }
-});
 
-//P0ST /api/delete-user
-router.post("/delete-user", async (req, res) => {
-  const { userId, role } = req.body;
-  if (!userId || !role) {
-    logger.warn("Missing userId or role in delete-user");
-    return res.status(400).json({ message: "Missing userId or role" });
-  }
+    const results = [];
+    const errors = [];
 
-  const connection = await db.getConnection();
-  try {
+    // Read and parse CSV file
+    const fileRows = await new Promise((resolve, reject) => {
+      const rows = [];
+      fs.createReadStream(req.file.path)
+        .pipe(csv.parse({ columns: true, trim: true }))
+        .on("data", (row) => rows.push(row))
+        .on("error", (error) => reject(error))
+        .on("end", () => resolve(rows));
+    });
+
+    logger.info(`Parsed ${fileRows.length} student rows from CSV`);
     await connection.beginTransaction();
-    logger.info(`Deleting user: ${userId}, role: ${role}`);
 
-    // Delete from role-specific profile table first
-    if (role === "student") {
-      await connection.query(
-        "DELETE FROM student_coding_profiles WHERE student_id = ?",
-        [userId]
-      );
-      await connection.query(
-        "DELETE FROM student_performance WHERE student_id = ?",
-        [userId]
-      );
-      await connection.query(
-        "DELETE FROM student_profiles WHERE student_id = ?",
-        [userId]
-      );
-    } else if (role === "faculty") {
-      await connection.query(
-        "DELETE FROM faculty_section_assignment WHERE faculty_id = ?",
-        [userId]
-      );
-      await connection.query(
-        "DELETE FROM faculty_profiles WHERE faculty_id = ?",
-        [userId]
-      );
-    } else if (role === "hod") {
-      await connection.query("DELETE FROM hod_profiles WHERE hod_id = ?", [
-        userId,
-      ]);
+    for (const row of fileRows) {
+      const stdId = row["Student Id"];
+      const hashed = await bcrypt.hash(stdId, 10);
+      const name = row["Student Name"];
+      const email = `${stdId}@aec.edu.in`;
+      try {
+        // Insert into users table
+        await connection.query(
+          "INSERT INTO users (user_id, email, password, role) VALUES (?, ?, ?, ?)",
+          [stdId, email, hashed, "student"]
+        );
+        if (!stdId || !name || !row.Degree || !row.CGPA) {
+          logger.warn(`Missing fields in CSV row: ${JSON.stringify(row)}`);
+          errors.push({
+            error: `Check the fields in CSV and upload.`,
+          });
+          continue;
+        }
+        // Insert into student_profiles table
+        await connection.query(
+          `INSERT INTO student_profiles 
+           (student_id, name, dept_code, year, section, degree, cgpa, gender)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          [stdId, name, dept, year, section, row.Degree, row.CGPA, row.Gender]
+        );
+        await connection.query(
+          `INSERT INTO student_performance (student_id) VALUES (?);`,
+          [stdId]
+        );
+
+        // Insert into student_coding_profiles table
+        await connection.query(
+          `INSERT INTO student_coding_profiles 
+    (student_id, hackerrank_id, leetcode_id, codechef_id, geekforgeeks_id,
+     hackerrank_status, leetcode_status, codechef_status, geekforgeeks_status,
+     hackerrank_verified, leetcode_verified, codechef_verified, geekforgeeks_verified)
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            stdId,
+            row.HackerRank || null,
+            row.LeetCode || null,
+            row.CodeChef || null,
+            row.GeeksforGeeks || null,
+            "accepted", // hackerrank_status
+            "accepted", // leetcode_status
+            "accepted", // codechef_status
+            "accepted", // geekforgeeks_status
+            1, // hackerrank_verified
+            1, // leetcode_verified
+            1, // codechef_verified
+            1, // geekforgeeks_verified
+          ]
+        );
+
+        // After inserting into student_coding_profiles table:
+        if (row.HackerRank) {
+          scrapeAndUpdatePerformance(stdId, "hackerrank", row.HackerRank);
+        }
+        if (row.LeetCode) {
+          scrapeAndUpdatePerformance(stdId, "leetcode", row.LeetCode);
+        }
+        if (row.CodeChef) {
+          scrapeAndUpdatePerformance(stdId, "codechef", row.CodeChef);
+        }
+        if (row.GeeksforGeeks) {
+          scrapeAndUpdatePerformance(stdId, "geekforgeeks", row.GeeksforGeeks);
+        }
+
+        results.push({ stdId: stdId, status: "success" });
+        logger.info(`Student imported: ${stdId}`);
+      } catch (err) {
+        logger.error(`Error importing student ${stdId}: ${err.message}`);
+        errors.push({
+          error:
+            err.code === "ER_DUP_ENTRY"
+              ? `Student with ID ${stdId} already exists`
+              : err.code === "ER_BAD_NULL_ERROR"
+              ? `Check fields in CSV and upload again`
+              : err.message,
+        });
+      }
     }
 
-    // Delete from users table
-    const [result] = await connection.query(
-      "DELETE FROM users WHERE user_id = ? AND role = ?",
-      [userId, role]
-    );
+    // Delete the temporary file
+    fs.unlinkSync(req.file.path);
+
+    if (errors.length === fileRows.length) {
+      // If all entries failed, rollback
+      await connection.rollback();
+      logger.warn("Bulk import students failed: all entries failed");
+      return res.status(400).json({
+        message: "Bulk import failed",
+        totalProcessed: fileRows.length,
+        errors,
+      });
+    }
+
+    // Commit if at least some entries succeeded
     await connection.commit();
+    logger.info(
+      `Bulk import students completed: ${results.length} succeeded, ${errors.length} failed`
+    );
 
-    if (result.affectedRows === 0) {
-      logger.warn(`User not found for delete-user: ${userId}, role: ${role}`);
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    logger.info(`User deleted successfully: ${userId}, role: ${role}`);
-    res.json({ message: "User deleted successfully" });
+    res.json({
+      message: "Bulk import completed",
+      totalProcessed: fileRows.length,
+      successful: results.length,
+      failed: errors.length,
+      errors: errors.length > 0 ? errors : undefined,
+    });
   } catch (err) {
     await connection.rollback();
-    logger.error(`Error deleting user ${userId}, role ${role}: ${err.message}`);
+    logger.error(`Bulk import students error: ${err.message}`);
+
+    // Delete the temporary file in case of error
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
+    }
+
     res.status(500).json({ message: "Server error", error: err.message });
   } finally {
     connection.release();
   }
 });
-
 module.exports = router;

@@ -10,6 +10,10 @@ import UserProfile from "../../components/ui/UserProfile";
 // Lazy-loaded components
 const RankingTable = lazy(() => import("../../components/Ranking"));
 const ViewProfile = lazy(() => import("../../components/ViewProfile"));
+// const BulkImportWithCP = lazy(() =>
+//   import("../../components/ui/BulkImportWithCP")
+// );
+import BulkImportWithCP from "../../components/ui/BulkImportWithCP";
 const AddFacultyModal = lazy(() =>
   import("../../components/Modals").then((m) => ({
     default: m.AddFacultyModal,
@@ -189,22 +193,25 @@ function AdminDashboard() {
           <div className="grid grid-cols-2 md:grid-cols-3 justify-around rounded bg-gray-100 border-gray-200 border gap-2 md:gap-4 p-1 mb-4 text-base">
             <button
               onClick={() => setSelectedTab("StudentRanking")}
-              className={`flex-1 min-w-[120px] py-1 rounded cursor-pointer ${selectedTab === "StudentRanking" ? "bg-white text-black" : ""
-                }`}
+              className={`flex-1 min-w-[120px] py-1 rounded cursor-pointer ${
+                selectedTab === "StudentRanking" ? "bg-white text-black" : ""
+              }`}
             >
               Student Ranking
             </button>
             <button
               onClick={() => setSelectedTab("GradingSystem")}
-              className={`flex-1 min-w-[120px] py-1 rounded cursor-pointer ${selectedTab === "GradingSystem" ? "bg-white text-black" : ""
-                }`}
+              className={`flex-1 min-w-[120px] py-1 rounded cursor-pointer ${
+                selectedTab === "GradingSystem" ? "bg-white text-black" : ""
+              }`}
             >
               Grading System
             </button>
             <button
               onClick={() => setSelectedTab("UserManagment")}
-              className={`flex-1 min-w-[120px] py-1 rounded cursor-pointer ${selectedTab === "UserManagment" ? "bg-white text-black" : ""
-                }`}
+              className={`flex-1 min-w-[120px] py-1 rounded cursor-pointer ${
+                selectedTab === "UserManagment" ? "bg-white text-black" : ""
+              }`}
             >
               User Managment
             </button>
@@ -299,13 +306,18 @@ function AdminDashboard() {
                       { key: "addHOD", label: "Add HOD" },
                       { key: "resetPassword", label: "Reset Password" },
                       { key: "bulkImport", label: "Bulk Import" },
+                      {
+                        key: "bulkImportWithCP",
+                        label: "Bulk Import with Coding Profiles",
+                      },
                     ].map((item) => (
                       <li key={item.key}>
                         <button
-                          className={`w-full text-left px-3 py-2 rounded transition ${userMgmtTab === item.key
+                          className={`w-full text-left px-3 py-2 rounded transition ${
+                            userMgmtTab === item.key
                               ? "bg-blue-600 text-white"
                               : "hover:bg-blue-100"
-                            }`}
+                          }`}
                           onClick={() => setUserMgmtTab(item.key)}
                         >
                           {item.label}
@@ -325,17 +337,12 @@ function AdminDashboard() {
                     {userMgmtTab === "resetPassword" && <ResetPasswordModal />}
                     {userMgmtTab === "bulkImport" && <BulkImportModal />}
                     {userMgmtTab === "addBranch" && <AddBranchModal />}
+                    {userMgmtTab === "bulkImportWithCP" && <BulkImportWithCP />}
                   </Suspense>
                 </div>
               </div>
             </div>
           )}
-
-          <ProfileScraper
-            apiEndpoint="http://localhost:5000/api/profile-scraper"
-            socketEndpoint="http://localhost:5000/profile-scraper"
-            onComplete={handleComplete}
-          />
         </div>
       </div>
       <Footer />
