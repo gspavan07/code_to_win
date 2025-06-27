@@ -14,7 +14,7 @@ export default function StatsCard({ icon, title, value, color = 'blue' }) {
   const iconColor = colorStyles[color] || colorStyles.blue;
 
   return (
-    <View className="w-[48%] flex-row items-center rounded-xl bg-white p-4 shadow dark:bg-gray-700">
+    <View className="w-[48%] flex-row items-center rounded-xl bg-white p-4 shadow dark:bg-gray-800">
       <View className={`h-12 w-12 items-center justify-center rounded-lg ${iconColor}`}>
         <MaterialCommunityIcons name={icon} size={24} />
       </View>

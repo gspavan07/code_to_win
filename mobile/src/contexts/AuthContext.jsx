@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiFetch } from 'src/utils';
-const API_URL = 'http://10.50.25.99:5000/api';
 const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
@@ -30,7 +29,7 @@ export const AuthProvider = ({ children }) => {
         let profile = data.profile;
 
         if (!profile) {
-          const profileRes = await fetch(`${API_URL}/${user.role}/profile?userId=${user.user_id}`);
+          const profileRes = await apiFetch(`/${user.role}/profile?userId=${user.user_id}`);
           profile = await profileRes.json();
         }
 
@@ -56,7 +55,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (userId, password, role) => {
     try {
-      const res = await fetch(`${API_URL}/auth/login`, {
+      const res = await apiFetch(`/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, password, role }),
@@ -68,7 +67,7 @@ export const AuthProvider = ({ children }) => {
       let profileData = profile;
 
       if (!profileData) {
-        const profileRes = await fetch(`${API_URL}/${user.role}/profile?userId=${user.user_id}`);
+        const profileRes = await apiFetch(`/${user.role}/profile?userId=${user.user_id}`);
         profileData = await profileRes.json();
       }
 

@@ -1,9 +1,7 @@
 import React, { useState, lazy, useMemo, useEffect, Suspense } from "react";
-import { FaUser } from "react-icons/fa6";
 import { useAuth } from "../../context/AuthContext";
 import Navbar from "../../components/Navbar";
 import LoadingSpinner from "../../common/LoadingSpinner";
-import ProfileScraper from "../../components/ProfileScraper";
 import Footer from "../../components/Footer";
 import UserProfile from "../../components/ui/UserProfile";
 

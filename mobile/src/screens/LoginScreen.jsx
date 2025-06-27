@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function LoginScreen({ navigation }) {
@@ -7,9 +7,12 @@ export default function LoginScreen({ navigation }) {
   const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('student'); // default role
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
+    setLoading(true);
     const { success, role: userRole, message } = await login(userId, password, role);
+    setLoading(false);
     if (!success) {
       Alert.alert('Login Failed', message);
     }
@@ -24,6 +27,7 @@ export default function LoginScreen({ navigation }) {
         value={userId}
         onChangeText={setUserId}
         className="mb-4 w-full rounded border border-gray-300 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+        editable={!loading}
       />
       <TextInput
         placeholder="Password"
@@ -31,6 +35,7 @@ export default function LoginScreen({ navigation }) {
         onChangeText={setPassword}
         secureTextEntry
         className="mb-4 w-full rounded border border-gray-300 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+        editable={!loading}
       />
 
       {/* Simple Role Selector (can customize later) */}
@@ -39,7 +44,8 @@ export default function LoginScreen({ navigation }) {
           <TouchableOpacity
             key={r}
             className={`rounded px-3 py-2 ${role === r ? 'bg-blue-500' : 'bg-gray-200'}`}
-            onPress={() => setRole(r)}>
+            onPress={() => setRole(r)}
+            disabled={loading}>
             <Text className={role === r ? 'text-white' : 'text-gray-800'}>
               {r.charAt(0).toUpperCase() + r.slice(1)}
             </Text>
@@ -47,8 +53,16 @@ export default function LoginScreen({ navigation }) {
         ))}
       </View>
 
-      <TouchableOpacity className="rounded bg-blue-600 px-5 py-3" onPress={handleLogin}>
-        <Text className="text-center font-medium text-white">Log In</Text>
+      <TouchableOpacity
+        className="rounded bg-blue-600 px-5 py-3"
+        onPress={handleLogin}
+        disabled={loading}
+        style={loading ? { opacity: 0.6 } : {}}>
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text className="text-center font-medium text-white">Log In</Text>
+        )}
       </TouchableOpacity>
     </View>
   );

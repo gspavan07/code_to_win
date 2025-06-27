@@ -122,4 +122,51 @@ async function scrapeAndUpdatePerformance(student_id, platform, username) {
   }
 }
 
-module.exports = { scrapeAndUpdatePerformance };
+async function updateAllStudentsPerformance() {
+  try {
+    // Get all students and their coding profile IDs
+    const [rows] = await db.query(
+      `SELECT student_id, hackerrank_id, leetcode_id, codechef_id, geekforgeeks_id
+       FROM student_coding_profiles`
+    );
+
+    for (const row of rows) {
+      if (row.hackerrank_id) {
+        await scrapeAndUpdatePerformance(
+          row.student_id,
+          "hackerrank",
+          row.hackerrank_id
+        );
+      }
+      if (row.leetcode_id) {
+        await scrapeAndUpdatePerformance(
+          row.student_id,
+          "leetcode",
+          row.leetcode_id
+        );
+      }
+      if (row.codechef_id) {
+        await scrapeAndUpdatePerformance(
+          row.student_id,
+          "codechef",
+          row.codechef_id
+        );
+      }
+      if (row.geekforgeeks_id) {
+        await scrapeAndUpdatePerformance(
+          row.student_id,
+          "geekforgeeks",
+          row.geekforgeeks_id
+        );
+      }
+    }
+
+    logger.info("[SCRAPING] Finished updating all students' coding profiles.");
+  } catch (err) {
+    logger.error(
+      `[SCRAPING] Error updating all students' performance: ${err.message}`
+    );
+  }
+}
+
+module.exports = { scrapeAndUpdatePerformance, updateAllStudentsPerformance };

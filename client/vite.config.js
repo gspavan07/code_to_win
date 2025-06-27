@@ -8,11 +8,11 @@ export default defineConfig({
     port: 1432,
     proxy: {
       "/api": {
-        target: "http://10.50.25.119:5000",
+        target: "http://localhost:5000",
         changeOrigin: true,
         secure: false,
       },
-    }
+    },
   },
   plugins: [react(), tailwindcss()],
 });

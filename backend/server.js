@@ -2,7 +2,10 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const { logger } = require("./utils"); // <-- Add this line
-
+const cron = require("node-cron");
+const {
+  updateAllStudentsPerformance,
+} = require("./scrapers/scrapeAndUpdatePerformance");
 const app = express();
 app.use(cors());
 
@@ -26,6 +29,13 @@ app.use("/api/admin", require("./routes/adminRoutes"));
 app.use("/api/ranking", require("./routes/rankingRoutes"));
 app.use("/api/meta", require("./routes/metaRoutes"));
 app.use("/api/", require("./routes/managementRoutes"));
+
+// Schedule: Every Saturday at 00:00 (midnight)
+cron.schedule("0 0 * * 6", async () => {
+  logger.info("[CRON] Starting weekly student performance update...");
+  await updateAllStudentsPerformance();
+  logger.info("[CRON] Weekly student performance update finished.");
+});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, "0.0.0.0", () =>

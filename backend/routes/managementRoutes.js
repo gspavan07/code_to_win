@@ -11,6 +11,10 @@ const { logger } = require("../utils"); // <-- Add logger
 const {
   scrapeAndUpdatePerformance,
 } = require("../scrapers/scrapeAndUpdatePerformance");
+const scrapeLeetCodeProfile = require("../scrapers/leetcode");
+const scrapeCodeChefProfile = require("../scrapers/codechef");
+const scrapeHackerRankProfile = require("../scrapers/hackerrank");
+const scrapeGeeksForGeeksProfile = require("../scrapers/geeksforgeeks");
 
 // Configure multer for CSV uploads
 const upload = multer({
@@ -674,4 +678,87 @@ router.post("/bulk-import-with-cp", upload.single("file"), async (req, res) => {
     connection.release();
   }
 });
+
+router.post("/check-score", async (req, res) => {
+  try {
+    const { profiles } = req.body;
+    logger.info(`Check Score`);
+
+    if (!profiles || !Array.isArray(profiles) || profiles.length === 0) {
+      return res.status(404).json({ message: "No coding profiles found" });
+    }
+    console.log(profiles);
+
+    const profile = profiles[0];
+    const results = {};
+
+    const tasks = [];
+
+    if (profile.leetcode_id) {
+      tasks.push(
+        scrapeLeetCodeProfile(`https://leetcode.com/u/${profile.leetcode_id}`)
+          .then((data) => {
+            results.leetcode = data;
+          })
+          .catch((err) => {
+            logger.error(`[FETCH] LeetCode: ${err.message}`);
+            results.leetcode = null;
+          })
+      );
+    }
+    if (profile.codechef_id) {
+      tasks.push(
+        scrapeCodeChefProfile(
+          `https://www.codechef.com/users/${profile.codechef_id}`
+        )
+          .then((data) => {
+            results.codechef = data;
+          })
+          .catch((err) => {
+            logger.error(`[FETCH] CodeChef: ${err.message}`);
+            results.codechef = null;
+          })
+      );
+    }
+    if (profile.geekforgeeks_id) {
+      tasks.push(
+        scrapeGeeksForGeeksProfile(
+          `https://www.geeksforgeeks.org/user/${profile.geekforgeeks_id}`
+        )
+          .then((data) => {
+            results.geekforgeeks = data;
+          })
+          .catch((err) => {
+            logger.error(`[FETCH] GFG: ${err.message}`);
+            results.geekforgeeks = null;
+          })
+      );
+    }
+    if (profile.hackerrank_id) {
+      tasks.push(
+        scrapeHackerRankProfile(
+          `https://www.hackerrank.com/profile/${profile.hackerrank_id}`
+        )
+          .then((data) => {
+            results.hackerrank = data;
+          })
+          .catch((err) => {
+            logger.error(`[FETCH] HackerRank: ${err.message}`);
+            results.hackerrank = null;
+          })
+      );
+    }
+
+    await Promise.all(tasks);
+
+    logger.info(`Completed fetch for ${tasks.length} coding profiles.`);
+    res.json({
+      data: results,
+    });
+  } catch (err) {
+    logger.error(`Error fetching coding profiles: ${err.stack || err.message}`);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 module.exports = router;
