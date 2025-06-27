@@ -7,55 +7,72 @@ const developers = [
     name: "Pavan Gollapalli",
     role: "Full Stack Developer",
     description:
-      "Experienced developer with a passion for clean code and beautiful UIs.",
-    github: "#",
+      "Handles both frontend and backend development of the website. Integrates data from the scraper into the web app and ensures end-to-end functionality.",
+    github: "https://github.com/gspavan07/",
     linkedin: "#",
     image: "https://github.com/gspavan07.png", // replace with actual image
   },
   {
     name: "Sunil Garbana",
-    role: "Backend Developer",
-    description:
-      "Experienced developer with a passion for clean code and beautiful UIs.",
-    github: "#",
+    role: "Frontend Developer",
+    description: "Designs and implements the user-facing part of the website using Reactjs and Tailwind CSS. Focuses on performance and user experience.",
+    github: "https://github.com/sunilgarbana/",
     linkedin: "#",
-    image: "https://github.com/gspavan07.png", // replace with actual image
+    image: "https://github.com/sunilgarbana.png", // replace with actual image
   },
   {
     name: "Lalu Prasad",
     role: "Frontend Developer",
-    description:
-      "Expert Python developer specializing in data processing and automation solutions.",
+    description: "Designs and implements the user-facing part of the website using Reactjs and Tailwind CSS. Focuses on performance and user experience.",
     github: "#",
     linkedin: "#",
     image: "Lalu_pic.jpeg", // replace with actual image
   },
   {
-    name: "Kamal Sai Tillari",
-    role: "Python Developer",
+    name: "Charan Teja",
+    role: "UI/UX",
     description:
-      "Expert Python developer specializing in data processing and automation solutions.",
+      "Designs the layout, appearance, and interaction flow of the website. Ensures that the interface is user-friendly, responsive, and visually appealing.",
     github: "#",
     linkedin: "#",
     image: "https://github.com/gspavan07.png", // replace with actual image
   },
+  {
+    name: "Nareen kumar",
+    role: "Scraper Engineer",
+    description:
+      "Builds and maintains scripts to extract data from external websites. Ensures scraped data is accurate, clean, and usable for integration into the application.",
+    github: "#",
+    linkedin: "#",
+    image: "https://github.com/gspavan07.png", // replace with actual image
+  },
+  {
+    name: "Kamal Sai Tillari",
+    role: "Scraper Engineer",
+    description:
+      "Builds and maintains scripts to extract data from external websites. Ensures scraped data is accurate, clean, and usable for integration into the application.",
+    github: "#",
+    linkedin: "#",
+    image: "https://github.com/gspavan07.png", // replace with actual image
+  },
+
 ];
 
 const Dev = () => {
   return (
     <>
       <Navbar />
-      <section className="flex flex-col items-center  text-center mb-10">
+      <section className="flex flex-col items-center  mb-10 ">
         <h1 className="text-3xl font-bold mb-2">Meet Our Developers</h1>
-        <p className="text-gray-600 mb-10">
+        <p className="text-gray-600 mb-10 text-center">
           The talented team behind the Student Coding Profile Dashboard
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 p-6 max-w-7xl">
           {developers.map((dev, index) => (
             <div
               key={index}
-              className="bg-white shadow-md rounded-lg w-96 hover:shadow-xl overflow-hidden transition-shadow"
+              className="bg-white shadow-md rounded-lg  hover:shadow-xl overflow-hidden transition-shadow"
             >
               <div className="flex ite>ms-center justify-between p-5 bg-gray-200">
                 <div className="flex flex-col justify-center items-start">

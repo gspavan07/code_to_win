@@ -1,5 +1,5 @@
 import React from "react";
-import { FaEnvelope, FaGithub, FaLinkedin, FaRegEnvelope } from "react-icons/fa6";
+import { FaRegEnvelope } from "react-icons/fa6";
 import { FiGithub, FiLinkedin } from "react-icons/fi";
 import { NavLink } from "react-router-dom";
 
@@ -12,7 +12,7 @@ const Footer = () => {
           <h2 className="text-xl font-bold text-[#FFFFFF]">
             Code<span className="text-[#FFFFFF]">Track</span>
           </h2>
-          <p className="mt-2 text-gray-500 md:max-w-xs">
+          <p className="mt-2 text-gray-400 md:max-w-xs">
             Helping students track and showcase their coding journey across
             multiple platforms.
           </p>
@@ -36,33 +36,27 @@ const Footer = () => {
         {/* Navigation */}
         <div>
           <h3 className="font-semibold text-[#FFFFFF] mb-2">Quick Links</h3>
-          <ul className="space-y-1">
-            <li>
-              <NavLink to="/" className="hover:text-[#FFFFFF]">
-                Home
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/strength" className="hover:text-[#FFFFFF]">
-                Check Your Strength
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/dev" className="hover:text-[#FFFFFF]">
-                Developers
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/contact" className="hover:text-[#FFFFFF]">
-                Contact Us
-              </NavLink>
-            </li>
-          </ul>
+          {[
+            { label: "Home", link: "/" },
+            { label: "Check Your Strength", link: "/checkscore" },
+            { label: "Developers", link: "/dev" },
+            { label: "Contact Us", link: "/contact" },
+          ].map((items, index) => (
+
+
+            <ul className="space-y-1" key={index}>
+              <li>
+                <NavLink to={items.link} className="hover:text-[#FFFFFF]">
+                  {items.label}
+                </NavLink>
+              </li>
+
+            </ul>))}
         </div>
         <div>
           <h3 className="font-semibold text-[#FFFFFF] mb-2">KEY FEATURES</h3>
           <ul className="space-y-1">
-            <li className="hover:text-[#FFFFFF]">
+            <li className="hover:text-[#FFFFFF] ">
               Dynamic Dashboards
             </li>
             <li className="hover:text-[#FFFFFF]">
@@ -74,49 +68,29 @@ const Footer = () => {
         {/* Platforms */}
         <div>
           <h3 className="font-semibold text-[#FFFFFF] mb-2">Platforms</h3>
-          <ul className="space-y-1">
-            <li>
-              <a
-                href="https://www.hackerrank.com/"
-                className="hover:text-[#FFFFFF]"
-                target="_blank"
-              >
-                HackerRank
-              </a>
-            </li>
-            <li>
-              <a
-                href="https://leetcode.com/"
-                className="hover:text-[#FFFFFF]"
-                target="_blank"
-              >
-                LeetCode
-              </a>
-            </li>
-            <li>
-              <a
-                href="https://www.codechef.com/"
-                className="hover:text-[#FFFFFF]"
-                target="_blank"
-              >
-                CodeChef
-              </a>
-            </li>
-            <li>
-              <a
-                href="https://www.geeksforgeeks.org/"
-                className="hover:text-[#FFFFFF]"
-                target="_blank"
-              >
-                GeeksforGeeks
-              </a>
-            </li>
-          </ul>
+          {[
+            { label: "Leet Code", link: "https://leetcode.com/" },
+            { label: "Code Chef", link: "https://www.codechef.com/" },
+            { label: "Hacker Rank", link: "https://www.hackerrank.com/" },
+            { label: "Geek for Geeks", link: "https://www.geeksforgeeks.com" },
+          ].map((items, index) => (
+            <ul className="space-y-1" key={index}>
+
+              <li >
+                <a
+                  href={items.link}
+                  className="hover:text-[#FFFFFF]"
+                  target="_blank"
+                >
+                  {items.label}
+                </a>
+              </li>
+            </ul>))}
         </div>
       </div>
 
       <div className="mt-10 text-center text-base text-gray-300 border-t border-gray-300 pt-6">
-        © 2025 CodeProfileTracker. All rights reserved by{" "}
+        © 2025 Code Tracker. All rights reserved by{" "}
         <a href="https://ofzen.in/" className="text-gray-100 hover:underline font-medium">
           Ofzen
         </a>

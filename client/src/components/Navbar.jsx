@@ -37,7 +37,7 @@ const Navbar = () => {
               <NavLink to="/" className={linkClass}>
                 Home
               </NavLink>
-              <NavLink to="/stdDash" className={linkClass}>
+              <NavLink to="/checkscore" className={linkClass}>
                 Check Your Strength
               </NavLink>
               <NavLink to="/dev" className={linkClass}>
@@ -66,11 +66,11 @@ const Navbar = () => {
             </div>
           )}
           {/* Mobile Hamburger */}
-          <div className="md:hidden flex items-center">
+          <div className="md:hidden flex items-center ">
             {!currentUser ? (
               <button
                 onClick={() => setMobileMenuOpen((prev) => !prev)}
-                className="text-2xl text-gray-700 focus:outline-none"
+                className="text-2xl text-gray-700 focus:outline-none "
               >
                 {mobileMenuOpen ? <FiX /> : <FiMenu />}
               </button>
@@ -86,11 +86,11 @@ const Navbar = () => {
         </div>
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden flex flex-col gap-2 py-2">
+          <div className="md:hidden flex flex-col  gap-2 py-2 ">
             <Link to="/" onClick={() => setMobileMenuOpen(false)}>
               Home
             </Link>
-            <Link to="/stdDash" onClick={() => setMobileMenuOpen(false)}>
+            <Link to="/checkscore" onClick={() => setMobileMenuOpen(false)}>
               Check Your Strength
             </Link>
             <Link to="/dev" onClick={() => setMobileMenuOpen(false)}>

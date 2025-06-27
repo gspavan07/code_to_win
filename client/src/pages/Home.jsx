@@ -60,9 +60,9 @@ function Home() {
             </p>
           </div>
           <div className="flex justify-center gap-4">
-            <button className="bg-blue-600 py-2 px-4 rounded-lg text-base hover:bg-transparent border border-blue-600 text-white hover:text-blue-600">
+            <Link to="/checkscore"><button className="bg-blue-600 py-2 px-4 rounded-lg text-base hover:bg-transparent border border-blue-600 text-white hover:text-blue-600">
               Check Your Score
-            </button>
+            </button></Link>
           </div>
         </div>
         <div className="my-8">
@@ -73,7 +73,7 @@ function Home() {
         <img
           src="/owl.gif"
           alt=""
-          className="absolute h-40 right-5 -top-32 w-auto"
+          className="absolute h-32 md:h-40  right-3 md:right-5 md:-top-32 -top-24 w-auto"
         />
         <div className="bg-yellow-50 py-5 px-5 lg:px-28 flex items-center gap-5 rounded-t-2xl border-b-2 border-b-gray-200 text-center">
           <img src="/trophy.png" alt="" />
