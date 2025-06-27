@@ -4,6 +4,7 @@ import { Toaster } from "react-hot-toast";
 import LoadingSpinner from "./common/LoadingSpinner";
 import { useAuth } from "./context/AuthContext";
 import HODDashboard from "./pages/dashboards/HODDashboard";
+import CheckYourScore from "./pages/CheckYourScore";
 // import StdDashboard from "./pages/dashboards/StdDashboard";
 
 // Lazy-loaded components
@@ -49,6 +50,7 @@ const App = () => {
             <Route path="/dev" element={<Dev />} />
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/rank" element={<RankingTable />} />
+            <Route path="/checkscore" element={<CheckYourScore />} />
 
             {/* Protected routes - Student */}
             <Route
