@@ -62,7 +62,9 @@ const Footer = () => {
             <li className="hover:text-[#FFFFFF]">
               Live Ranking
             </li>
-
+            <li className="hover:text-[#FFFFFF]">
+              Check Score
+            </li>
           </ul>
         </div>
         {/* Platforms */}

@@ -10,7 +10,7 @@ const StatsCard = ({ icon, title, value, color }) => {
   };
 
   return (
-    <div className="flex items-center bg-white rounded-xl border border-gray-200 md:p-6">
+    <div className="flex items-center bg-white rounded-xl border border-gray-200 md:p-6 text-center">
       <div
         className={`w-12 h-12 rounded-lg flex items-center justify-center ${colorMap[color]}`}
       >

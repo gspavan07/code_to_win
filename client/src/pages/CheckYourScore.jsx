@@ -3,6 +3,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import PlatformCard from '../components/ui/PlatformCard';
 import StatsCard from '../components/ui/StatsCard';
+import { FiCode } from 'react-icons/fi';
 
 export default function CheckYourScore() {
     const [form, setForm] = useState({
@@ -16,13 +17,34 @@ export default function CheckYourScore() {
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
     const [error, setError] = useState(null);
-
+    const [grade, setGrades] = useState([])
+    const getPoints = (metric) =>
+        grade.find(g => g.metric === metric)?.points || 0;
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setForm((prev) => ({ ...prev, [name]: value }));
     };
+    const fetchGrades = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await fetch("/api/meta/grading");
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || "Failed to fetch grades");
+            setGrades(data.grading || data); // adjust if your backend returns {grades: [...]}
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
+
+        fetchGrades();
+        console.log(grade)
+    }, []);
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -106,75 +128,133 @@ export default function CheckYourScore() {
                 </form>
                 {error && <div className="text-red-600 mt-4">{error}</div>}
                 {result && (
-
-                    <div className="mt-8 p-4 bg-blue-50 rounded grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {result.data?.leetcode && (
-                            <PlatformCard
-                                name="LeetCode"
-                                color="hover:text-yellow-600 hover:shadow-yellow-600"
-                                icon="/LeetCode_logo.png"
-                                total={
-                                    (result.data.leetcode.Problems.Easy || 0) +
-                                    (result.data.leetcode.Problems.Medium || 0) +
-                                    (result.data.leetcode.Problems.Hard || 0)
+                    <div>
+                        <div className='bg-blue-50 grid grid-cols-3 rounded-lg gap-5 p-10 mt-10'>
+                            <StatsCard
+                                icon={<FiCode />}
+                                color="blue"
+                                title="Total Problems SOlved"
+                                value={
+                                    (result.data.leetcode?.Problems.Easy) +
+                                    (result.data.leetcode?.Problems.Medium) +
+                                    (result.data.leetcode?.Problems.Hard) +
+                                    (result.data.codechef?.problemsSolved) +
+                                    (result.data.geekforgeeks.School) +
+                                    (result.data.geekforgeeks.Basic) +
+                                    (result.data.geekforgeeks.Easy) +
+                                    (result.data.geekforgeeks.Medium) +
+                                    (result.data.geekforgeeks.Hard)
                                 }
-                                breakdown={{
-                                    Easy: result.data.leetcode.Problems.Easy,
-                                    Medium: result.data.leetcode.Problems.Medium,
-                                    Hard: result.data.leetcode.Problems.Hard,
-                                    Contests: result.data.leetcode.Contests_Attended,
-                                    Badges: result.data.leetcode.Badges,
-                                }}
                             />
-                        )}
-                        {result.data?.hackerrank && (
-                            <PlatformCard
-                                name="HackerRank"
-                                color="hover:text-green-600 hover:shadow-green-600"
-                                icon="/HackerRank_logo.png"
-                                total={result.data.hackerrank.Total_stars}
-                                breakdown={{
-
-                                }}
-                                subtitle='Badges Gained'
-                            />
-                        )}
-                        {result.data?.codechef && (
-                            <PlatformCard
-                                name="CodeChef"
-                                color=" hover:text-orange-900 hover:shadow-orange-900"
-                                icon="/codechef_logo.png"
-                                total={result.data.codechef.Contests_Attended}
-                                subtitle="Contests Participated"
-                                breakdown={{
-                                    "Problems Solved":
-                                        result.data.codechef.Problems.problems,
-                                    Star: result.data.codechef.Problems.stars,
-                                    Badges: result.data.codechef.Problems.badges,
-                                }} />
-                        )
-                        }
-                        {result.data?.geekforgeeks && (
-                            <PlatformCard
-                                name="GeeksforGeeks"
-                                color="hover:text-green-800 hover:shadow-green-800"
-                                icon="/GeeksForGeeks_logo.png"
-                                total={
-                                    (Number(result.data.geekforgeeks.School) || 0) +
-                                    (Number(result.data.geekforgeeks.Basic) || 0) +
-                                    (Number(result.data.geekforgeeks.Easy) || 0) +
-                                    (Number(result.data.geekforgeeks.Medium) || 0) +
-                                    (Number(result.data.geekforgeeks.Hard) || 0)
+                            <StatsCard
+                                icon={<FiCode />}
+                                color="purple"
+                                title="Total Contests Attended"
+                                value={
+                                    (result.data.leetcode?.Contests_Attended) +
+                                    (result.data.codechef?.Contests_Participated)
                                 }
-                                breakdown={{
-                                    School: result.data.geekforgeeks?.School ?? 0,
-                                    Basic: result.data.geekforgeeks?.Basic ?? 0,
-                                    Easy: result.data.geekforgeeks?.Easy ?? 0,
-                                    Medium: result.data.geekforgeeks?.Medium ?? 0,
-                                    Hard: result.data.geekforgeeks?.Hard ?? 0,
-                                }}
                             />
-                        )}
+                            <StatsCard
+                                icon={<FiCode />}
+                                color="success"
+                                title="Score"
+                                value={(
+                                    ((result.data.leetcode?.Problems.Easy || 0) * getPoints("easy_lc")) +
+                                    ((result.data.geekforgeeks?.School || 0) * getPoints("school_gfg")) +
+                                    ((result.data.geekforgeeks?.Basic || 0) * getPoints("basic_gfg")) +
+                                    ((result.data.geekforgeeks?.Easy || 0) * getPoints("easy_gfg")) +
+                                    ((result.data.codechef?.problemsSolved || 0) * getPoints("problems_cc")) +
+
+                                    ((result.data.leetcode?.Problems.Medium || 0) * getPoints("medium_lc")) +
+                                    ((result.data.geekforgeeks?.Medium || 0) * getPoints("medium_gfg")) +
+
+                                    ((result.data.leetcode?.Problems.Hard || 0) * getPoints("hard_lc")) +
+                                    ((result.data.geekforgeeks?.Hard || 0) * getPoints("hard_gfg")) +
+
+                                    ((result.data.leetcode?.Badges || 0) * getPoints("badges_lc")) +
+                                    ((result.data.codechef?.Badges || 0) * getPoints("badges_cc")) +
+
+                                    ((result.data.leetcode?.Contests_Attended || 0) * getPoints("contests_lc")) +
+                                    ((result.data.codechef?.Contests_Participated || 0) * getPoints("contests_cc")) +
+
+                                    ((result.data.hackerrank?.Total_stars || 0) * getPoints("stars_hr")) +
+                                    ((result.data.codechef?.Star || 0) * getPoints("stars_cc"))
+                                )
+                                }
+                            />
+                        </div>
+                        <div className="mt-8 p-4 bg-blue-50 rounded grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {result.data?.leetcode && (
+                                <PlatformCard
+                                    name="LeetCode"
+                                    color="hover:text-yellow-600 hover:shadow-yellow-600"
+                                    icon="/LeetCode_logo.png"
+                                    total={
+                                        (result.data.leetcode.Problems.Easy || 0) +
+                                        (result.data.leetcode.Problems.Medium || 0) +
+                                        (result.data.leetcode.Problems.Hard || 0)
+                                    }
+                                    breakdown={{
+                                        Easy: result.data.leetcode.Problems.Easy,
+                                        Medium: result.data.leetcode.Problems.Medium,
+                                        Hard: result.data.leetcode.Problems.Hard,
+                                        Contests: result.data.leetcode.Contests_Attended,
+                                        Badges: result.data.leetcode.Badges,
+                                    }}
+                                />
+                            )}
+                            {result.data?.hackerrank && (
+                                <PlatformCard
+                                    name="HackerRank"
+                                    color="hover:text-green-600 hover:shadow-green-600"
+                                    icon="/HackerRank_logo.png"
+                                    total={result.data.hackerrank.Total_stars}
+                                    breakdown={{
+
+                                    }}
+                                    subtitle='Badges Gained'
+                                />
+                            )}
+                            {result.data?.codechef && (
+                                <PlatformCard
+                                    name="CodeChef"
+                                    color=" hover:text-orange-900 hover:shadow-orange-900"
+                                    icon="/codechef_logo.png"
+                                    total={result.data.codechef.Contests_Participated}
+                                    subtitle="Contests Participated"
+                                    breakdown={{
+                                        "Problems Solved":
+                                            result.data.codechef.problemsSolved,
+                                        Star: result.data.codechef.Star,
+                                        Badges: result.data.codechef.Badges,
+                                    }} />
+                            )
+                            }
+                            {result.data?.geekforgeeks && (
+                                <PlatformCard
+                                    name="GeeksforGeeks"
+                                    color="hover:text-green-800 hover:shadow-green-800"
+                                    icon="/GeeksForGeeks_logo.png"
+                                    total={
+                                        (Number(result.data.geekforgeeks.School) || 0) +
+                                        (Number(result.data.geekforgeeks.Basic) || 0) +
+                                        (Number(result.data.geekforgeeks.Easy) || 0) +
+                                        (Number(result.data.geekforgeeks.Medium) || 0) +
+                                        (Number(result.data.geekforgeeks.Hard) || 0)
+                                    }
+                                    breakdown={{
+                                        School: result.data.geekforgeeks?.School ?? 0,
+                                        Basic: result.data.geekforgeeks?.Basic ?? 0,
+                                        Easy: result.data.geekforgeeks?.Easy ?? 0,
+                                        Medium: result.data.geekforgeeks?.Medium ?? 0,
+                                        Hard: result.data.geekforgeeks?.Hard ?? 0,
+                                    }}
+                                />
+
+                            )}
+
+                        </div>
                     </div>
                 )}
             </div>
