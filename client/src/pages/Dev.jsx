@@ -15,7 +15,8 @@ const developers = [
   {
     name: "Sunil Garbana",
     role: "Frontend Developer",
-    description: "Designs and implements the user-facing part of the website using Reactjs and Tailwind CSS. Focuses on performance and user experience.",
+    description:
+      "Designs and implements the user-facing part of the website using Reactjs and Tailwind CSS. Focuses on performance and user experience.",
     github: "https://github.com/sunilgarbana/",
     linkedin: "#",
     image: "https://github.com/sunilgarbana.png", // replace with actual image
@@ -23,39 +24,39 @@ const developers = [
   {
     name: "Lalu Prasad",
     role: "Frontend Developer",
-    description: "Designs and implements the user-facing part of the website using Reactjs and Tailwind CSS. Focuses on performance and user experience.",
+    description:
+      "Designs and implements the user-facing part of the website using Reactjs and Tailwind CSS. Focuses on performance and user experience.",
     github: "#",
     linkedin: "#",
-    image: "Lalu_pic.jpeg", // replace with actual image
+    image: "/lalu.png", // replace with actual image
   },
   {
-    name: "Charan Teja",
-    role: "UI/UX",
+    name: "Charan Teja Neelam",
+    role: "UI/UX Designer",
     description:
       "Designs the layout, appearance, and interaction flow of the website. Ensures that the interface is user-friendly, responsive, and visually appealing.",
     github: "#",
     linkedin: "#",
-    image: "https://github.com/gspavan07.png", // replace with actual image
+    image: "/charan.jpeg", // replace with actual image
   },
   {
     name: "Nareen kumar",
     role: "Scraper Engineer",
     description:
       "Builds and maintains scripts to extract data from external websites. Ensures scraped data is accurate, clean, and usable for integration into the application.",
-    github: "#",
-    linkedin: "#",
-    image: "https://github.com/gspavan07.png", // replace with actual image
+    github: "https://github.com/mangamnareenkumar",
+    linkedin: "https://www.linkedin.com/in/nareen-kumar-mangam-0aaa11254",
+    image: "/nareen_hidden.png", // replace with actual image
   },
   {
     name: "Kamal Sai Tillari",
     role: "Scraper Engineer",
     description:
       "Builds and maintains scripts to extract data from external websites. Ensures scraped data is accurate, clean, and usable for integration into the application.",
-    github: "#",
-    linkedin: "#",
-    image: "https://github.com/gspavan07.png", // replace with actual image
+    github: "https://github.com/kamalsai369",
+    linkedin: "https://www.linkedin.com/in/kamal-sai-tillari-445201268",
+    image: "https://github.com/kamalsai369.png", // replace with actual image
   },
-
 ];
 
 const Dev = () => {
