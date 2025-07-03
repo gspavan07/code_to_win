@@ -9,7 +9,7 @@ const developers = [
     description:
       "Handles both frontend and backend development of the website. Integrates data from the scraper into the web app and ensures end-to-end functionality.",
     github: "https://github.com/gspavan07/",
-    linkedin: "#",
+    linkedin: "https://www.linkedin.com/in/shanmukpavan-gollapalli/",
     image: "https://github.com/gspavan07.png", // replace with actual image
   },
   {
@@ -18,7 +18,7 @@ const developers = [
     description:
       "Designs and implements the user-facing part of the website using Reactjs and Tailwind CSS. Focuses on performance and user experience.",
     github: "https://github.com/sunilgarbana/",
-    linkedin: "#",
+    linkedin: "https://www.linkedin.com/in/sunil-garbana-186376274/",
     image: "https://github.com/sunilgarbana.png", // replace with actual image
   },
   {
@@ -26,8 +26,8 @@ const developers = [
     role: "Frontend Developer",
     description:
       "Designs and implements the user-facing part of the website using Reactjs and Tailwind CSS. Focuses on performance and user experience.",
-    github: "#",
-    linkedin: "#",
+    github: "https://github.com/Prasad-Arugollu",
+    linkedin: "https://www.linkedin.com/in/prasadarugollu/",
     image: "/lalu.png", // replace with actual image
   },
   {
@@ -35,8 +35,8 @@ const developers = [
     role: "UI/UX Designer",
     description:
       "Designs the layout, appearance, and interaction flow of the website. Ensures that the interface is user-friendly, responsive, and visually appealing.",
-    github: "#",
-    linkedin: "#",
+    github: "https://github.com/Charantej111",
+    linkedin: "https://www.linkedin.com/in/charan-tej-neelam-bb0a9a302/",
     image: "/charan.jpeg", // replace with actual image
   },
   {
