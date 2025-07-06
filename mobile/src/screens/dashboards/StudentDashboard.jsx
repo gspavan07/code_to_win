@@ -15,20 +15,19 @@ export default function StudentDashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [refreshing, setRefreshing] = useState(false);
 
+  // Calculate stats only from accepted platforms
   const easy =
-    currentUser.performance.platformWise.leetcode.easy +
-    currentUser.performance.platformWise.gfg.school +
-    currentUser.performance.platformWise.gfg.basic +
-    currentUser.performance.platformWise.gfg.easy;
+    (currentUser.coding_profiles?.leetcode_status === "accepted" ? currentUser.performance.platformWise.leetcode.easy : 0) +
+    (currentUser.coding_profiles?.geekforgeeks_status === "accepted" ? currentUser.performance.platformWise.gfg.school + currentUser.performance.platformWise.gfg.basic + currentUser.performance.platformWise.gfg.easy : 0);
 
   const medium =
-    currentUser.performance.platformWise.leetcode.medium +
-    currentUser.performance.platformWise.codechef.problems +
-    currentUser.performance.platformWise.gfg.medium;
+    (currentUser.coding_profiles?.leetcode_status === "accepted" ? currentUser.performance.platformWise.leetcode.medium : 0) +
+    (currentUser.coding_profiles?.codechef_status === "accepted" ? currentUser.performance.platformWise.codechef.problems : 0) +
+    (currentUser.coding_profiles?.geekforgeeks_status === "accepted" ? currentUser.performance.platformWise.gfg.medium : 0);
 
   const hard =
-    currentUser.performance.platformWise.leetcode.hard +
-    currentUser.performance.platformWise.gfg.hard;
+    (currentUser.coding_profiles?.leetcode_status === "accepted" ? currentUser.performance.platformWise.leetcode.hard : 0) +
+    (currentUser.coding_profiles?.geekforgeeks_status === "accepted" ? currentUser.performance.platformWise.gfg.hard : 0);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -119,63 +118,71 @@ export default function StudentDashboard() {
             <StatsCard icon="fire" color="error" title="Hard" value={hard} />
           </View>
 
-          {/* Platform Performance Cards */}
+          {/* Platform Performance Cards - Only show accepted platforms */}
           <View className="mb-12 flex gap-2">
-            <PlatformCard
-              name="LeetCode"
-              className={'text-yellow-500'}
-              logo={require('../../../assets/leetcode.png')}
-              total={
-                currentUser.performance.platformWise.leetcode.easy +
-                currentUser.performance.platformWise.leetcode.medium +
-                currentUser.performance.platformWise.leetcode.hard
-              }
-              breakdown={{
-                Easy: currentUser.performance.platformWise.leetcode.easy,
-                Medium: currentUser.performance.platformWise.leetcode.medium,
-                Hard: currentUser.performance.platformWise.leetcode.hard,
-                Contests: currentUser.performance.platformWise.leetcode.contests,
-                Badges: currentUser.performance.platformWise.leetcode.badges,
-              }}
-            />
-            <PlatformCard
-              name="CodeChef"
-              className={'text-orange-950'}
-              logo={require('../../../assets/codechef.png')}
-              total={currentUser.performance.platformWise.codechef.contests}
-              subtitle="Contests Participated"
-              breakdown={{
-                Solved: currentUser.performance.platformWise.codechef.problems,
-                Stars: currentUser.performance.platformWise.codechef.stars,
-                Badges: currentUser.performance.platformWise.codechef.badges,
-              }}
-            />
-            <PlatformCard
-              name="GeeksforGeeks"
-              className={'text-green-700'}
-              logo={require('../../../assets/gfg.png')}
-              total={
-                currentUser.performance.platformWise.gfg.school +
-                currentUser.performance.platformWise.gfg.basic +
-                currentUser.performance.platformWise.gfg.easy +
-                currentUser.performance.platformWise.gfg.medium +
-                currentUser.performance.platformWise.gfg.hard
-              }
-              breakdown={{
-                School: currentUser.performance.platformWise.gfg.school,
-                Basic: currentUser.performance.platformWise.gfg.basic,
-                Easy: currentUser.performance.platformWise.gfg.easy,
-                Medium: currentUser.performance.platformWise.gfg.medium,
-                Hard: currentUser.performance.platformWise.gfg.hard,
-              }}
-            />
-            <PlatformCard
-              name="HackerRank"
-              className={''}
-              logo={require('../../../assets/hackerrank.png')}
-              total={currentUser.performance.platformWise.hackerrank.badges}
-              subtitle="Badges Gained"
-            />
+            {currentUser.coding_profiles?.leetcode_status === "accepted" && (
+              <PlatformCard
+                name="LeetCode"
+                className={'text-yellow-500'}
+                logo={require('../../../assets/leetcode.png')}
+                total={
+                  currentUser.performance.platformWise.leetcode.easy +
+                  currentUser.performance.platformWise.leetcode.medium +
+                  currentUser.performance.platformWise.leetcode.hard
+                }
+                breakdown={{
+                  Easy: currentUser.performance.platformWise.leetcode.easy,
+                  Medium: currentUser.performance.platformWise.leetcode.medium,
+                  Hard: currentUser.performance.platformWise.leetcode.hard,
+                  Contests: currentUser.performance.platformWise.leetcode.contests,
+                  Badges: currentUser.performance.platformWise.leetcode.badges,
+                }}
+              />
+            )}
+            {currentUser.coding_profiles?.codechef_status === "accepted" && (
+              <PlatformCard
+                name="CodeChef"
+                className={'text-orange-950'}
+                logo={require('../../../assets/codechef.png')}
+                total={currentUser.performance.platformWise.codechef.contests}
+                subtitle="Contests Participated"
+                breakdown={{
+                  Solved: currentUser.performance.platformWise.codechef.problems,
+                  Stars: currentUser.performance.platformWise.codechef.stars,
+                  Badges: currentUser.performance.platformWise.codechef.badges,
+                }}
+              />
+            )}
+            {currentUser.coding_profiles?.geekforgeeks_status === "accepted" && (
+              <PlatformCard
+                name="GeeksforGeeks"
+                className={'text-green-700'}
+                logo={require('../../../assets/gfg.png')}
+                total={
+                  currentUser.performance.platformWise.gfg.school +
+                  currentUser.performance.platformWise.gfg.basic +
+                  currentUser.performance.platformWise.gfg.easy +
+                  currentUser.performance.platformWise.gfg.medium +
+                  currentUser.performance.platformWise.gfg.hard
+                }
+                breakdown={{
+                  School: currentUser.performance.platformWise.gfg.school,
+                  Basic: currentUser.performance.platformWise.gfg.basic,
+                  Easy: currentUser.performance.platformWise.gfg.easy,
+                  Medium: currentUser.performance.platformWise.gfg.medium,
+                  Hard: currentUser.performance.platformWise.gfg.hard,
+                }}
+              />
+            )}
+            {currentUser.coding_profiles?.hackerrank_status === "accepted" && (
+              <PlatformCard
+                name="HackerRank"
+                className={''}
+                logo={require('../../../assets/hackerrank.png')}
+                total={currentUser.performance.platformWise.hackerrank.badges}
+                subtitle="Badges Gained"
+              />
+            )}
           </View>
         </ScrollView>
       </View>

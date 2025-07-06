@@ -1,0 +1,17 @@
+{
+  "name": "code_to_win",
+  "version": "1.0.0",
+  "description": "Coding platform stats tracking app",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd backend && npm run dev",
+    "client": "cd client && npm run dev",
+    "install-all": "npm install && cd backend && npm install && cd ../client && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "all": "^0.0.0"
+  }
+}

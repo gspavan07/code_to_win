@@ -266,65 +266,78 @@ const StudentDashboard = () => {
               />
             </div>
 
-            {/* Platform-wise Stats */}
+            {/* Platform-wise Stats - Only show accepted platforms */}
             <div className="grid grid-cols-2 gap-2 md:gap-6 ">
-              <PlatformCard
-                name="LeetCode"
-                color=" hover:text-yellow-600 hover:shadow-yellow-600"
-                icon="/LeetCode_logo.png"
-                total={
-                  currentUser.performance.platformWise.leetcode.easy +
-                  currentUser.performance.platformWise.leetcode.medium +
-                  currentUser.performance.platformWise.leetcode.hard
-                }
-                breakdown={{
-                  Easy: currentUser.performance.platformWise.leetcode.easy,
-                  Medium: currentUser.performance.platformWise.leetcode.medium,
-                  Hard: currentUser.performance.platformWise.leetcode.hard,
-                  contests:
-                    currentUser.performance.platformWise.leetcode.contests,
-                  Badges: currentUser.performance.platformWise.leetcode.badges,
-                }}
-              />
-              <PlatformCard
-                name="CodeChef"
-                color=" hover:text-orange-900 hover:shadow-orange-900"
-                icon="/codechef_logo.png"
-                total={currentUser.performance.platformWise.codechef.contests}
-                subtitle="Contests Participated"
-                breakdown={{
-                  "Problems Solved":
-                    currentUser.performance.platformWise.codechef.problems,
-                  Star: currentUser.performance.platformWise.codechef.stars,
-                  Badges: currentUser.performance.platformWise.codechef.badges,
-                }}
-              />
-              <PlatformCard
-                name="GeeksforGeeks"
-                color=" hover:text-green-800 hover:shadow-green-800"
-                icon="/GeeksForGeeks_logo.png"
-                total={
-                  currentUser.performance.platformWise.gfg.school +
-                  currentUser.performance.platformWise.gfg.basic +
-                  currentUser.performance.platformWise.gfg.easy +
-                  currentUser.performance.platformWise.gfg.medium +
-                  currentUser.performance.platformWise.gfg.hard
-                }
-                breakdown={{
-                  School: currentUser.performance.platformWise.gfg.school,
-                  Basic: currentUser.performance.platformWise.gfg.basic,
-                  Easy: currentUser.performance.platformWise.gfg.easy,
-                  Medium: currentUser.performance.platformWise.gfg.medium,
-                  Hard: currentUser.performance.platformWise.gfg.hard,
-                }}
-              />
-              <PlatformCard
-                name="HackerRank"
-                color=" hover:text-gray-900 hover:shadow-gray-900"
-                icon="/HackerRank_logo.png"
-                total={currentUser.performance.platformWise.hackerrank.badges}
-                subtitle="Stars Gained"
-              />
+              {currentUser.coding_profiles?.leetcode_status === "accepted" && (
+                <PlatformCard
+                  name="LeetCode"
+                  color=" hover:text-yellow-600 hover:shadow-yellow-600"
+                  icon="/LeetCode_logo.png"
+                  total={
+                    currentUser.performance.platformWise.leetcode.easy +
+                    currentUser.performance.platformWise.leetcode.medium +
+                    currentUser.performance.platformWise.leetcode.hard
+                  }
+                  breakdown={{
+                    Easy: currentUser.performance.platformWise.leetcode.easy,
+                    Medium:
+                      currentUser.performance.platformWise.leetcode.medium,
+                    Hard: currentUser.performance.platformWise.leetcode.hard,
+                    contests:
+                      currentUser.performance.platformWise.leetcode.contests,
+                    Badges:
+                      currentUser.performance.platformWise.leetcode.badges,
+                  }}
+                />
+              )}
+              {currentUser.coding_profiles?.codechef_status === "accepted" && (
+                <PlatformCard
+                  name="CodeChef"
+                  color=" hover:text-orange-900 hover:shadow-orange-900"
+                  icon="/codechef_logo.png"
+                  total={currentUser.performance.platformWise.codechef.contests}
+                  subtitle="Contests Participated"
+                  breakdown={{
+                    "Problems Solved":
+                      currentUser.performance.platformWise.codechef.problems,
+                    Star: currentUser.performance.platformWise.codechef.stars,
+                    Badges:
+                      currentUser.performance.platformWise.codechef.badges,
+                  }}
+                />
+              )}
+              {currentUser.coding_profiles?.geekforgeeks_status ===
+                "accepted" && (
+                <PlatformCard
+                  name="GeeksforGeeks"
+                  color=" hover:text-green-800 hover:shadow-green-800"
+                  icon="/GeeksForGeeks_logo.png"
+                  total={
+                    currentUser.performance.platformWise.gfg.school +
+                    currentUser.performance.platformWise.gfg.basic +
+                    currentUser.performance.platformWise.gfg.easy +
+                    currentUser.performance.platformWise.gfg.medium +
+                    currentUser.performance.platformWise.gfg.hard
+                  }
+                  breakdown={{
+                    School: currentUser.performance.platformWise.gfg.school,
+                    Basic: currentUser.performance.platformWise.gfg.basic,
+                    Easy: currentUser.performance.platformWise.gfg.easy,
+                    Medium: currentUser.performance.platformWise.gfg.medium,
+                    Hard: currentUser.performance.platformWise.gfg.hard,
+                  }}
+                />
+              )}
+              {currentUser.coding_profiles?.hackerrank_status ===
+                "accepted" && (
+                <PlatformCard
+                  name="HackerRank"
+                  color=" hover:text-gray-900 hover:shadow-gray-900"
+                  icon="/HackerRank_logo.png"
+                  total={currentUser.performance.platformWise.hackerrank.badges}
+                  subtitle="Stars Gained"
+                />
+              )}
             </div>
           </div>
         </div>

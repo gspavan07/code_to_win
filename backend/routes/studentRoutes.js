@@ -50,49 +50,55 @@ router.get("/profile", async (req, res) => {
     }
 
     const p = data[0];
+
+    // Only include data from accepted platforms
+    const isLeetcodeAccepted = coding_profiles?.leetcode_status === "accepted";
+    const isCodechefAccepted = coding_profiles?.codechef_status === "accepted";
+    const isGfgAccepted = coding_profiles?.geekforgeeks_status === "accepted";
+    const isHackerrankAccepted =
+      coding_profiles?.hackerrank_status === "accepted";
+
     const totalSolved =
-      p.easy_lc +
-      p.medium_lc +
-      p.hard_lc +
-      p.school_gfg +
-      p.basic_gfg +
-      p.easy_gfg +
-      p.medium_gfg +
-      p.hard_gfg +
-      p.problems_cc;
+      (isLeetcodeAccepted ? p.easy_lc + p.medium_lc + p.hard_lc : 0) +
+      (isGfgAccepted
+        ? p.school_gfg + p.basic_gfg + p.easy_gfg + p.medium_gfg + p.hard_gfg
+        : 0) +
+      (isCodechefAccepted ? p.problems_cc : 0);
 
     const combined = {
       totalSolved: totalSolved,
-      totalContests: p.contests_cc + p.contests_gfg,
-      stars_cc: p.stars_cc,
-      badges_hr: p.badges_hr,
+      totalContests:
+        (isCodechefAccepted ? p.contests_cc : 0) +
+        (isGfgAccepted ? p.contests_gfg : 0),
+      stars_cc: isCodechefAccepted ? p.stars_cc : 0,
+      badges_hr: isHackerrankAccepted ? p.badges_hr : 0,
       last_updated: p.last_updated,
     };
 
     const platformWise = {
       leetcode: {
-        easy: p.easy_lc,
-        medium: p.medium_lc,
-        hard: p.hard_lc,
-        contests: p.contests_lc,
-        badges: p.badges_lc,
+        easy: isLeetcodeAccepted ? p.easy_lc : 0,
+        medium: isLeetcodeAccepted ? p.medium_lc : 0,
+        hard: isLeetcodeAccepted ? p.hard_lc : 0,
+        contests: isLeetcodeAccepted ? p.contests_lc : 0,
+        badges: isLeetcodeAccepted ? p.badges_lc : 0,
       },
       gfg: {
-        school: p.school_gfg,
-        basic: p.basic_gfg,
-        easy: p.easy_gfg,
-        medium: p.medium_gfg,
-        hard: p.hard_gfg,
-        contests: p.contests_gfg,
+        school: isGfgAccepted ? p.school_gfg : 0,
+        basic: isGfgAccepted ? p.basic_gfg : 0,
+        easy: isGfgAccepted ? p.easy_gfg : 0,
+        medium: isGfgAccepted ? p.medium_gfg : 0,
+        hard: isGfgAccepted ? p.hard_gfg : 0,
+        contests: isGfgAccepted ? p.contests_gfg : 0,
       },
       codechef: {
-        problems: p.problems_cc,
-        contests: p.contests_cc,
-        stars: p.stars_cc,
-        badges: p.badges_cc,
+        problems: isCodechefAccepted ? p.problems_cc : 0,
+        contests: isCodechefAccepted ? p.contests_cc : 0,
+        stars: isCodechefAccepted ? p.stars_cc : 0,
+        badges: isCodechefAccepted ? p.badges_cc : 0,
       },
       hackerrank: {
-        badges: p.stars_hr,
+        badges: isHackerrankAccepted ? p.stars_hr : 0,
       },
     };
     logger.info(`Student profile fetched for userId: ${userId}`);
