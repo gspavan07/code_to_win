@@ -3,6 +3,7 @@ import { GrCodepen } from "react-icons/gr";
 import { Link, NavLink } from "react-router-dom";
 import { FiMenu, FiX, FiLogOut, FiUser } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
+import NotificationDropdown from "./ui/NotificationDropdown";
 
 const Navbar = () => {
   // Replace this with your actual authentication logic
@@ -49,6 +50,7 @@ const Navbar = () => {
             </div>
           ) : (
             <div className="hidden md:flex items-center gap-6">
+              <NotificationDropdown />
               <div className="flex items-center gap-2 font-medium p-2">
                 <FiUser />
                 {currentUser?.name}
@@ -66,7 +68,7 @@ const Navbar = () => {
             </div>
           )}
           {/* Mobile Hamburger */}
-          <div className="md:hidden flex items-center ">
+          <div className="md:hidden flex items-center gap-2">
             {!currentUser ? (
               <button
                 onClick={() => setMobileMenuOpen((prev) => !prev)}
@@ -75,12 +77,15 @@ const Navbar = () => {
                 {mobileMenuOpen ? <FiX /> : <FiMenu />}
               </button>
             ) : (
-              <div
-                onClick={logout}
-                className="flex items-center gap-2 on hover:text-blue-800 p-2 cursor-pointer"
-              >
-                <FiLogOut />
-              </div>
+              <>
+                <NotificationDropdown />
+                <div
+                  onClick={logout}
+                  className="flex items-center gap-2 on hover:text-blue-800 p-2 cursor-pointer"
+                >
+                  <FiLogOut />
+                </div>
+              </>
             )}
           </div>
         </div>

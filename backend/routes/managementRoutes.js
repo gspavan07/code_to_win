@@ -587,9 +587,9 @@ router.post("/bulk-import-with-cp", upload.single("file"), async (req, res) => {
         // Insert into student_coding_profiles table
         await connection.query(
           `INSERT INTO student_coding_profiles 
-    (student_id, hackerrank_id, leetcode_id, codechef_id, geekforgeeks_id,
-     hackerrank_status, leetcode_status, codechef_status, geekforgeeks_status,
-     hackerrank_verified, leetcode_verified, codechef_verified, geekforgeeks_verified)
+    (student_id, hackerrank_id, leetcode_id, codechef_id, geeksforgeeks_id,
+     hackerrank_status, leetcode_status, codechef_status, geeksforgeeks_status,
+     hackerrank_verified, leetcode_verified, codechef_verified, geeksforgeeks_verified)
    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             stdId,
@@ -600,11 +600,11 @@ router.post("/bulk-import-with-cp", upload.single("file"), async (req, res) => {
             "accepted", // hackerrank_status
             "accepted", // leetcode_status
             "accepted", // codechef_status
-            "accepted", // geekforgeeks_status
+            "accepted", // geeksforgeeks_status
             1, // hackerrank_verified
             1, // leetcode_verified
             1, // codechef_verified
-            1, // geekforgeeks_verified
+            1, // geeksforgeeks_verified
           ]
         );
 
@@ -619,7 +619,7 @@ router.post("/bulk-import-with-cp", upload.single("file"), async (req, res) => {
           scrapeAndUpdatePerformance(stdId, "codechef", row.CodeChef);
         }
         if (row.GeeksforGeeks) {
-          scrapeAndUpdatePerformance(stdId, "geekforgeeks", row.GeeksforGeeks);
+          scrapeAndUpdatePerformance(stdId, "geeksforgeeks", row.GeeksforGeeks);
         }
 
         results.push({ stdId: stdId, status: "success" });
@@ -720,17 +720,17 @@ router.post("/check-score", async (req, res) => {
           })
       );
     }
-    if (profile.geekforgeeks_id) {
+    if (profile.geeksforgeeks_id) {
       tasks.push(
         scrapeGeeksForGeeksProfile(
-          `https://www.geeksforgeeks.org/user/${profile.geekforgeeks_id}`
+          `https://www.geeksforgeeks.org/user/${profile.geeksforgeeks_id}`
         )
           .then((data) => {
-            results.geekforgeeks = data;
+            results.geeksforgeeks = data;
           })
           .catch((err) => {
             logger.error(`[FETCH] GFG: ${err.message}`);
-            results.geekforgeeks = null;
+            results.geeksforgeeks = null;
           })
       );
     }

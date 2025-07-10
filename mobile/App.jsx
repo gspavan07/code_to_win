@@ -1,19 +1,19 @@
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider } from 'src/contexts/AuthContext';
+import { MetaProvider } from 'src/contexts/MetaContext';
 import AppNavigation from 'src/navigation/AppNavigation';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { ThemeProvider } from 'src/contexts/ThemeContext';
 import './global.css';
 
 export default function App() {
   return (
     <SafeAreaProvider>
-      <ThemeProvider>
-        <StatusBar />
+      <StatusBar />
+      <MetaProvider>
         <AuthProvider>
           <AppNavigation />
         </AuthProvider>
-      </ThemeProvider>
+      </MetaProvider>
     </SafeAreaProvider>
   );
 }

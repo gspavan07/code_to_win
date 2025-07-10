@@ -29,7 +29,7 @@ router.get("/profile", async (req, res) => {
       `SELECT 
     leetcode_id, leetcode_status, leetcode_verified,
     codechef_id, codechef_status, codechef_verified,
-    geekforgeeks_id, geekforgeeks_status, geekforgeeks_verified,
+    geeksforgeeks_id, geeksforgeeks_status, geeksforgeeks_verified,
     hackerrank_id, hackerrank_status, hackerrank_verified,
     verified_by
    FROM student_coding_profiles
@@ -54,7 +54,7 @@ router.get("/profile", async (req, res) => {
     // Only include data from accepted platforms
     const isLeetcodeAccepted = coding_profiles?.leetcode_status === "accepted";
     const isCodechefAccepted = coding_profiles?.codechef_status === "accepted";
-    const isGfgAccepted = coding_profiles?.geekforgeeks_status === "accepted";
+    const isGfgAccepted = coding_profiles?.geeksforgeeks_status === "accepted";
     const isHackerrankAccepted =
       coding_profiles?.hackerrank_status === "accepted";
 
@@ -122,7 +122,7 @@ router.put("/update-profile", async (req, res) => {
   const { userId, name } = req.body;
   logger.info(`Updating student profile: userId=${userId}, name=${name}`);
   try {
-    await db.promise().query(
+    await db.query(
       `UPDATE student_profiles 
              SET name = ?
              WHERE student_id = ?`,
@@ -138,9 +138,44 @@ router.put("/update-profile", async (req, res) => {
   }
 });
 
+router.put("/change-password", async (req, res) => {
+  const { userId, currentPassword, newPassword } = req.body;
+  logger.info(`Changing password for userId: ${userId}`);
+  try {
+    // Get current password hash
+    const [user] = await db.query(
+      "SELECT password FROM users WHERE user_id = ?",
+      [userId]
+    );
+
+    if (user.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Verify current password (assuming plain text for now - should use bcrypt in production)
+    if (user[0].password !== currentPassword) {
+      return res.status(400).json({ message: "Current password is incorrect" });
+    }
+
+    // Update password
+    await db.query("UPDATE users SET password = ? WHERE user_id = ?", [
+      newPassword,
+      userId,
+    ]);
+
+    logger.info(`Password changed successfully for userId: ${userId}`);
+    res.json({ message: "Password changed successfully" });
+  } catch (err) {
+    logger.error(
+      `Error changing password for userId=${userId}: ${err.message}`
+    );
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 // POST /student/coding-profile
 router.post("/coding-profile", async (req, res) => {
-  const { userId, leetcode_id, codechef_id, geekforgeeks_id, hackerrank_id } =
+  const { userId, leetcode_id, codechef_id, geeksforgeeks_id, hackerrank_id } =
     req.body;
   logger.info(`Submitting coding profiles for verification: userId=${userId}`);
   try {
@@ -170,13 +205,13 @@ router.post("/coding-profile", async (req, res) => {
       );
       values.push(codechef_id);
     }
-    if (geekforgeeks_id !== undefined) {
+    if (geeksforgeeks_id !== undefined) {
       fields.push(
-        "geekforgeeks_id = ?",
-        "geekforgeeks_status = 'pending'",
-        "geekforgeeks_verified = 0"
+        "geeksforgeeks_id = ?",
+        "geeksforgeeks_status = 'pending'",
+        "geeksforgeeks_verified = 0"
       );
-      values.push(geekforgeeks_id);
+      values.push(geeksforgeeks_id);
     }
     if (hackerrank_id !== undefined) {
       fields.push(
@@ -203,14 +238,14 @@ router.post("/coding-profile", async (req, res) => {
         `INSERT INTO student_coding_profiles 
          (student_id, leetcode_id, leetcode_status, leetcode_verified,
           codechef_id, codechef_status, codechef_verified,
-          geekforgeeks_id, geekforgeeks_status, geekforgeeks_verified,
+          geeksforgeeks_id, geeksforgeeks_status, geeksforgeeks_verified,
           hackerrank_id, hackerrank_status, hackerrank_verified)
          VALUES (?, ?, 'pending', 0, ?, 'pending', 0, ?, 'pending', 0, ?, 'pending', 0)`,
         [
           userId,
           leetcode_id || null,
           codechef_id || null,
-          geekforgeeks_id || null,
+          geeksforgeeks_id || null,
           hackerrank_id || null,
         ]
       );
@@ -226,13 +261,37 @@ router.post("/coding-profile", async (req, res) => {
   }
 });
 
+// GET /student/notifications
+router.get("/notifications", async (req, res) => {
+  const { userId } = req.query;
+  try {
+    const [notifications] = await db.query(
+      `SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 20`,
+      [userId]
+    );
+    res.json(
+      notifications.map((n) => ({
+        id: n.id,
+        title: n.title,
+        message: n.message,
+        status: n.status,
+        read: n.read_status,
+        created_at: n.created_at,
+      }))
+    );
+  } catch (err) {
+    logger.error(`Error fetching notifications: ${err.message}`);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 // POST /student/refresh-coding-profiles
 router.post("/refresh-coding-profiles", async (req, res) => {
   const { userId } = req.body;
   logger.info(`Refreshing coding profiles for userId: ${userId}`);
   try {
     const [profiles] = await db.query(
-      `SELECT leetcode_id, leetcode_status, codechef_id, codechef_status, geekforgeeks_id, geekforgeeks_status, hackerrank_id, hackerrank_status
+      `SELECT leetcode_id, leetcode_status, codechef_id, codechef_status, geeksforgeeks_id, geeksforgeeks_status, hackerrank_id, hackerrank_status
        FROM student_coding_profiles WHERE student_id = ?`,
       [userId]
     );
@@ -244,7 +303,11 @@ router.post("/refresh-coding-profiles", async (req, res) => {
     const profile = profiles[0];
     const tasks = [];
 
-    if (profile.leetcode_id && profile.leetcode_status === "accepted") {
+    if (
+      profile.leetcode_id &&
+      (profile.leetcode_status === "accepted" ||
+        profile.leetcode_status === "suspended")
+    ) {
       tasks.push(
         scrapeAndUpdatePerformance(
           userId,
@@ -253,7 +316,11 @@ router.post("/refresh-coding-profiles", async (req, res) => {
         ).catch((err) => logger.error(`[REFRESH] LeetCode: ${err.message}`))
       );
     }
-    if (profile.codechef_id && profile.codechef_status === "accepted") {
+    if (
+      profile.codechef_id &&
+      (profile.codechef_status === "accepted" ||
+        profile.codechef_status === "suspended")
+    ) {
       tasks.push(
         scrapeAndUpdatePerformance(
           userId,
@@ -262,16 +329,24 @@ router.post("/refresh-coding-profiles", async (req, res) => {
         ).catch((err) => logger.error(`[REFRESH] CodeChef: ${err.message}`))
       );
     }
-    if (profile.geekforgeeks_id && profile.geekforgeeks_status === "accepted") {
+    if (
+      profile.geeksforgeeks_id &&
+      (profile.geeksforgeeks_status === "accepted" ||
+        profile.geeksforgeeks_status === "suspended")
+    ) {
       tasks.push(
         scrapeAndUpdatePerformance(
           userId,
-          "geekforgeeks",
-          profile.geekforgeeks_id
+          "geeksforgeeks",
+          profile.geeksforgeeks_id
         ).catch((err) => logger.error(`[REFRESH] GFG: ${err.message}`))
       );
     }
-    if (profile.hackerrank_id && profile.hackerrank_status === "accepted") {
+    if (
+      profile.hackerrank_id &&
+      (profile.hackerrank_status === "accepted" ||
+        profile.hackerrank_status === "suspended")
+    ) {
       tasks.push(
         scrapeAndUpdatePerformance(
           userId,

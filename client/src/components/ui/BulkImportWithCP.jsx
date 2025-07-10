@@ -36,7 +36,7 @@ const bulkImportWithCP = ({ onSuccess }) => {
     error: null,
     success: false,
   });
-  const [modalOpen, setModalOpen] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
   const [uploadStats, setUploadStats] = useState(null);
 
   const handleBulkFormChange = (field, value) => {

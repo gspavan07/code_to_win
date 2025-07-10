@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { TbUserShare } from "react-icons/tb";
+import { FiPause, FiAlertTriangle } from "react-icons/fi";
 import StudentTable from "./StudentTable";
 
 function CodingProfileRequests({ dept, year, section, facultyId }) {
@@ -153,18 +154,33 @@ function StudentRequestsModal({ student, onClose, onAction, facultyId }) {
             </tr>
           </thead>
           <tbody>
-            {["leetcode", "codechef", "geekforgeeks", "hackerrank"].map(
+            {["leetcode", "codechef", "geeksforgeeks", "hackerrank"].map(
               (platform) => {
                 const idKey = `${platform}_id`;
                 const statusKey = `${platform}_status`;
                 const username = student.reqs[0][idKey];
                 const status = student.reqs[0][statusKey];
-                // Only show if status is pending and username exists
-                if (!username || status !== "pending") return null;
+                // Only show if status is pending/suspended and username exists
+                if (
+                  !username ||
+                  (status !== "pending" && status !== "suspended")
+                )
+                  return null;
                 return (
-                  <tr key={platform} className="text-sm p-4">
-                    <td>
+                  <tr
+                    key={platform}
+                    className={`text-sm p-4 ${
+                      status === "suspended" ? "bg-yellow-50" : ""
+                    }`}
+                  >
+                    <td className="flex items-center gap-2">
                       {platform.charAt(0).toUpperCase() + platform.slice(1)}
+                      {status === "suspended" && (
+                        <FiPause
+                          className="text-yellow-500"
+                          title="Temporarily suspended"
+                        />
+                      )}
                     </td>
                     <td>{username}</td>
                     <td>
@@ -178,18 +194,29 @@ function StudentRequestsModal({ student, onClose, onAction, facultyId }) {
                       </a>
                     </td>
                     <td className="flex justify-center gap-2 mb-2 mt-1">
-                      <button
-                        className="bg-green-500 text-white px-2 py-1 rounded mr-2 text-xs hover:bg-green-600"
-                        onClick={() => handleAction(platform, "accept")}
-                      >
-                        Accept
-                      </button>
-                      <button
-                        className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-xs"
-                        onClick={() => handleAction(platform, "reject")}
-                      >
-                        Reject
-                      </button>
+                      {status === "suspended" ? (
+                        <button
+                          className="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600"
+                          onClick={() => handleAction(platform, "accept")}
+                        >
+                          Reactivate
+                        </button>
+                      ) : (
+                        <>
+                          <button
+                            className="bg-green-500 text-white px-2 py-1 rounded mr-2 text-xs hover:bg-green-600"
+                            onClick={() => handleAction(platform, "accept")}
+                          >
+                            Accept
+                          </button>
+                          <button
+                            className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-xs"
+                            onClick={() => handleAction(platform, "reject")}
+                          >
+                            Reject
+                          </button>
+                        </>
+                      )}
                     </td>
                   </tr>
                 );

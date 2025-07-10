@@ -981,7 +981,7 @@ export function EditModal({ onClose, user }) {
 const optionList = [
   { label: "Leetcode", key: "leetcode" },
   { label: "CodeChef", key: "codechef" },
-  { label: "GeeksforGeeks", key: "geekforgeeks" },
+  { label: "GeeksforGeeks", key: "geeksforgeeks" },
   { label: "HackerRank", key: "hackerrank" },
 ];
 

@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { FiCheck, FiClock, FiCode, FiRefreshCw, FiX } from "react-icons/fi";
+import {
+  FiCheck,
+  FiClock,
+  FiCode,
+  FiRefreshCw,
+  FiX,
+  FiPause,
+  FiAlertTriangle,
+} from "react-icons/fi";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
 import dayjs from "dayjs";
@@ -32,6 +40,19 @@ const StudentDashboard = () => {
   const totalStars =
     currentUser.performance.platformWise.hackerrank.badges +
     currentUser.performance.platformWise.codechef.stars;
+
+  // Check for suspended platforms
+  const suspendedPlatforms = [
+    "leetcode",
+    "codechef",
+    "geeksforgeeks",
+    "hackerrank",
+  ]
+    .filter(
+      (platform) =>
+        currentUser.coding_profiles?.[`${platform}_status`] === "suspended"
+    )
+    .map((platform) => platform.charAt(0).toUpperCase() + platform.slice(1));
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -79,6 +100,23 @@ const StudentDashboard = () => {
       <Navbar />
 
       <div className=" bg-gray-100/50 p-6 lg:px-10 xl:px-40">
+        {/* Suspended Platforms Notification */}
+        {suspendedPlatforms.length > 0 && (
+          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 rounded">
+            <div className="flex items-center">
+              <FiAlertTriangle className="text-yellow-400 mr-2" />
+              <div>
+                <p className="text-sm font-medium text-yellow-800">
+                  Platform Update Issues
+                </p>
+                <p className="text-sm text-yellow-700">
+                  {suspendedPlatforms.join(", ")} temporarily suspended due to
+                  connection issues. We'll retry automatically.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
         <div className="text-right text-sm text-gray-500 mb-2">
           Last Updated on {formattedDate}
         </div>
@@ -171,7 +209,7 @@ const StudentDashboard = () => {
               <p className="font-semibold">Coding Profiles</p>
 
               <div className="flex flex-col gap-2">
-                {["leetcode", "codechef", "geekforgeeks", "hackerrank"].map(
+                {["leetcode", "codechef", "geeksforgeeks", "hackerrank"].map(
                   (platform) => {
                     const idKey = `${platform}_id`;
                     const statusKey = `${platform}_status`;
@@ -193,6 +231,9 @@ const StudentDashboard = () => {
                           )}
                           {status === "pending" && (
                             <FiClock className="inline ml-1 text-gray-500" />
+                          )}
+                          {status === "suspended" && (
+                            <FiPause className="inline ml-1 text-yellow-500" />
                           )}
                         </p>
                       </div>
@@ -306,7 +347,7 @@ const StudentDashboard = () => {
                   }}
                 />
               )}
-              {currentUser.coding_profiles?.geekforgeeks_status ===
+              {currentUser.coding_profiles?.geeksforgeeks_status ===
                 "accepted" && (
                 <PlatformCard
                   name="GeeksforGeeks"

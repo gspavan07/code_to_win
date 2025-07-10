@@ -105,27 +105,37 @@ router.get("/students", async (req, res) => {
         [student.student_id]
       );
       const [codingProfiles] = await db.query(
-        `SELECT leetcode_status, codechef_status, geekforgeeks_status, hackerrank_status FROM student_coding_profiles WHERE student_id = ?`,
+        `SELECT leetcode_status, codechef_status, geeksforgeeks_status, hackerrank_status FROM student_coding_profiles WHERE student_id = ?`,
         [student.student_id]
       );
-      
+
+      student.coding_profiles = codingProfiles[0] || {};
+
       if (perfRows.length > 0) {
         const p = perfRows[0];
         const cp = codingProfiles[0] || {};
-        
-        const isLeetcodeAccepted = cp.leetcode_status === 'accepted';
-        const isCodechefAccepted = cp.codechef_status === 'accepted';
-        const isGfgAccepted = cp.geekforgeeks_status === 'accepted';
-        const isHackerrankAccepted = cp.hackerrank_status === 'accepted';
-        
+
+        const isLeetcodeAccepted = cp.leetcode_status === "accepted";
+        const isCodechefAccepted = cp.codechef_status === "accepted";
+        const isGfgAccepted = cp.geeksforgeeks_status === "accepted";
+        const isHackerrankAccepted = cp.hackerrank_status === "accepted";
+
         const totalSolved =
           (isLeetcodeAccepted ? p.easy_lc + p.medium_lc + p.hard_lc : 0) +
-          (isGfgAccepted ? p.school_gfg + p.basic_gfg + p.easy_gfg + p.medium_gfg + p.hard_gfg : 0) +
+          (isGfgAccepted
+            ? p.school_gfg +
+              p.basic_gfg +
+              p.easy_gfg +
+              p.medium_gfg +
+              p.hard_gfg
+            : 0) +
           (isCodechefAccepted ? p.problems_cc : 0);
 
         const combined = {
           totalSolved: totalSolved,
-          totalContests: (isCodechefAccepted ? p.contests_cc : 0) + (isGfgAccepted ? p.contests_gfg : 0),
+          totalContests:
+            (isCodechefAccepted ? p.contests_cc : 0) +
+            (isGfgAccepted ? p.contests_gfg : 0),
           stars_cc: isCodechefAccepted ? p.stars_cc : 0,
           badges_hr: isHackerrankAccepted ? p.badges_hr : 0,
           last_updated: p.last_updated,
@@ -191,8 +201,12 @@ router.get("/coding-profile-requests", async (req, res) => {
         AND (
           scp.leetcode_status = 'pending'
           OR scp.codechef_status = 'pending'
-          OR scp.geekforgeeks_status = 'pending'
+          OR scp.geeksforgeeks_status = 'pending'
           OR scp.hackerrank_status = 'pending'
+          OR scp.leetcode_status = 'suspended'
+          OR scp.codechef_status = 'suspended'
+          OR scp.geeksforgeeks_status = 'suspended'
+          OR scp.hackerrank_status = 'suspended'
         )`,
       [dept, year, section]
     );
@@ -200,6 +214,71 @@ router.get("/coding-profile-requests", async (req, res) => {
     res.json(requests);
   } catch (err) {
     logger.error(`Error fetching coding profile requests: ${err.message}`);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// GET /faculty/notifications
+router.get("/notifications", async (req, res) => {
+  const { userId } = req.query;
+  try {
+    // Get faculty's assigned section
+    const [assignment] = await db.query(
+      "SELECT year, section FROM faculty_section_assignment WHERE faculty_id = ?",
+      [userId]
+    );
+
+    if (assignment.length === 0) {
+      return res.json([]);
+    }
+
+    const { year, section } = assignment[0];
+
+    // Get faculty's department
+    const [faculty] = await db.query(
+      "SELECT dept_code FROM faculty_profiles WHERE faculty_id = ?",
+      [userId]
+    );
+
+    if (faculty.length === 0) {
+      return res.json([]);
+    }
+
+    const dept_code = faculty[0].dept_code;
+
+    // Count pending requests
+    const [pendingCount] = await db.query(
+      `SELECT COUNT(*) as count FROM student_coding_profiles scp
+       JOIN student_profiles sp ON scp.student_id = sp.student_id
+       WHERE sp.dept_code = ? AND sp.year = ? AND sp.section = ?
+       AND (scp.leetcode_status = 'pending' OR scp.codechef_status = 'pending' 
+            OR scp.geeksforgeeks_status = 'pending' OR scp.hackerrank_status = 'pending'
+            OR scp.leetcode_status = 'suspended' OR scp.codechef_status = 'suspended'
+            OR scp.geeksforgeeks_status = 'suspended' OR scp.hackerrank_status = 'suspended')`,
+      [dept_code, year, section]
+    );
+
+    const count = pendingCount[0].count;
+
+    if (count > 0) {
+      res.json([
+        {
+          id: "pending-requests",
+          title: "Pending Profile Requests",
+          message: `You have ${count} coding profile request${
+            count > 1 ? "s" : ""
+          } to review`,
+          status: "pending",
+          read: false,
+          created_at: new Date().toISOString(),
+          count: count,
+        },
+      ]);
+    } else {
+      res.json([]);
+    }
+  } catch (err) {
+    logger.error(`Error fetching faculty notifications: ${err.message}`);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -222,6 +301,17 @@ router.post("/verify-coding-profile", async (req, res) => {
        SET ${statusField} = ?, ${verifiedField} = ?, verified_by = ?
        WHERE student_id = ?`,
       [status, is_verified, faculty_id, student_id]
+    );
+
+    // Create notification for student
+    const title = `${
+      platform.charAt(0).toUpperCase() + platform.slice(1)
+    } Profile ${status.charAt(0).toUpperCase() + status.slice(1)}`;
+    const message = `Your ${platform} coding profile has been ${status} by faculty.`;
+
+    await db.query(
+      `INSERT INTO notifications (user_id, title, message, status, created_at) VALUES (?, ?, ?, ?, NOW())`,
+      [student_id, title, message, status]
     );
 
     logger.info(`Profile ${platform} ${status} for student_id=${student_id}`);

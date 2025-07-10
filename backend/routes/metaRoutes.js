@@ -50,4 +50,28 @@ router.get("/depts", async (req, res) => {
   }
 });
 
+// GET /meta/years
+router.get("/years", async (req, res) => {
+  logger.info("Fetching years");
+  try {
+    const [years] = await db.query("SELECT DISTINCT year FROM student_profiles ORDER BY year");
+    res.json(years.map(y => y.year));
+  } catch (err) {
+    logger.error(`Error fetching years: ${err.message}`);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// GET /meta/sections
+router.get("/sections", async (req, res) => {
+  logger.info("Fetching sections");
+  try {
+    const [sections] = await db.query("SELECT DISTINCT section FROM student_profiles ORDER BY section");
+    res.json(sections.map(s => s.section));
+  } catch (err) {
+    logger.error(`Error fetching sections: ${err.message}`);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 module.exports = router;

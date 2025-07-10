@@ -19,14 +19,14 @@ export default function LoginScreen({ navigation }) {
   };
 
   return (
-    <View className="flex-1 items-center justify-center bg-white px-6 dark:bg-gray-950">
-      <Text className="mb-6 text-3xl font-bold dark:text-white">Welcome Back</Text>
+    <View className="flex-1 items-center justify-center bg-white px-6 ">
+      <Text className="mb-6 text-3xl font-bold ">Welcome Back</Text>
 
       <TextInput
         placeholder="User ID"
         value={userId}
         onChangeText={setUserId}
-        className="mb-4 w-full rounded border border-gray-300 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+        className="mb-4 w-full rounded border border-gray-300 px-4 py-2 "
         editable={!loading}
       />
       <TextInput
@@ -34,13 +34,13 @@ export default function LoginScreen({ navigation }) {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
-        className="mb-4 w-full rounded border border-gray-300 px-4 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+        className="mb-4 w-full rounded border border-gray-300 px-4 py-2"
         editable={!loading}
       />
 
       {/* Simple Role Selector (can customize later) */}
       <View className="mb-4 flex-row gap-3">
-        {['student', 'faculty', 'hod', 'admin'].map((r) => (
+        {['student', 'faculty', 'hod'].map((r) => (
           <TouchableOpacity
             key={r}
             className={`rounded px-3 py-2 ${role === r ? 'bg-blue-500' : 'bg-gray-200'}`}

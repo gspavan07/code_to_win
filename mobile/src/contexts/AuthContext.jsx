@@ -14,23 +14,19 @@ export const AuthProvider = ({ children }) => {
       const token = await AsyncStorage.getItem('authToken');
       if (!token) throw new Error('No token');
 
-      const res = await apiFetch(`/auth/validate`, {
+      const data = await apiFetch(`/auth/validate`, {
         headers: {
           Authorization: token,
           'Content-Type': 'application/json',
         },
       });
 
-      if (!res.ok) throw new Error('Invalid token');
-
-      const data = await res.json();
       if (data.valid) {
         const user = data.user;
         let profile = data.profile;
 
         if (!profile) {
-          const profileRes = await apiFetch(`/${user.role}/profile?userId=${user.user_id}`);
-          profile = await profileRes.json();
+          profile = await apiFetch(`/${user.role}/profile?userId=${user.user_id}`);
         }
 
         const userData = { ...user, ...profile };
@@ -55,20 +51,16 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (userId, password, role) => {
     try {
-      const res = await apiFetch(`/auth/login`, {
+      const { token, user, profile } = await apiFetch(`/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, password, role }),
       });
 
-      if (!res.ok) throw new Error('Login failed');
-
-      const { token, user, profile } = await res.json();
       let profileData = profile;
 
       if (!profileData) {
-        const profileRes = await apiFetch(`/${user.role}/profile?userId=${user.user_id}`);
-        profileData = await profileRes.json();
+        profileData = await apiFetch(`/${user.role}/profile?userId=${user.user_id}`);
       }
 
       const userData = { ...user, ...profileData };

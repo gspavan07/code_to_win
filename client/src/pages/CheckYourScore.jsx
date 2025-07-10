@@ -57,11 +57,11 @@ export default function CheckYourScore() {
         {
           leetcode_id: form.leetcode,
           codechef_id: form.codechef,
-          geekforgeeks_id: form.gfg,
+          geeksforgeeks_id: form.gfg,
           hackerrank_id: form.hankerrank,
           leetcode_status: form.leetcode ? "accepted" : "none",
           codechef_status: form.codechef ? "accepted" : "none",
-          geekforgeeks_status: form.gfg ? "accepted" : "none",
+          geeksforgeeks_status: form.gfg ? "accepted" : "none",
           hackerrank_status: form.hankerrank ? "accepted" : "none",
         },
       ],
@@ -146,11 +146,11 @@ export default function CheckYourScore() {
                   (result.data.leetcode?.Problems.Medium || 0) +
                   (result.data.leetcode?.Problems.Hard || 0) +
                   (result.data.codechef?.problemsSolved || 0) +
-                  (result.data?.geekforgeeks?.School || 0) +
-                  (result.data?.geekforgeeks?.Basic || 0) +
-                  (result.data?.geekforgeeks?.Easy || 0) +
-                  (result.data?.geekforgeeks?.Medium || 0) +
-                  (result.data?.geekforgeeks?.Hard || 0)
+                  (result.data?.geeksforgeeks?.School || 0) +
+                  (result.data?.geeksforgeeks?.Basic || 0) +
+                  (result.data?.geeksforgeeks?.Easy || 0) +
+                  (result.data?.geeksforgeeks?.Medium || 0) +
+                  (result.data?.geeksforgeeks?.Hard || 0)
                 }
               />
               <StatsCard
@@ -170,21 +170,21 @@ export default function CheckYourScore() {
                 value={
                   (result.data.leetcode?.Problems.Easy || 0) *
                     getPoints("easy_lc") +
-                  (result.data.geekforgeeks?.School || 0) *
+                  (result.data.geeksforgeeks?.School || 0) *
                     getPoints("school_gfg") +
-                  (result.data.geekforgeeks?.Basic || 0) *
+                  (result.data.geeksforgeeks?.Basic || 0) *
                     getPoints("basic_gfg") +
-                  (result.data.geekforgeeks?.Easy || 0) *
+                  (result.data.geeksforgeeks?.Easy || 0) *
                     getPoints("easy_gfg") +
                   ((result.data.codechef?.problemsSolved || 0) *
                     getPoints("problems_cc") +
                     (result.data.leetcode?.Problems.Medium || 0) *
                       getPoints("medium_lc") +
-                    (result.data.geekforgeeks?.Medium || 0) *
+                    (result.data.geeksforgeeks?.Medium || 0) *
                       getPoints("medium_gfg")) +
                   (result.data.leetcode?.Problems.Hard || 0) *
                     getPoints("hard_lc") +
-                  (result.data.geekforgeeks?.Hard || 0) *
+                  (result.data.geeksforgeeks?.Hard || 0) *
                     getPoints("hard_gfg") +
                   (result.data.leetcode?.Badges || 0) * getPoints("badges_lc") +
                   (result.data.codechef?.Badges || 0) * getPoints("badges_cc") +
@@ -242,24 +242,24 @@ export default function CheckYourScore() {
                   }}
                 />
               )}
-              {result.data?.geekforgeeks && (
+              {result.data?.geeksforgeeks && (
                 <PlatformCard
                   name="GeeksforGeeks"
                   color="hover:text-green-800 hover:shadow-green-800"
                   icon="/GeeksForGeeks_logo.png"
                   total={
-                    (Number(result.data.geekforgeeks?.School) || 0) +
-                    (Number(result.data.geekforgeeks?.Basic) || 0) +
-                    (Number(result.data.geekforgeeks?.Easy) || 0) +
-                    (Number(result.data.geekforgeeks?.Medium) || 0) +
-                    (Number(result.data.geekforgeeks?.Hard) || 0)
+                    (Number(result.data.geeksforgeeks?.School) || 0) +
+                    (Number(result.data.geeksforgeeks?.Basic) || 0) +
+                    (Number(result.data.geeksforgeeks?.Easy) || 0) +
+                    (Number(result.data.geeksforgeeks?.Medium) || 0) +
+                    (Number(result.data.geeksforgeeks?.Hard) || 0)
                   }
                   breakdown={{
-                    School: result.data.geekforgeeks?.School ?? 0,
-                    Basic: result.data.geekforgeeks?.Basic ?? 0,
-                    Easy: result.data.geekforgeeks?.Easy ?? 0,
-                    Medium: result.data.geekforgeeks?.Medium ?? 0,
-                    Hard: result.data.geekforgeeks?.Hard ?? 0,
+                    School: result.data.geeksforgeeks?.School ?? 0,
+                    Basic: result.data.geeksforgeeks?.Basic ?? 0,
+                    Easy: result.data.geeksforgeeks?.Easy ?? 0,
+                    Medium: result.data.geeksforgeeks?.Medium ?? 0,
+                    Hard: result.data.geeksforgeeks?.Hard ?? 0,
                   }}
                 />
               )}
