@@ -24,8 +24,8 @@ const CodingProfileRequests = lazy(() =>
   import("../../components/ui/CodingProfileRequests")
 );
 const StudentTable = lazy(() => import("../../components/ui/StudentTable"));
-const BulkImportStudent = lazy(() =>
-  import("../../components/ui/BulkImportStudent")
+const BulkImportWithCP = lazy(() =>
+  import("../../components/ui/BulkImportWithCP")
 );
 
 function FacultyDashboard() {
@@ -71,8 +71,9 @@ function FacultyDashboard() {
         <button
           key={tab}
           onClick={() => setSelectedTab(tab)}
-          className={`flex-1 min-w-[120px] py-1 rounded ${selectedTab === tab ? "bg-white text-black" : ""
-            }`}
+          className={`flex-1 min-w-[120px] py-1 rounded ${
+            selectedTab === tab ? "bg-white text-black" : ""
+          }`}
         >
           {tab.replace(/([A-Z])/g, " $1").trim()}
         </button>
@@ -179,10 +180,11 @@ function FacultyDashboard() {
                     <ul className="space-y-2">
                       <li>
                         <button
-                          className={`w-full text-left px-3 py-2 rounded ${addStudentMenu === "individual"
-                            ? "bg-blue-600 text-white"
-                            : "bg-gray-100 text-gray-900"
-                            }`}
+                          className={`w-full text-left px-3 py-2 rounded ${
+                            addStudentMenu === "individual"
+                              ? "bg-blue-600 text-white"
+                              : "bg-gray-100 text-gray-900"
+                          }`}
                           onClick={() => setAddStudentMenu("individual")}
                         >
                           Add Individual Student
@@ -190,10 +192,11 @@ function FacultyDashboard() {
                       </li>
                       <li>
                         <button
-                          className={`w-full text-left px-3 py-2 rounded ${addStudentMenu === "bulk"
-                            ? "bg-blue-600 text-white"
-                            : "bg-gray-100 text-gray-900"
-                            }`}
+                          className={`w-full text-left px-3 py-2 rounded ${
+                            addStudentMenu === "bulk"
+                              ? "bg-blue-600 text-white"
+                              : "bg-gray-100 text-gray-900"
+                          }`}
                           onClick={() => setAddStudentMenu("bulk")}
                         >
                           Bulk Import Students
@@ -201,10 +204,11 @@ function FacultyDashboard() {
                       </li>
                       <li>
                         <button
-                          className={`w-full text-left px-3 py-2 rounded ${addStudentMenu === "delete"
-                            ? "bg-blue-600 text-white"
-                            : "bg-gray-100 text-gray-900"
-                            }`}
+                          className={`w-full text-left px-3 py-2 rounded ${
+                            addStudentMenu === "delete"
+                              ? "bg-blue-600 text-white"
+                              : "bg-gray-100 text-gray-900"
+                          }`}
                           onClick={() => setAddStudentMenu("delete")}
                         >
                           Delete Student
@@ -212,10 +216,11 @@ function FacultyDashboard() {
                       </li>
                       <li>
                         <button
-                          className={`w-full text-left px-3 py-2 rounded ${addStudentMenu === "resetpassword"
-                            ? "bg-blue-600 text-white"
-                            : "bg-gray-100 text-gray-900"
-                            }`}
+                          className={`w-full text-left px-3 py-2 rounded ${
+                            addStudentMenu === "resetpassword"
+                              ? "bg-blue-600 text-white"
+                              : "bg-gray-100 text-gray-900"
+                          }`}
                           onClick={() => setAddStudentMenu("resetpassword")}
                         >
                           Reset Password
@@ -240,7 +245,7 @@ function FacultyDashboard() {
                           Import multiple students from CSV file
                         </p>
                         <Suspense fallback={<LoadingSpinner />}>
-                          <BulkImportStudent onSuccess={fetchStudents} />
+                          <BulkImportWithCP onSuccess={fetchStudents} />
                         </Suspense>
                       </div>
                     )}

@@ -8,10 +8,6 @@ import UserProfile from "../../components/ui/UserProfile";
 // Lazy-loaded components
 const RankingTable = lazy(() => import("../../components/Ranking"));
 const ViewProfile = lazy(() => import("../../components/ViewProfile"));
-// const BulkImportWithCP = lazy(() =>
-//   import("../../components/ui/BulkImportWithCP")
-// );
-import BulkImportWithCP from "../../components/ui/BulkImportWithCP";
 const AddFacultyModal = lazy(() =>
   import("../../components/Modals").then((m) => ({
     default: m.AddFacultyModal,
@@ -304,10 +300,6 @@ function AdminDashboard() {
                       { key: "addHOD", label: "Add HOD" },
                       { key: "resetPassword", label: "Reset Password" },
                       { key: "bulkImport", label: "Bulk Import" },
-                      {
-                        key: "bulkImportWithCP",
-                        label: "Bulk Import with Coding Profiles",
-                      },
                     ].map((item) => (
                       <li key={item.key}>
                         <button
@@ -335,7 +327,6 @@ function AdminDashboard() {
                     {userMgmtTab === "resetPassword" && <ResetPasswordModal />}
                     {userMgmtTab === "bulkImport" && <BulkImportModal />}
                     {userMgmtTab === "addBranch" && <AddBranchModal />}
-                    {userMgmtTab === "bulkImportWithCP" && <BulkImportWithCP />}
                   </Suspense>
                 </div>
               </div>

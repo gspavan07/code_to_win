@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useDepts } from "../context/MetaContext";
-import BulkImportStudent from "./ui/BulkImportStudent";
+import { useMeta } from "../context/MetaContext";
+import BulkImportWithCP from "./ui/BulkImportWithCP";
 import BulkImportFaculty from "./ui/BulkImportFaculty";
 import { FaUserMinus, FaUserPlus } from "react-icons/fa6";
 import { CiCircleCheck } from "react-icons/ci";
@@ -151,7 +151,7 @@ function GenericFormModal({
 
 // Add Branch Modal
 export function AddBranchModal() {
-  const { refreshDepts } = useDepts();
+  const { refreshMeta } = useMeta();
   const [status, setStatus] = useState({
     loading: false,
     error: null,
@@ -182,7 +182,7 @@ export function AddBranchModal() {
         success: "Department added successfully!",
       });
       setForm({ dept_code: "", dept_name: "" });
-      if (refreshDepts) refreshDepts();
+      if (refreshDepts) refreshMeta();
     } catch (error) {
       setStatus({ loading: false, error: error.message, success: null });
     }
@@ -219,7 +219,7 @@ export function AddBranchModal() {
 
 // Add Individual Student Modal
 export function AddIndividualStudentModel({ onSuccess }) {
-  const { depts } = useDepts();
+  const { depts, years, sections } = useMeta();
   const [status, setStatus] = useState({
     loading: false,
     error: null,
@@ -304,11 +304,9 @@ export function AddIndividualStudentModel({ onSuccess }) {
           label: "Year",
           type: "select",
           required: true,
-          options: [1, 2, 3, 4].map((year) => ({
+          options: years.map((year) => ({
             value: year,
-            label: `${year}${
-              year === 1 ? "st" : year === 2 ? "nd" : year === 3 ? "rd" : "th"
-            }`,
+            label: `${year}`,
           })),
         },
         {
@@ -316,7 +314,7 @@ export function AddIndividualStudentModel({ onSuccess }) {
           label: "Section",
           type: "select",
           required: true,
-          options: ["A", "B", "C", "D"],
+          options: sections,
         },
       ]}
       onSubmit={handleSubmit}
@@ -338,7 +336,7 @@ export function AddIndividualStudentModel({ onSuccess }) {
 
 // Add Faculty Modal
 export function AddFacultyModal() {
-  const { depts } = useDepts();
+  const { depts } = useMeta();
   const [status, setStatus] = useState({
     loading: false,
     error: null,
@@ -421,7 +419,7 @@ export function AddFacultyModal() {
 
 // Add HOD Modal
 export function AddHODModal() {
-  const { depts } = useDepts();
+  const { depts } = useMeta();
   const [status, setStatus] = useState({
     loading: false,
     error: null,
@@ -863,7 +861,7 @@ export function BulkImportModal() {
       {importType === "student" && (
         <div className="p-10 border border-gray-200 flex flex-col rounded-2xl">
           <p className="text-2xl text-gray-800">Student Bulk Upload</p>
-          <BulkImportStudent />
+          <BulkImportWithCP />
         </div>
       )}
       {importType === "faculty" && (

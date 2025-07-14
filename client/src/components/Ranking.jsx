@@ -2,7 +2,7 @@ import React, { useEffect, useState, lazy, Suspense } from "react";
 import { TbUserShare } from "react-icons/tb";
 const ViewProfile = lazy(() => import("./ViewProfile"));
 import { FaSearch } from "react-icons/fa";
-import { useDepts } from "../context/MetaContext";
+import { useDepts, useMeta } from "../context/MetaContext";
 import LoadingSpinner from "../common/LoadingSpinner";
 import { FaDownload } from "react-icons/fa6";
 import * as XLSX from "xlsx";
@@ -36,9 +36,7 @@ const RankingTable = ({ filter }) => {
   const [topX, setTopX] = useState("");
   const [search, setSearch] = useState("");
   const [selectedStudent, setSelectedStudent] = useState(null);
-  const [years, setYears] = useState([]);
-  const { depts, loading } = useDepts();
-  const [sections, setSections] = useState([]);
+  const { depts, years, sections } = useMeta();
 
   const fetchRanks = async () => {
     try {
@@ -61,13 +59,6 @@ const RankingTable = ({ filter }) => {
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch rankings");
       const data = await res.json();
-
-      const uniqueYears = [...new Set(data.map((s) => s.year))].sort(
-        (a, b) => a - b
-      );
-      setYears(uniqueYears);
-      const uniqueSections = [...new Set(data.map((s) => s.section))];
-      setSections(uniqueSections);
       setRanks(data);
     } catch (err) {
       console.error(err);
@@ -149,8 +140,9 @@ const RankingTable = ({ filter }) => {
       depts.find((d) => d.dept_code === filters.dept)?.dept_name ||
       filters.dept;
     const filenamePrefix =
-      `${deptName || ""}${filters?.year ? " " + filters.year + "_year" : ""}${filters?.section ? " " + filters.section + "_sec" : ""
-        }`.trim() || "overall";
+      `${deptName || ""}${filters?.year ? " " + filters.year + "_year" : ""}${
+        filters?.section ? " " + filters.section + "_sec" : ""
+      }`.trim() || "overall";
     // 2. Convert array of arrays to worksheet
     const worksheet = XLSX.utils.aoa_to_sheet(largeData);
 

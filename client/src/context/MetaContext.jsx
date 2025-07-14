@@ -1,36 +1,62 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-const DeptContext = createContext();
+const MetaContext = createContext();
 
-export function useDepts() {
-  return useContext(DeptContext);
+export function useMeta() {
+  return useContext(MetaContext);
 }
 
-export function DeptProvider({ children }) {
+// Keep backward compatibility
+export function useDepts() {
+  const { depts, loading } = useMeta();
+  return { depts, loading };
+}
+
+export function MetaProvider({ children }) {
   const [depts, setDepts] = useState([]);
+  const [years, setYears] = useState([]);
+  const [sections, setSections] = useState([]);
   const [loading, setLoading] = useState(true);
-  const fetchDepts = async () => {
+
+  const fetchMeta = async () => {
     try {
-      const response = await fetch("/api/meta/depts");
-      if (!response.ok) {
-        throw new Error("Failed to fetch departments");
-      }
-      const data = await response.json();
-      setDepts(data);
+      const [deptsRes, yearsRes, sectionsRes] = await Promise.all([
+        fetch("/api/meta/depts"),
+        fetch("/api/meta/years"),
+        fetch("/api/meta/sections"),
+      ]);
+
+      const [deptsData, yearsData, sectionsData] = await Promise.all([
+        deptsRes.json(),
+        yearsRes.json(),
+        sectionsRes.json(),
+      ]);
+
+      setDepts(Array.isArray(deptsData) ? deptsData : []);
+      setYears(Array.isArray(yearsData) ? yearsData : []);
+      setSections(Array.isArray(sectionsData) ? sectionsData : []);
     } catch (error) {
-      console.error("Error fetching departments:", error);
+      console.error("Error fetching meta data:", error);
       setDepts([]);
+      setYears([]);
+      setSections([]);
     } finally {
       setLoading(false);
     }
   };
+
   useEffect(() => {
-    fetchDepts();
+    fetchMeta();
   }, []);
 
   return (
-    <DeptContext.Provider value={{ depts, loading, refreshDepts: fetchDepts }}>
+    <MetaContext.Provider
+      value={{ depts, years, sections, loading, refreshMeta: fetchMeta }}
+    >
       {children}
-    </DeptContext.Provider>
+    </MetaContext.Provider>
   );
 }
+
+// Keep backward compatibility
+export const DeptProvider = MetaProvider;

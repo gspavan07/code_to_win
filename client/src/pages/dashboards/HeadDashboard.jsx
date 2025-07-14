@@ -1,5 +1,4 @@
 import React, { useEffect, useState, lazy, Suspense } from "react";
-import { FaUpload, FaUser, FaUserPlus } from "react-icons/fa6";
 import { FaSearch } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import Navbar from "../../components/Navbar";
@@ -12,8 +11,9 @@ import {
   DeleteIndividualStudentModal,
   ResetPasswordModal,
 } from "../../components/Modals";
-import BulkImportStudent from "../../components/ui/BulkImportStudent";
 import UserProfile from "../../components/ui/UserProfile";
+import { useMeta } from "../../context/MetaContext";
+import Footer from "../../components/Footer";
 
 // Lazy-loaded components
 const RankingTable = lazy(() => import("../../components/Ranking"));
@@ -404,8 +404,7 @@ function HeadDashboard() {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [students, setStudents] = useState([]);
   const [facultyList, setFacultyList] = useState([]);
-  const [years, setYears] = useState([]);
-  const [sections, setSections] = useState([]);
+  const { years, sections } = useMeta();
   const [filterYear, setFilterYear] = useState("");
   const [filterSection, setFilterSection] = useState("");
   const [search, setSearch] = useState("");
@@ -421,14 +420,6 @@ function HeadDashboard() {
             section: filterSection || "",
           },
         });
-        if (filterYear === "" && filterSection === "") {
-          const uniqueYears = [...new Set(data.map((s) => s.year))].sort(
-            (a, b) => a - b
-          );
-          setYears(uniqueYears);
-          const uniqueSections = [...new Set(data.map((s) => s.section))];
-          setSections(uniqueSections);
-        }
         setStudents(data);
       } catch (error) {
         console.error("Error fetching students:", error);
@@ -519,6 +510,7 @@ function HeadDashboard() {
           {selectedTab === "More" && <AddStudentTab />}
         </div>
       </div>
+      <Footer />
     </>
   );
 }

@@ -1,12 +1,10 @@
 import React, { useState } from "react";
 import { FaUpload } from "react-icons/fa6";
-import { useDepts } from "../../context/MetaContext";
+import { useMeta } from "../../context/MetaContext";
 
-const API_BASE = "http://localhost:5000";
-
-const SAMPLE_CSV_DATA = `Faculty Id,Faculty Name
-0104,Lalu Prasad
-0142,Kumar`;
+const SAMPLE_CSV_DATA = `Faculty Id,	Faculty Name,	Faculty Branch,	Faculty Incharge Section,	Faculty Incharge Year,	Faculty Email
+104,	Lalu Prasad,	AIML,	A,	2,	example@adityauniversity.in
+142,	Kumar,	CSE,	B,	3,	example@adityauniversity.in`;
 
 const downloadSampleCSV = () => {
   const blob = new Blob([SAMPLE_CSV_DATA], { type: "text/csv" });
@@ -21,7 +19,7 @@ const downloadSampleCSV = () => {
 };
 
 const BulkImportFaculty = ({ onSuccess }) => {
-  const { depts } = useDepts();
+  const { depts } = useMeta();
   const [bulkFormData, setBulkFormData] = useState({
     dept: "",
     file: null,
@@ -73,7 +71,7 @@ const BulkImportFaculty = ({ onSuccess }) => {
     formData.append("file", bulkFormData.file);
 
     try {
-      const response = await fetch(`${API_BASE}/api/bulk-import-faculty`, {
+      const response = await fetch(`/api/bulk-import-faculty`, {
         method: "POST",
         body: formData,
       });
@@ -153,8 +151,9 @@ const BulkImportFaculty = ({ onSuccess }) => {
       <button
         type="submit"
         disabled={bulkUploadStatus.loading}
-        className={`w-full mt-4 flex justify-center items-center gap-2 ${bulkUploadStatus.loading ? "bg-green-500" : "bg-green-600"
-          } text-white font-medium py-2 rounded hover:bg-green-700 transition`}
+        className={`w-full mt-4 flex justify-center items-center gap-2 ${
+          bulkUploadStatus.loading ? "bg-green-500" : "bg-green-600"
+        } text-white font-medium py-2 rounded hover:bg-green-700 transition`}
       >
         {bulkUploadStatus.loading ? (
           <>

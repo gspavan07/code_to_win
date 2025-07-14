@@ -1,15 +1,14 @@
 import React, { useState } from "react";
 import { FaUpload } from "react-icons/fa6";
-import { useDepts } from "../../context/MetaContext";
+import { useMeta } from "../../context/MetaContext";
 const RequiredLabel = ({ label, htmlFor }) => (
   <label htmlFor={htmlFor} className="block text-sm font-medium text-gray-700">
     {label} <span className="text-red-500">*</span>
   </label>
 );
-const API_BASE = "http://localhost:5000";
 
-const SAMPLE_CSV_DATA = `Student Id,Student Name,Gender,Degree,CGPA,HackerRank,LeetCode,CodeChef,GeeksforGeeks
-22A91A6182,Pavan G,Male,B.Tech,8.5,gollapalli_shan1,gspavan07,gpavan07,gollapallishn85u`;
+const SAMPLE_CSV_DATA = `Student Id,Student Name,Student Email,Gender,CGPA,HackerRank,LeetCode,CodeChef,GeeksforGeeks
+22A91A6182,Pavan G,example@aditya.in,Male,8.5,gollapalli_shan1,gspavan07,gpavan07,gollapallishn85u`;
 
 const downloadSampleCSV = () => {
   const blob = new Blob([SAMPLE_CSV_DATA], { type: "text/csv" });
@@ -24,7 +23,7 @@ const downloadSampleCSV = () => {
 };
 
 const bulkImportWithCP = ({ onSuccess }) => {
-  const { depts } = useDepts();
+  const { depts, years, sections } = useMeta();
   const [bulkFormData, setBulkFormData] = useState({
     dept: "",
     year: "",
@@ -90,7 +89,7 @@ const bulkImportWithCP = ({ onSuccess }) => {
     formData.append("file", bulkFormData.file);
 
     try {
-      const response = await fetch(`${API_BASE}/api/bulk-import-with-cp`, {
+      const response = await fetch(`/api/bulk-import-with-cp`, {
         method: "POST",
         body: formData,
       });
@@ -212,7 +211,7 @@ const bulkImportWithCP = ({ onSuccess }) => {
   return (
     <div className="w-full">
       <UploadModal />
-      <h2 className="text-lg font- mb-4">Bulk Import Users</h2>
+
       <form className="space-y-4" onSubmit={handleBulkSubmit}>
         <div>
           <RequiredLabel label="Branch" htmlFor="Branch" />
@@ -238,7 +237,7 @@ const bulkImportWithCP = ({ onSuccess }) => {
             className="w-full border-blue-50 border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Select year</option>
-            {[1, 2, 3, 4].map((year) => (
+            {years.map((year) => (
               <option key={year} value={year}>
                 {year}
                 {year === 1
@@ -261,7 +260,7 @@ const bulkImportWithCP = ({ onSuccess }) => {
             className="w-full border-blue-50 border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Select section</option>
-            {["A", "B", "C"].map((section) => (
+            {sections.map((section) => (
               <option key={section} value={section}>
                 {section}
               </option>

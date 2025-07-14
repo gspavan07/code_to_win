@@ -50,7 +50,16 @@ export default function CheckYourScore() {
     setLoading(true);
     setError(null);
     setResult(null);
-
+    if (
+      form.codechef == "" &&
+      form.gfg == "" &&
+      form.hankerrank == "" &&
+      form.leetcode == ""
+    ) {
+      setError("Atleast one platform id is required!");
+      setLoading(false);
+      return (result = null);
+    }
     // Prepare payload for backend scraping endpoint
     const payload = {
       profiles: [
