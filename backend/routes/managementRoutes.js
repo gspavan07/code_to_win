@@ -453,7 +453,9 @@ router.post("/bulk-import-faculty", upload.single("file"), async (req, res) => {
       const hashed = await bcrypt.hash("faculty@aditya", 10);
       const facultyId = row["Faculty Id"];
       const name = row["Faculty Name"];
-      const email = `${name}@aec.edu.in`;
+      const email = row["Faculty Email"];
+      const section = row["Faculty Incharge Section"];
+      const year = row["Faculty Incharge Year"];
       try {
         // Insert into users table
         await connection.query(
@@ -467,6 +469,10 @@ router.post("/bulk-import-faculty", upload.single("file"), async (req, res) => {
            (faculty_id, name, dept_code)
            VALUES (?, ?, ?)`,
           [facultyId, name, dept]
+        );
+        await connection.query(
+          "Insert into faculty_section_assignment (faculty_id, section, year) VALUES (?, ?, ?)",
+          [facultyId, section, year]
         );
 
         results.push({ facultyId: facultyId, status: "success" });
