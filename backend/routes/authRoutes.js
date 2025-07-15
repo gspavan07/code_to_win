@@ -3,9 +3,48 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const db = require("../config/db");
+const nodemailer = require("nodemailer");
 const { logger } = require("../utils"); // <-- Add logger
+const {
+  scrapeAndUpdatePerformance,
+} = require("../scrapers/scrapeAndUpdatePerformance");
 
 require("dotenv").config();
+
+// Email configuration
+const transporter = nodemailer.createTransport({
+  service: "gmail", // or your email service
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+const sendNewRegistrationMail = async (email, name, userId, password) => {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Your Login Details - Code Tracker",
+    html: `
+      <h2>Welcome to Code Tracker!</h2>
+      <p>Dear ${name},</p>
+      <p>Your registration has been successful. Here are your login details:</p>
+      <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px;">
+        <p><strong>User ID:</strong> ${userId}</p>
+        <p><strong>Password:</strong> ${password}</p>
+      </div>
+      <p>Please keep these credentials safe and change your password after first login.</p>
+      <p>Best regards,<br>Code Tracker Team</p>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    logger.info(`Login details email sent to ${email}`);
+  } catch (error) {
+    logger.error(`Failed to send email to ${email}: ${error.message}`);
+  }
+};
 
 // Login a user
 router.post("/login", async (req, res) => {
@@ -68,9 +107,22 @@ router.post("/login", async (req, res) => {
 
 //register a user
 router.post("/register", async (req, res) => {
-  const { stdId, name, email, gender, dept, year, section, cgpa } =
-    req.body.formData;
-  logger.info(`Add student request: ${JSON.stringify(req.body)}`);
+  const {
+    stdId,
+    name,
+    email,
+    gender,
+    degree,
+    dept,
+    year,
+    section,
+    cgpa,
+    leetcode,
+    hackerrank,
+    geeksforgeeks,
+    codechef,
+  } = req.body.formData;
+  logger.info(`Add student request: ${JSON.stringify(req.body.formData)}`);
   const connection = await db.getConnection(); // Use a connection from the pool
 
   try {
@@ -79,7 +131,7 @@ router.post("/register", async (req, res) => {
       `Adding student: ${stdId}, ${name}, ${dept}, ${year}, ${section}, ${email}, ${cgpa}`
     );
 
-    const hashed = await bcrypt.hash("student@aditya", 10);
+    const hashed = await bcrypt.hash(stdId, 13);
 
     // 1. Insert into users table
     const [result] = await connection.query(
@@ -90,9 +142,9 @@ router.post("/register", async (req, res) => {
     // 2. Insert into student_profiles table
     await connection.query(
       `INSERT INTO student_profiles 
-        (student_id, name, dept_code, year, section, gender, cgpa)
-        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [stdId, name, dept, year, section, gender, cgpa]
+        (student_id, name,degree, dept_code, year, section, gender, cgpa)
+        VALUES (?, ?, ?, ?,?, ?, ?, ?)`,
+      [stdId, name, degree, dept, year, section, gender, cgpa]
     );
     await connection.query(
       `INSERT INTO student_performance 
@@ -100,9 +152,47 @@ router.post("/register", async (req, res) => {
       VALUES (?);`,
       [stdId]
     );
+    await connection.query(
+      `INSERT INTO student_coding_profiles 
+    (student_id, hackerrank_id, leetcode_id, codechef_id, geeksforgeeks_id,
+     hackerrank_status, leetcode_status, codechef_status, geeksforgeeks_status,
+     hackerrank_verified, leetcode_verified, codechef_verified, geeksforgeeks_verified)
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        stdId,
+        hackerrank || null,
+        leetcode || null,
+        codechef || null,
+        geeksforgeeks || null,
+        "accepted", // hackerrank_status
+        "accepted", // leetcode_status
+        "accepted", // codechef_status
+        "accepted", // geeksforgeeks_status
+        1, // hackerrank_verified
+        1, // leetcode_verified
+        1, // codechef_verified
+        1, // geeksforgeeks_verified
+      ]
+    );
 
+    // After inserting into student_coding_profiles table:
+    if (hackerrank) {
+      scrapeAndUpdatePerformance(stdId, "hackerrank", hackerrank);
+    }
+    if (leetcode) {
+      scrapeAndUpdatePerformance(stdId, "leetcode", leetcode);
+    }
+    if (codechef) {
+      scrapeAndUpdatePerformance(stdId, "codechef", codechef);
+    }
+    if (geeksforgeeks) {
+      scrapeAndUpdatePerformance(stdId, "geeksforgeeks", geeksforgeeks);
+    }
+    await sendNewRegistrationMail(email, name, stdId, stdId);
+    // Send email with login details
     await connection.commit();
     logger.info(`Student added successfully: ${stdId}`);
+
     res.status(200).json({ message: "Student added successfully" });
   } catch (err) {
     await connection.rollback();

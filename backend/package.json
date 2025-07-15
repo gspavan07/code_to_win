@@ -23,6 +23,7 @@
     "mysql2": "^3.14.1",
     "node-cache": "^5.1.2",
     "node-cron": "^4.1.0",
+    "nodemailer": "^7.0.5",
     "nodemon": "^3.1.10",
     "winston": "^3.17.0",
     "xlsx": "^0.18.5"
