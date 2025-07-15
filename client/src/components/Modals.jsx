@@ -182,7 +182,7 @@ export function AddBranchModal() {
         success: "Department added successfully!",
       });
       setForm({ dept_code: "", dept_name: "" });
-      if (refreshDepts) refreshMeta();
+      if (refreshMeta) refreshMeta();
     } catch (error) {
       setStatus({ loading: false, error: error.message, success: null });
     }
