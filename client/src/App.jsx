@@ -4,6 +4,7 @@ import { Toaster } from "react-hot-toast";
 import LoadingSpinner from "./common/LoadingSpinner";
 import { useAuth } from "./context/AuthContext";
 import CheckYourScore from "./pages/CheckYourScore";
+import Register from "./pages/Register";
 // import StdDashboard from "./pages/dashboards/StdDashboard";
 
 // Lazy-loaded components
@@ -46,6 +47,7 @@ const App = () => {
             {/* Public routes */}
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
             <Route path="/dev" element={<Dev />} />
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/rank" element={<RankingTable />} />
