@@ -88,6 +88,7 @@ const StudentDashboard = () => {
       {updateProfile && (
         <UpdateProfileModal
           user={currentUser}
+          onSuccess={() => {}}
           onClose={() => setUpdateProfile(false)}
         />
       )}

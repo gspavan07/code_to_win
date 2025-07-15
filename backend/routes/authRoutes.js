@@ -66,6 +66,59 @@ router.post("/login", async (req, res) => {
   }
 });
 
+//register a user
+router.post("/register", async (req, res) => {
+  const { stdId, name, email, gender, dept, year, section, cgpa } =
+    req.body.formData;
+  logger.info(`Add student request: ${JSON.stringify(req.body)}`);
+  const connection = await db.getConnection(); // Use a connection from the pool
+
+  try {
+    await connection.beginTransaction();
+    logger.info(
+      `Adding student: ${stdId}, ${name}, ${dept}, ${year}, ${section}, ${email}, ${cgpa}`
+    );
+
+    const hashed = await bcrypt.hash("student@aditya", 10);
+
+    // 1. Insert into users table
+    const [result] = await connection.query(
+      `INSERT INTO users (user_id, email, password, role) VALUES (?,?, ?, ?)`,
+      [stdId, email, hashed, "student"]
+    );
+
+    // 2. Insert into student_profiles table
+    await connection.query(
+      `INSERT INTO student_profiles 
+        (student_id, name, dept_code, year, section, gender, cgpa)
+        VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [stdId, name, dept, year, section, gender, cgpa]
+    );
+    await connection.query(
+      `INSERT INTO student_performance 
+      (student_id) 
+      VALUES (?);`,
+      [stdId]
+    );
+
+    await connection.commit();
+    logger.info(`Student added successfully: ${stdId}`);
+    res.status(200).json({ message: "Student added successfully" });
+  } catch (err) {
+    await connection.rollback();
+    logger.error(`Error adding student: ${err.message}`);
+    res.status(500).json({
+      message:
+        err.code === "ER_DUP_ENTRY"
+          ? `Student with ID ${stdId} already exists`
+          : err.message,
+      error: err.errno,
+    });
+  } finally {
+    connection.release();
+  }
+});
+
 router.get("/validate", async (req, res) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) {

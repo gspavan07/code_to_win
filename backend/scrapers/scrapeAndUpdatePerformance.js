@@ -140,7 +140,7 @@ async function scrapeAndUpdatePerformance(student_id, platform, username) {
         if (performanceData) {
           await db.query(
             `UPDATE student_performance SET stars_hr = ?, last_updated = NOW() WHERE student_id = ?`,
-            [performanceData?.Total_stars, student_id]
+            [performanceData?.Total_stars || 0, student_id]
           );
           // Mark as accepted if it was suspended and create notification
           const [suspendedCheck] = await db.query(
