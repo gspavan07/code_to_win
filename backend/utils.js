@@ -71,11 +71,12 @@ const safeRequest = async (url, options = {}) => {
       timeout: config.REQUEST_TIMEOUT,
       ...(options.data ? { data: options.data } : {}),
       validateStatus: (status) => status === 200,
+      family: 4,
     });
 
     return response;
   } catch (error) {
-    logger.error(`Request failed for ${url}: ${error.message}`);
+    logger.error(`Request failed for ${url}: ${JSON.stringify(error, null, 2)}`);
     return null;
   }
 };

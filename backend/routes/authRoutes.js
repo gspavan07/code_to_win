@@ -3,8 +3,9 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const db = require("../config/db");
+const appendToExcel = require("../appendToExcel");
 const nodemailer = require("nodemailer");
-const { logger } = require("../utils"); // <-- Add logger
+const { logger } = require("../utils");
 const {
   scrapeAndUpdatePerformance,
 } = require("../scrapers/scrapeAndUpdatePerformance");
@@ -13,16 +14,17 @@ require("dotenv").config();
 
 // Email configuration
 const transporter = nodemailer.createTransport({
-  service: "gmail", // or your email service
+  host: "smtp.gmail.com", // or your SMTP host
+  port: 587,
+  secure: false,
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user: "g.pavan0712@gmail.com",
+    pass: "ezvx ynow liuq zevf",
   },
 });
-
 const sendNewRegistrationMail = async (email, name, userId, password) => {
   const mailOptions = {
-    from: process.env.EMAIL_USER,
+    from: "g.pavan0712@gmail.com",
     to: email,
     subject: "Your Login Details - Code Tracker",
     html: `
@@ -41,8 +43,10 @@ const sendNewRegistrationMail = async (email, name, userId, password) => {
   try {
     await transporter.sendMail(mailOptions);
     logger.info(`Login details email sent to ${email}`);
+    return true;
   } catch (error) {
     logger.error(`Failed to send email to ${email}: ${error.message}`);
+    return false;
   }
 };
 
@@ -174,7 +178,15 @@ router.post("/register", async (req, res) => {
         1, // geeksforgeeks_verified
       ]
     );
+    // Append to Excel after DB commit
+    await appendToExcel({
+      stdId, name, email, gender, degree, dept, year, section,
+      leetcode, codechef, hackerrank, geeksforgeeks
+    });
+    
+    await sendNewRegistrationMail(email, name, stdId, stdId);
 
+    
     // After inserting into student_coding_profiles table:
     if (hackerrank) {
       scrapeAndUpdatePerformance(stdId, "hackerrank", hackerrank);
@@ -188,7 +200,6 @@ router.post("/register", async (req, res) => {
     if (geeksforgeeks) {
       scrapeAndUpdatePerformance(stdId, "geeksforgeeks", geeksforgeeks);
     }
-    await sendNewRegistrationMail(email, name, stdId, stdId);
     // Send email with login details
     await connection.commit();
     logger.info(`Student added successfully: ${stdId}`);
