@@ -178,15 +178,27 @@ router.post("/register", async (req, res) => {
         1, // geeksforgeeks_verified
       ]
     );
+
+    logger.info("[EXCEL] Adding student to excel.....");
     // Append to Excel after DB commit
     await appendToExcel({
-      stdId, name, email, gender, degree, dept, year, section,
-      leetcode, codechef, hackerrank, geeksforgeeks
+      stdId,
+      name,
+      email,
+      gender,
+      degree,
+      dept,
+      year,
+      section,
+      leetcode,
+      codechef,
+      hackerrank,
+      geeksforgeeks,
     });
-    
+    logger.info("[EXCEL] Student added to excel successfully");
+
     await sendNewRegistrationMail(email, name, stdId, stdId);
 
-    
     // After inserting into student_coding_profiles table:
     if (hackerrank) {
       scrapeAndUpdatePerformance(stdId, "hackerrank", hackerrank);
@@ -202,6 +214,7 @@ router.post("/register", async (req, res) => {
     }
     // Send email with login details
     await connection.commit();
+
     logger.info(`Student added successfully: ${stdId}`);
 
     res.status(200).json({ message: "Student added successfully" });

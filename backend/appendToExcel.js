@@ -1,67 +1,76 @@
-const getGraphClient = require("./excelClient");
+const ExcelJS = require("exceljs");
+const path = require("path");
+const { logger } = require("./utils");
+
+const filePath = path.join(
+  __dirname,
+  "OneDriveSync",
+  "CodeTracker_Student_Registration.xlsx"
+);
 
 async function appendToExcel(student) {
-  const client = await getGraphClient();
-  const filePath = "/Documents/CodeTracker_Student_Registration.xlsx";
+  const workbook = new ExcelJS.Workbook();
 
-  const row = [
-    student.stdId, student.name, student.email, student.gender,
-    student.degree, student.dept, student.year, student.section,
-    student.leetcode, student.codechef, student.hackerrank, student.geeksforgeeks
+  // Try to load existing file, or create new
+  try {
+    await workbook.xlsx.readFile(filePath);
+    logger.info("[EXCEL] Loaded existing Excel file.");
+  } catch (err) {
+    logger.error("[EXCEL] Excel file not found. Creating a new one.");
+  }
+
+  const headers = [
+    "Student ID",
+    "Name",
+    "Email",
+    "Gender",
+    "Degree",
+    "Branch",
+    "Year",
+    "Section",
+    "LeetCode ID",
+    "CodeChef ID",
+    "HackerRank ID",
+    "GeeksForGeeks ID",
   ];
 
-  const masterSheet = "AllRegistrations";
-  const tableName = "Table1";
+  const row = [
+    student.stdId,
+    student.name,
+    student.email,
+    student.gender,
+    student.degree,
+    student.dept,
+    student.year,
+    student.section,
+    student.leetcode || "",
+    student.codechef || "",
+    student.hackerrank || "",
+    student.geeksforgeeks || "",
+  ];
 
-  try {
-    console.log("Adding to master sheet...");
-    await client
-      .api(`/drive/root:${filePath}:/workbook/worksheets('${masterSheet}')/tables('${tableName}')/rows/add`)
-      .post({ values: [row] });
-    console.log("Added to master sheet.");
-  } catch (err) {
-    console.error("Error adding to master sheet:", JSON.stringify(err, null, 2));
-    throw err;
+  // ========== 1) Master sheet ==========
+  let masterSheet = workbook.getWorksheet("AllRegistrations");
+  if (!masterSheet) {
+    masterSheet = workbook.addWorksheet("AllRegistrations");
+    masterSheet.addRow(headers);
   }
+  masterSheet.addRow(row);
 
-  const specificSheet = `${student.dept}-${student.year}-${student.section}`;
-
-  try {
-    console.log(`Adding to specific sheet ${specificSheet}...`);
-    await client
-      .api(`/drive/root:${filePath}:/workbook/worksheets('${specificSheet}')/tables('${tableName}')/rows/add`)
-      .post({ values: [row] });
-    console.log(`Added to ${specificSheet}.`);
-  } catch (err) {
-    if (err.statusCode === 404) {
-      console.log(`Sheet ${specificSheet} not found. Creating...`);
-      try {
-        await client
-          .api(`/drive/root:${filePath}:/workbook/worksheets/add`)
-          .post({ name: specificSheet });
-        console.log(`Created sheet ${specificSheet}.`);
-
-        await client
-          .api(`/drive/root:${filePath}:/workbook/worksheets('${specificSheet}')/tables/add`)
-          .post({
-            address: "A1:L1",
-            hasHeaders: true
-          });
-        console.log(`Created table in ${specificSheet}.`);
-
-        await client
-          .api(`/drive/root:${filePath}:/workbook/worksheets('${specificSheet}')/tables('${tableName}')/rows/add`)
-          .post({ values: [row] });
-        console.log(`Added data to new sheet ${specificSheet}.`);
-      } catch (innerErr) {
-        console.error(`Failed creating sheet/table or inserting data:`, JSON.stringify(innerErr, null, 2));
-        throw innerErr;
-      }
-    } else {
-      console.error(`Failed inserting into existing sheet:`, JSON.stringify(err, null, 2));
-      throw err;
-    }
+  // ========== 2) Branch-Year-Section sheet ==========
+  const specificSheetName = `${student.dept}-${student.year}-${student.section}`;
+  let specificSheet = workbook.getWorksheet(specificSheetName);
+  if (!specificSheet) {
+    specificSheet = workbook.addWorksheet(specificSheetName);
+    specificSheet.addRow(headers);
   }
+  specificSheet.addRow(row);
+
+  // ========== Save file ==========
+  await workbook.xlsx.writeFile(filePath);
+  logger.info(`[EXCEL] Added student ${student.stdId} to Excel.`);
+
+  return true;
 }
 
 module.exports = appendToExcel;
