@@ -1,22 +1,19 @@
 const ExcelJS = require("exceljs");
 const path = require("path");
+const fs = require("fs");
 const { logger } = require("./utils");
 
-const filePath = path.join(
-  __dirname,
-  "OneDriveSync",
-  "CodeTracker_Student_Registration.xlsx"
-);
+const dirPath = path.join(__dirname, "OneDriveSync","Documents");
+const filePath = path.join(dirPath, "CodeTracker_Student_Registration.xlsx");
 
 async function appendToExcel(student) {
   const workbook = new ExcelJS.Workbook();
 
-  // Try to load existing file, or create new
   try {
     await workbook.xlsx.readFile(filePath);
     logger.info("[EXCEL] Loaded existing Excel file.");
   } catch (err) {
-    logger.error("[EXCEL] Excel file not found. Creating a new one.");
+    logger.warn("[EXCEL] Excel file not found. Creating a new one.");
   }
 
   const headers = [
@@ -40,7 +37,7 @@ async function appendToExcel(student) {
     student.email,
     student.gender,
     student.degree,
-    student.dept,
+    student.dept_name,
     student.year,
     student.section,
     student.leetcode || "",
@@ -58,7 +55,7 @@ async function appendToExcel(student) {
   masterSheet.addRow(row);
 
   // ========== 2) Branch-Year-Section sheet ==========
-  const specificSheetName = `${student.dept}-${student.year}-${student.section}`;
+  const specificSheetName = `${student.dept_name}-${student.year}-${student.section}`;
   let specificSheet = workbook.getWorksheet(specificSheetName);
   if (!specificSheet) {
     specificSheet = workbook.addWorksheet(specificSheetName);
@@ -66,9 +63,14 @@ async function appendToExcel(student) {
   }
   specificSheet.addRow(row);
 
-  // ========== Save file ==========
+  // ========== 3) Save and Touch for OneDrive ==========
   await workbook.xlsx.writeFile(filePath);
-  logger.info(`[EXCEL] Added student ${student.stdId} to Excel.`);
+  workbook.removeWorksheet("temp"); // optional if used
+global.gc?.(); // force cleanup if GC is available
+
+  fs.utimesSync(filePath, new Date(), new Date()); // force OneDrive to detect change
+
+  logger.info(`[EXCEL] Added student ${student.stdId} to Excel and updated timestamp.`);
 
   return true;
 }

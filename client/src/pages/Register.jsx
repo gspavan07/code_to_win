@@ -24,7 +24,6 @@ const Register = () => {
     dept: "",
     year: "",
     section: "",
-    cgpa: "",
     leetcode: "",
     hackerrank: "",
     geeksforgeeks: "",
@@ -311,20 +310,14 @@ const Register = () => {
                           ))}
                         </select>
                       </div>
-                      <div className="mb-4 w-full">
-                        <label className="block text-gray-500 mb-1">CGPA</label>
-                        <input
-                          type="number"
-                          name="cgpa"
-                          value={formData.cgpa}
-                          onChange={handleChange}
-                          className="w-full border border-gray-200  rounded px-3 py-2"
-                        />
-                      </div>
                     </>
                   )}
                   {step === 3 && (
                     <>
+                    <p className="text-sm font-semibold text-yellow-500 mb-2">
+                        NOTE: Enter only username. Don't enter the complete
+                        link.
+                      </p>
                       <div className="mb-4 w-full">
                         <label className="block text-gray-500  mb-1">
                           LeetCode ID

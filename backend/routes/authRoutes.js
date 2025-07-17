@@ -35,6 +35,7 @@ const sendNewRegistrationMail = async (email, name, userId, password) => {
         <p><strong>User ID:</strong> ${userId}</p>
         <p><strong>Password:</strong> ${password}</p>
       </div>
+      <a href="http://210.212.210.92:3000" style="display: inline-block; padding: 10px 15px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">Login Now</a>
       <p>Please keep these credentials safe and change your password after first login.</p>
       <p>Best regards,<br>Code Tracker Team</p>
     `,
@@ -120,7 +121,6 @@ router.post("/register", async (req, res) => {
     dept,
     year,
     section,
-    cgpa,
     leetcode,
     hackerrank,
     geeksforgeeks,
@@ -132,7 +132,7 @@ router.post("/register", async (req, res) => {
   try {
     await connection.beginTransaction();
     logger.info(
-      `Adding student: ${stdId}, ${name}, ${dept}, ${year}, ${section}, ${email}, ${cgpa}`
+      `Adding student: ${stdId}, ${name}, ${dept}, ${year}, ${section}, ${email}`
     );
 
     const hashed = await bcrypt.hash(stdId, 13);
@@ -146,9 +146,9 @@ router.post("/register", async (req, res) => {
     // 2. Insert into student_profiles table
     await connection.query(
       `INSERT INTO student_profiles 
-        (student_id, name,degree, dept_code, year, section, gender, cgpa)
-        VALUES (?, ?, ?, ?,?, ?, ?, ?)`,
-      [stdId, name, degree, dept, year, section, gender, cgpa]
+        (student_id, name,degree, dept_code, year, section, gender)
+        VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [stdId, name, degree, dept, year, section, gender]
     );
     await connection.query(
       `INSERT INTO student_performance 
@@ -180,6 +180,11 @@ router.post("/register", async (req, res) => {
     );
 
     logger.info("[EXCEL] Adding student to excel.....");
+    const [deptRows] = await connection.query(
+      "SELECT dept_name FROM dept WHERE dept_code = ?",
+      [dept]
+    );
+    const dept_name = deptRows.length > 0 ? deptRows[0].dept_name : null;
     // Append to Excel after DB commit
     await appendToExcel({
       stdId,
@@ -187,7 +192,7 @@ router.post("/register", async (req, res) => {
       email,
       gender,
       degree,
-      dept,
+      dept_name,
       year,
       section,
       leetcode,

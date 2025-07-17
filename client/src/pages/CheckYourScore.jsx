@@ -58,7 +58,8 @@ export default function CheckYourScore() {
     ) {
       setError("Atleast one platform id is required!");
       setLoading(false);
-      return (result = null);
+      setResult(null);
+      return;
     }
     // Prepare payload for backend scraping endpoint
     const payload = {
@@ -92,8 +93,11 @@ export default function CheckYourScore() {
       console.log("Scraped Data:", data);
     } catch (err) {
       setError(err.message);
+      setResult(null);
+      return;
     } finally {
       setLoading(false);
+      
     }
   };
 
