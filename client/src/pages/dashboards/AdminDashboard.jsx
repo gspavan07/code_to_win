@@ -8,6 +8,9 @@ import UserProfile from "../../components/ui/UserProfile";
 // Lazy-loaded components
 const RankingTable = lazy(() => import("../../components/Ranking"));
 const ViewProfile = lazy(() => import("../../components/ViewProfile"));
+const ContactRequests = lazy(() => import("../../components/ui/ContactRequests"));
+const FacultyList = lazy(() => import("../../components/ui/FacultyList"));
+const HODList = lazy(() => import("../../components/ui/HODList"));
 const AddFacultyModal = lazy(() =>
   import("../../components/Modals").then((m) => ({
     default: m.AddFacultyModal,
@@ -184,7 +187,7 @@ function AdminDashboard() {
             </div>
           </div>
           {/* Tabs */}
-          <div className="grid grid-cols-2 md:grid-cols-3 justify-around rounded bg-gray-100 border-gray-200 border gap-2 md:gap-4 p-1 mb-4 text-base">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 justify-around rounded bg-gray-100 border-gray-200 border gap-2 md:gap-4 p-1 mb-4 text-base">
             <button
               onClick={() => setSelectedTab("StudentRanking")}
               className={`flex-1 min-w-[120px] py-1 rounded cursor-pointer ${
@@ -192,6 +195,22 @@ function AdminDashboard() {
               }`}
             >
               Student Ranking
+            </button>
+            <button
+              onClick={() => setSelectedTab("FacultyList")}
+              className={`flex-1 min-w-[120px] py-1 rounded cursor-pointer ${
+                selectedTab === "FacultyList" ? "bg-white text-black" : ""
+              }`}
+            >
+              Faculty List
+            </button>
+            <button
+              onClick={() => setSelectedTab("HODList")}
+              className={`flex-1 min-w-[120px] py-1 rounded cursor-pointer ${
+                selectedTab === "HODList" ? "bg-white text-black" : ""
+              }`}
+            >
+              HOD List
             </button>
             <button
               onClick={() => setSelectedTab("GradingSystem")}
@@ -208,6 +227,14 @@ function AdminDashboard() {
               }`}
             >
               User Managment
+            </button>
+            <button
+              onClick={() => setSelectedTab("ContactRequests")}
+              className={`flex-1 min-w-[120px] py-1 rounded cursor-pointer ${
+                selectedTab === "ContactRequests" ? "bg-white text-black" : ""
+              }`}
+            >
+              Contact Requests
             </button>
           </div>
           {/* Student Ranking */}
@@ -279,6 +306,27 @@ function AdminDashboard() {
               )}
             </div>
           )}
+          {/* Faculty List */}
+          {selectedTab === "FacultyList" && (
+            <Suspense fallback={<LoadingSpinner />}>
+              <FacultyList />
+            </Suspense>
+          )}
+
+          {/* HOD List */}
+          {selectedTab === "HODList" && (
+            <Suspense fallback={<LoadingSpinner />}>
+              <HODList />
+            </Suspense>
+          )}
+
+          {/* Contact Requests */}
+          {selectedTab === "ContactRequests" && (
+            <Suspense fallback={<LoadingSpinner />}>
+              <ContactRequests />
+            </Suspense>
+          )}
+          
           {/* User Management */}
           {selectedTab === "UserManagment" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 max-w-6xl mx-auto">

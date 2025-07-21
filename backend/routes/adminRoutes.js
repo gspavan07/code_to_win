@@ -126,7 +126,7 @@ router.get("/faculty", async (req, res) => {
     `;
     const params = [];
     if (dept) {
-      query += " AND fp.dept = ?";
+      query += " AND fp.dept_code = ?";
       params.push(dept);
     }
     const [faculty] = await db.query(query, params);
@@ -134,6 +134,143 @@ router.get("/faculty", async (req, res) => {
     res.json(faculty);
   } catch (err) {
     logger.error(`Error fetching faculty: ${err.message}`);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// GET /admin/hods?dept=CSE
+router.get("/hods", async (req, res) => {
+  const { dept } = req.query;
+  logger.info(`Fetching HODs: dept=${dept}`);
+  try {
+    let query = `
+      SELECT hp.*, u.email 
+      FROM hod_profiles hp
+      JOIN users u ON hp.hod_id = u.user_id
+      WHERE 1=1
+    `;
+    const params = [];
+    if (dept) {
+      query += " AND hp.dept_code = ?";
+      params.push(dept);
+    }
+    const [hods] = await db.query(query, params);
+    logger.info(`Fetched ${hods.length} HODs`);
+    res.json(hods);
+  } catch (err) {
+    logger.error(`Error fetching HODs: ${err.message}`);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// PUT /admin/faculty/:id - Update faculty
+router.put("/faculty/:id", async (req, res) => {
+  const { id } = req.params;
+  const { name, email, dept_code } = req.body;
+  logger.info(
+    `Updating faculty ${id}: name=${name}, email=${email}, dept_code=${dept_code}`
+  );
+
+  try {
+    // Update faculty profile
+    await db.query(
+      "UPDATE faculty_profiles SET name = ?, dept_code = ? WHERE faculty_id = ?",
+      [name, dept_code, id]
+    );
+
+    // Update email in users table
+    await db.query("UPDATE users SET email = ? WHERE user_id = ?", [email, id]);
+
+    logger.info(`Faculty ${id} updated successfully`);
+    res.json({ message: "Faculty updated successfully" });
+  } catch (err) {
+    logger.error(`Error updating faculty ${id}: ${err.message}`);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// DELETE /admin/faculty/:id - Delete faculty
+router.delete("/faculty/:id", async (req, res) => {
+  const { id } = req.params;
+  logger.info(`Deleting faculty ${id}`);
+
+  try {
+    // Start a transaction
+    await db.query("START TRANSACTION");
+
+    // Delete from faculty_profiles
+    await db.query(
+      "DELETE FROM faculty_section_assignment WHERE faculty_id = ?",
+      [id]
+    );
+    await db.query("DELETE FROM faculty_profiles WHERE faculty_id = ?", [id]);
+
+    // Delete from users table
+    await db.query("DELETE FROM users WHERE user_id = ?", [id]);
+
+    // Commit the transaction
+    await db.query("COMMIT");
+
+    logger.info(`Faculty ${id} deleted successfully`);
+    res.json({ message: "Faculty deleted successfully" });
+  } catch (err) {
+    // Rollback on error
+    await db.query("ROLLBACK");
+    logger.error(`Error deleting faculty ${id}: ${err.message}`);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// PUT /admin/hods/:id - Update HOD
+router.put("/hods/:id", async (req, res) => {
+  const { id } = req.params;
+  const { name, email, dept_code } = req.body;
+  logger.info(
+    `Updating HOD ${id}: name=${name}, email=${email}, dept_code=${dept_code}`
+  );
+
+  try {
+    // Update HOD profile
+    await db.query(
+      "UPDATE hod_profiles SET name = ?, dept_code = ? WHERE hod_id = ?",
+      [name, dept_code, id]
+    );
+
+    // Update email in users table
+    await db.query("UPDATE users SET email = ? WHERE user_id = ?", [email, id]);
+
+    logger.info(`HOD ${id} updated successfully`);
+    res.json({ message: "HOD updated successfully" });
+  } catch (err) {
+    logger.error(`Error updating HOD ${id}: ${err.message}`);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// DELETE /admin/hods/:id - Delete HOD
+router.delete("/hods/:id", async (req, res) => {
+  const { id } = req.params;
+  logger.info(`Deleting HOD ${id}`);
+
+  try {
+    // Start a transaction
+    await db.query("START TRANSACTION");
+
+    // Delete from hod_profiles
+    await db.query("DELETE FROM hod_profiles WHERE hod_id = ?", [id]);
+
+    // Delete from users table
+    await db.query("DELETE FROM users WHERE user_id = ?", [id]);
+
+    // Commit the transaction
+    await db.query("COMMIT");
+
+    logger.info(`HOD ${id} deleted successfully`);
+    res.json({ message: "HOD deleted successfully" });
+  } catch (err) {
+    // Rollback on error
+    await db.query("ROLLBACK");
+    logger.error(`Error deleting HOD ${id}: ${err.message}`);
     res.status(500).json({ message: "Server error" });
   }
 });

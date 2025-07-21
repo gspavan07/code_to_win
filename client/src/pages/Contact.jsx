@@ -42,15 +42,38 @@ const ContactUs = () => {
       return;
     }
 
-    // Simulate sending (replace with real API call)
-    setTimeout(() => {
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setStatus({
+          loading: false,
+          success: data.message || "Message sent successfully!",
+          error: null,
+        });
+        setForm({ name: "", email: "", message: "" });
+      } else {
+        setStatus({
+          loading: false,
+          success: null,
+          error: data.message || "Failed to send message. Please try again.",
+        });
+      }
+    } catch (error) {
       setStatus({
         loading: false,
-        success: "Message sent successfully!",
-        error: null,
+        success: null,
+        error: "Network error. Please check your connection and try again.",
       });
-      setForm({ name: "", email: "", message: "" });
-    }, 1200);
+    }
   };
 
   return (
@@ -124,7 +147,7 @@ const ContactUs = () => {
                   Email
                 </label>
                 <input
-                  type="email"
+                  type="text"
                   name="email"
                   value={form.email}
                   onChange={handleChange}

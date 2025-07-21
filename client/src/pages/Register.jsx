@@ -130,7 +130,8 @@ const Register = () => {
               <h2 className="text-2xl  mb-2">Registration Successful!</h2>
               <p className="text-gray-600 mb-6">
                 Thank you. We'll process your data shortly and send you a mail
-                with your login details.
+                with your login details. If you did't receive mail, please
+                contact us.
               </p>
               <button
                 onClick={() => navi("/")}
@@ -314,7 +315,7 @@ const Register = () => {
                   )}
                   {step === 3 && (
                     <>
-                    <p className="text-sm font-semibold text-yellow-500 mb-2">
+                      <p className="text-sm font-semibold text-yellow-500 mb-2">
                         NOTE: Enter only username. Don't enter the complete
                         link.
                       </p>
