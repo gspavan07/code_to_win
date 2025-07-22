@@ -141,7 +141,7 @@ const Register = () => {
               </button>
             </div>
           ) : (
-            <div className="flex-1/2 px-8 flex flex-col justify-center items-center">
+            <div className="flex-1/2 p-8 flex flex-col justify-center items-center">
               {isSubmitting ? (
                 <div className="flex justify-center items-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
@@ -286,7 +286,7 @@ const Register = () => {
                           value={formData.year}
                         >
                           <option value="">Select</option>
-                          {years.map((year) => (
+                          {[1,2,3,4].map((year) => (
                             <option key={year} value={year}>
                               {year}
                             </option>

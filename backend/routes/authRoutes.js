@@ -18,13 +18,13 @@ const transporter = nodemailer.createTransport({
   port: 587,
   secure: false,
   auth: {
-    user: "g.pavan0712@gmail.com",
-    pass: "ezvx ynow liuq zevf",
+    user: "codetracker.info@gmail.com",
+    pass: "ngsf dcmh auvp glpx",
   },
 });
 const sendNewRegistrationMail = async (email, name, userId, password) => {
   const mailOptions = {
-    from: "g.pavan0712@gmail.com",
+    from: "codetracker.info@gmail.com",
     to: email,
     subject: "Your Login Details - Code Tracker",
     html: `
@@ -126,6 +126,7 @@ router.post("/register", async (req, res) => {
     geeksforgeeks,
     codechef,
   } = req.body.formData;
+  stdId = stdId.replace(/\s+/g, ""); // Remove all spaces from stdId
   logger.info(`Add student request: ${JSON.stringify(req.body.formData)}`);
   const connection = await db.getConnection(); // Use a connection from the pool
 

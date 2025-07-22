@@ -92,9 +92,9 @@ const Footer = () => {
       </div>
 
       <div className="mt-10 text-center text-base text-gray-300 border-t border-gray-300 pt-6">
-        © 2025 Code Tracker. All rights reserved by{" "}
+       © 2025 Aditya University. | Developed by 
         <a href="https://ofzen.in/" className="text-gray-100 hover:underline font-medium">
-          Ofzen
+          Ofzen.in
         </a>
         .
       </div>
