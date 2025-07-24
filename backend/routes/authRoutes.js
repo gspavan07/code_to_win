@@ -13,15 +13,23 @@ const {
 require("dotenv").config();
 
 // Email configuration
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com", // or your SMTP host
-  port: 587,
-  secure: false,
-  auth: {
-    user: "codetracker.info@gmail.com",
-    pass: "ngsf dcmh auvp glpx",
-  },
-});
+const transports = [
+  { user: "codetracker.info1@gmail.com", pass: "jdjb vobp uoro buhm" },
+  { user: "codetracker.info2@gmail.com", pass: "wihf kkpn mpnf fglv" },
+];
+
+let i = 0;
+function getNextTransporter() {
+  const creds = transports[i % transports.length];
+  i = (i + 1) % transports.length;
+  return nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    auth: creds,
+  });
+}
+
 const sendNewRegistrationMail = async (email, name, userId, password) => {
   const mailOptions = {
     from: "codetracker.info@gmail.com",
@@ -42,6 +50,7 @@ const sendNewRegistrationMail = async (email, name, userId, password) => {
   };
 
   try {
+    const transporter = getNextTransporter();
     await transporter.sendMail(mailOptions);
     logger.info(`Login details email sent to ${email}`);
     return true;
