@@ -146,7 +146,7 @@ router.post("/register", async (req, res) => {
       `Adding student: ${cleanedStdId}, ${name}, ${dept}, ${year}, ${section}, ${email}`
     );
 
-    const hashed = await bcrypt.hash(stdId, 13);
+    const hashed = await bcrypt.hash(cleanedStdId, 13);
 
     // 1. Insert into users table
     const [result] = await connection.query(
