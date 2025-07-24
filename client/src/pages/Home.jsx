@@ -17,10 +17,13 @@ const RankBadge = ({ rank }) => {
 
 function Home() {
   const [ranks, setRanks] = useState([]);
+  const [loading, setLoading] = useState(false);
+  
   const fetchRanks = async () => {
     try {
+      setLoading(true);
       const limit = 10;
-      const url = `/api/ranking/overall?limit=${limit}`;
+      const url = `/api/ranking/overall?limit=${limit}&page=1`;
 
       const response = await fetch(url, {
         method: "GET",
@@ -34,10 +37,13 @@ function Home() {
       }
 
       const data = await response.json();
-      setRanks(data);
+      // Handle the new response format with pagination
+      setRanks(data.students || []);
     } catch (err) {
       console.error("Error fetching ranks:", err);
       setRanks([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -96,29 +102,45 @@ function Home() {
             </tr>
           </thead>
           <tbody>
-            {ranks.map((s) => (
-              <tr key={s.student_id} className="hover:bg-gray-50 text-center">
-                <td className="py-5 px-2 md:px-4 ">
-                  <RankBadge rank={s.rank} />
-                </td>
-                <td className="py-3 md:px-4 px-2 text-left flex items-center gap-2">
-                  <div className=" hidden bg-blue-100 text-blue-800 rounded-full w-8 h-8 md:flex items-center text-sm justify-center font-bold">
-                    {s.name
-                      ?.split(" ")
-                      .map((n) => n[0])
-                      .join("")
-                      .slice(0, 2)}
+            {loading ? (
+              <tr>
+                <td colSpan="6" className="py-10 text-center">
+                  <div className="flex justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700"></div>
                   </div>
-                  {s.name}
                 </td>
-                <td className="py-3 px-4">{s.student_id}</td>
-                <td className="py-3 md:px-4 px-2 sr-only md:not-sr-only">
-                  {s.dept_name}
-                </td>
-                <td className="py-3 md:px-4 px-2">{s.year}</td>
-                <td className="py-3 md:px-4 px-2 font-semibold">{s.score}</td>
               </tr>
-            ))}
+            ) : ranks.length === 0 ? (
+              <tr>
+                <td colSpan="6" className="py-10 text-center text-gray-500">
+                  No ranking data available
+                </td>
+              </tr>
+            ) : (
+              ranks.map((s) => (
+                <tr key={s.student_id} className="hover:bg-gray-50 text-center">
+                  <td className="py-5 px-2 md:px-4 ">
+                    <RankBadge rank={s.rank} />
+                  </td>
+                  <td className="py-3 md:px-4 px-2 text-left flex items-center gap-2">
+                    <div className=" hidden bg-blue-100 text-blue-800 rounded-full w-8 h-8 md:flex items-center text-sm justify-center font-bold">
+                      {s.name
+                        ?.split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .slice(0, 2)}
+                    </div>
+                    {s.name}
+                  </td>
+                  <td className="py-3 px-4">{s.student_id}</td>
+                  <td className="py-3 md:px-4 px-2 sr-only md:not-sr-only">
+                    {s.dept_name}
+                  </td>
+                  <td className="py-3 md:px-4 px-2">{s.year}</td>
+                  <td className="py-3 md:px-4 px-2 font-semibold">{s.score}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </section>

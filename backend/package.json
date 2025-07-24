@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon server.js",
-    "generate-excel": "node generateStudentExcel.js"
+    "generate-excel": "node generateStudentExcel.js",
+    "update-rankings": "node updateRankings.js"
   },
   "keywords": [],
   "author": "",

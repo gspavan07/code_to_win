@@ -40,6 +40,18 @@ cron.schedule("0 0 * * 6", async () => {
   logger.info("[CRON] Weekly student performance update finished.");
 });
 
+// Schedule: Every day at 03:00 AM - Update rankings
+cron.schedule("0 3 * * *", async () => {
+  logger.info("[CRON] Starting daily ranking update...");
+  const updateRankings = require("./updateRankings");
+  try {
+    const result = await updateRankings();
+    logger.info(`[CRON] Daily ranking update finished: ${result.studentsUpdated} students updated`);
+  } catch (error) {
+    logger.error(`[CRON] Error in daily ranking update: ${error.message}`);
+  }
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, "0.0.0.0", () =>
   console.log(`Server is running on http://localhost:${PORT}`)

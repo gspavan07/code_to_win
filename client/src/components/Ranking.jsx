@@ -2,9 +2,10 @@ import React, { useEffect, useState, lazy, Suspense } from "react";
 import { TbUserShare } from "react-icons/tb";
 const ViewProfile = lazy(() => import("./ViewProfile"));
 import { FaSearch } from "react-icons/fa";
-import { useDepts, useMeta } from "../context/MetaContext";
+import { useMeta } from "../context/MetaContext";
 import LoadingSpinner from "../common/LoadingSpinner";
 import { FaDownload } from "react-icons/fa6";
+import { IoIosSync } from "react-icons/io";
 import * as XLSX from "xlsx";
 import dayjs from "dayjs";
 
@@ -19,15 +20,21 @@ const RankBadge = ({ rank }) => {
 };
 
 const TOP_X_OPTIONS = [
-  { label: "All", value: "" },
-  { label: "Top 5", value: 5 },
-  { label: "Top 10", value: 10 },
-  { label: "Top 50", value: 50 },
-  { label: "Top 100", value: 100 },
+  { label: "25 per page", value: 25 },
+  { label: "50 per page", value: 50 },
+  { label: "100 per page", value: 100 },
+  { label: "200 per page", value: 200 },
+  { label: "500 per page", value: 500 },
 ];
 
 const RankingTable = ({ filter }) => {
   const [ranks, setRanks] = useState([]);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 100,
+    totalStudents: 0,
+    totalPages: 0,
+  });
   const [filters, setFilters] = useState({
     dept: "",
     year: "",
@@ -35,13 +42,16 @@ const RankingTable = ({ filter }) => {
   });
   const [topX, setTopX] = useState("");
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const { depts, years, sections } = useMeta();
 
   const fetchRanks = async () => {
     try {
-      let params = { ...filters };
+      setLoading(true);
+      let params = { ...filters, page: pagination.page };
       if (topX) params.limit = topX;
+      else params.limit = pagination.limit;
 
       // Build query string
       const queryString = Object.entries(params)
@@ -59,25 +69,81 @@ const RankingTable = ({ filter }) => {
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch rankings");
       const data = await res.json();
-      setRanks(data);
+
+      // Update state with the new data structure
+      setRanks(data.students || []);
+      setPagination(
+        data.pagination || {
+          page: 1,
+          limit: 100,
+          totalStudents: 0,
+          totalPages: 0,
+        }
+      );
     } catch (err) {
       console.error(err);
       setRanks([]);
+    } finally {
+      setLoading(false);
     }
   };
   useEffect(() => {
     fetchRanks();
-  }, [JSON.stringify(filters), topX]);
+  }, [JSON.stringify(filters), topX, pagination.page]);
 
   const handleChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
+    // Reset to page 1 when changing filters
+    setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
-  const filteredRanks = ranks.filter(
-    (s) =>
-      s.name?.toLowerCase().includes(search.toLowerCase()) ||
-      s.student_id?.toLowerCase().includes(search.toLowerCase())
-  );
+  // Handle search - if using server-side search
+  const handleSearch = (e) => {
+    setSearch(e.target.value);
+    // Reset to first page when searching
+    if (pagination.page !== 1) {
+      setPagination((prev) => ({ ...prev, page: 1 }));
+    }
+  };
+
+  // For client-side filtering when needed
+  const filteredRanks =
+    search.length > 0
+      ? ranks.filter(
+          (s) =>
+            s.name?.toLowerCase().includes(search.toLowerCase()) ||
+            s.student_id?.toLowerCase().includes(search.toLowerCase())
+        )
+      : ranks;
+
+  // Function to trigger manual ranking update
+  const updateRankings = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("/api/ranking/update-all", {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to trigger ranking update");
+      }
+
+      // Show success message
+      alert(
+        "Ranking update started in the background. This may take a few minutes."
+      );
+
+      // Refresh the current page after a short delay
+      setTimeout(() => {
+        fetchRanks();
+      }, 2000);
+    } catch (error) {
+      console.error("Error updating rankings:", error);
+      alert("Failed to update rankings. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const downloadSampleXLSX = () => {
     // 1. Simulate a large dataset
@@ -107,7 +173,7 @@ const RankingTable = ({ filter }) => {
       "Score",
     ]);
 
-    ranks.forEach((rank) => {
+    filteredRanks.forEach((rank) => {
       largeData.push([
         rank.student_id,
         rank.name,
@@ -258,12 +324,20 @@ const RankingTable = ({ filter }) => {
                     className="block text-xs font-semibold text-gray-500 mb-1"
                     htmlFor="topx"
                   >
-                    Top
+                    Page Size
                   </label>
                   <select
                     id="topx"
                     value={topX}
-                    onChange={(e) => setTopX(e.target.value)}
+                    onChange={(e) => {
+                      setTopX(e.target.value);
+                      // Reset to page 1 when changing page size
+                      setPagination((prev) => ({
+                        ...prev,
+                        page: 1,
+                        limit: Number(e.target.value) || 100,
+                      }));
+                    }}
                     className="border border-gray-300 hover:bg-blue-50 p-2 rounded-lg transition outline-none"
                   >
                     {TOP_X_OPTIONS.map((opt) => (
@@ -274,22 +348,31 @@ const RankingTable = ({ filter }) => {
                   </select>
                 </div>
               </div>
-              <div className=" flex gap-x-5 mr-15 py-3">
+              <div className=" flex gap-x-3 mr-15 py-3">
                 <div className="relative">
                   <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 opacity-85 text-blue-800" />
                   <input
                     type="text"
                     placeholder="Search students..."
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={handleSearch}
                     className="pl-10 pr-3 py-2 border border-gray-300 rounded-lg hover:bg-blue-50  focus:ring-1  w-[240px] max-w-xs transition outline-none "
                   />
                 </div>
                 <button
-                  className="px-2 items-center rounded-lg bg-blue-600 flex gap-2 text-white  "
+                  className="px-2 items-center rounded-lg bg-blue-600 flex gap-2 text-white"
                   onClick={downloadSampleXLSX}
+                  disabled={loading}
                 >
                   <FaDownload /> Download
+                </button>
+                <button
+                  className="px-2 items-center rounded-lg bg-green-600 flex gap-2 text-white"
+                  onClick={updateRankings}
+                  disabled={loading}
+                >
+                  <IoIosSync className={loading ? "animate-spin" : ""} /> Update
+                  Rankings
                 </button>
               </div>
             </div>
@@ -363,6 +446,59 @@ const RankingTable = ({ filter }) => {
             )}
           </tbody>
         </table>
+
+        {/* Pagination Controls */}
+        {ranks.length > 0 && (
+          <div className="flex justify-between items-center mt-4 px-4 py-2">
+            <div className="text-sm text-gray-600">
+              Showing {ranks.length} of {pagination.totalStudents} students
+            </div>
+            <div className="flex space-x-2">
+              <button
+                onClick={() =>
+                  setPagination((prev) => ({
+                    ...prev,
+                    page: Math.max(1, prev.page - 1),
+                  }))
+                }
+                disabled={pagination.page <= 1 || loading}
+                className={`px-3 py-1 rounded ${
+                  pagination.page <= 1 || loading
+                    ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                    : "bg-blue-600 text-white hover:bg-blue-700"
+                }`}
+              >
+                Previous
+              </button>
+              <span className="px-3 py-1 bg-gray-100 rounded">
+                Page {pagination.page} of {pagination.totalPages || 1}
+              </span>
+              <button
+                onClick={() =>
+                  setPagination((prev) => ({
+                    ...prev,
+                    page: Math.min(pagination.totalPages, prev.page + 1),
+                  }))
+                }
+                disabled={pagination.page >= pagination.totalPages || loading}
+                className={`px-3 py-1 rounded ${
+                  pagination.page >= pagination.totalPages || loading
+                    ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                    : "bg-blue-600 text-white hover:bg-blue-700"
+                }`}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Loading indicator */}
+        {loading && (
+          <div className="flex justify-center my-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700"></div>
+          </div>
+        )}
       </div>
     </>
   );
