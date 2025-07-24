@@ -126,14 +126,15 @@ router.post("/register", async (req, res) => {
     geeksforgeeks,
     codechef,
   } = req.body.formData;
-  stdId = stdId.replace(/\s+/g, ""); // Remove all spaces from stdId
+ const cleanedStdId = stdId.replace(/\s+/g, '');
+
   logger.info(`Add student request: ${JSON.stringify(req.body.formData)}`);
   const connection = await db.getConnection(); // Use a connection from the pool
 
   try {
     await connection.beginTransaction();
     logger.info(
-      `Adding student: ${stdId}, ${name}, ${dept}, ${year}, ${section}, ${email}`
+      `Adding student: ${cleanedStdId}, ${name}, ${dept}, ${year}, ${section}, ${email}`
     );
 
     const hashed = await bcrypt.hash(stdId, 13);
@@ -141,7 +142,7 @@ router.post("/register", async (req, res) => {
     // 1. Insert into users table
     const [result] = await connection.query(
       `INSERT INTO users (user_id, email, password, role) VALUES (?,?, ?, ?)`,
-      [stdId, email, hashed, "student"]
+      [cleanedStdId, email, hashed, "student"]
     );
 
     // 2. Insert into student_profiles table
@@ -149,13 +150,13 @@ router.post("/register", async (req, res) => {
       `INSERT INTO student_profiles 
         (student_id, name,degree, dept_code, year, section, gender)
         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [stdId, name, degree, dept, year, section, gender]
+      [cleanedStdId, name, degree, dept, year, section, gender]
     );
     await connection.query(
       `INSERT INTO student_performance 
       (student_id) 
       VALUES (?);`,
-      [stdId]
+      [cleanedStdId]
     );
     await connection.query(
       `INSERT INTO student_coding_profiles 
@@ -164,7 +165,7 @@ router.post("/register", async (req, res) => {
      hackerrank_verified, leetcode_verified, codechef_verified, geeksforgeeks_verified)
    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        stdId,
+        cleanedStdId,
         hackerrank || null,
         leetcode || null,
         codechef || null,
@@ -188,7 +189,7 @@ router.post("/register", async (req, res) => {
     const dept_name = deptRows.length > 0 ? deptRows[0].dept_name : null;
     // Append to Excel after DB commit
     await appendToExcel({
-      stdId,
+      cleanedStdId,
       name,
       email,
       gender,
@@ -203,25 +204,25 @@ router.post("/register", async (req, res) => {
     });
     logger.info("[EXCEL] Student added to excel successfully");
 
-    await sendNewRegistrationMail(email, name, stdId, stdId);
+    await sendNewRegistrationMail(email, name, cleanedStdId, stdId);
 
     // After inserting into student_coding_profiles table:
     if (hackerrank) {
-      scrapeAndUpdatePerformance(stdId, "hackerrank", hackerrank);
+      scrapeAndUpdatePerformance(cleanedStdId, "hackerrank", hackerrank);
     }
     if (leetcode) {
-      scrapeAndUpdatePerformance(stdId, "leetcode", leetcode);
+      scrapeAndUpdatePerformance(cleanedStdId, "leetcode", leetcode);
     }
     if (codechef) {
-      scrapeAndUpdatePerformance(stdId, "codechef", codechef);
+      scrapeAndUpdatePerformance(cleanedStdId, "codechef", codechef);
     }
     if (geeksforgeeks) {
-      scrapeAndUpdatePerformance(stdId, "geeksforgeeks", geeksforgeeks);
+      scrapeAndUpdatePerformance(cleanedStdId, "geeksforgeeks", geeksforgeeks);
     }
     // Send email with login details
     await connection.commit();
 
-    logger.info(`Student added successfully: ${stdId}`);
+    logger.info(`Student added successfully: ${cleanedStdId}`);
 
     res.status(200).json({ message: "Student added successfully" });
   } catch (err) {
@@ -230,7 +231,7 @@ router.post("/register", async (req, res) => {
     res.status(500).json({
       message:
         err.code === "ER_DUP_ENTRY"
-          ? `Student with ID ${stdId} already exists`
+          ? `Student with ID ${cleanedStdId} already exists`
           : err.message,
       error: err.errno,
     });

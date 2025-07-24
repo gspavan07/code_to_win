@@ -95,7 +95,7 @@ const ContactUs = () => {
             <div className="flex items-start gap-3">
               <i className="fas fa-envelope mt-1 text-gray-600"></i>
               <div>
-                <p className="font-medium text-gray-800">info@ofzen.in</p>
+                <p className="font-medium text-gray-800">codetracker.contact@gmail.com</p>
                 <p className="text-sm text-gray-500">
                   We'll respond within 24 hours
                 </p>
