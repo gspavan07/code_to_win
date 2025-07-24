@@ -30,6 +30,7 @@ app.use("/api/ranking", require("./routes/rankingRoutes"));
 app.use("/api/meta", require("./routes/metaRoutes"));
 app.use("/api/notifications", require("./routes/notificationRoutes"));
 app.use("/api/contact", require("./routes/contactRoutes"));
+app.use("/api/export", require("./routes/exportRoutes"));
 app.use("/api/", require("./routes/managementRoutes"));
 
 // Schedule: Every Saturday at 00:00 (midnight)
