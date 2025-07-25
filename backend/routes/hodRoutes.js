@@ -38,7 +38,7 @@ router.get("/profile", async (req, res) => {
 
     // Get total unique sections in dept (across all years)
     const [[{ total_sections }]] = await db.query(
-      "SELECT COUNT(DISTINCT section) AS total_sections FROM student_profiles WHERE dept_code = ?",
+      "SELECT COUNT(DISTINCT fsa.faculty_id) AS total_sections FROM faculty_profiles fp JOIN faculty_section_assignment fsa ON fp.faculty_id = fsa.faculty_id WHERE fp.dept_code = ?",
       [dept]
     );
 

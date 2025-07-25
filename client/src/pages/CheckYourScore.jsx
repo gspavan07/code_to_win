@@ -149,7 +149,7 @@ export default function CheckYourScore() {
         {error && <div className="text-red-600 mt-4">{error}</div>}
         {result && (
           <div>
-            <div className="bg-blue-50 grid grid-cols-3 rounded-lg gap-5 p-10 mt-10">
+            <div className="bg-blue-50 grid grid-cols-1 md:grid-cols-3 rounded-lg gap-5 p-10 mt-10">
               <StatsCard
                 icon={<FiCode />}
                 color="blue"
