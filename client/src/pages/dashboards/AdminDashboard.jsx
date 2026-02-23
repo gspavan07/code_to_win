@@ -96,6 +96,8 @@ const metricToPlatform = {
   badges_lc: "LeetCode",
   contests_lc: "LeetCode",
   contests_gfg: "GeeksforGeeks",
+  repos_gh: "GitHub",
+  contributions_gh: "GitHub"
 };
 
 const platformOrder = [
@@ -169,10 +171,11 @@ function VerificationToggle() {
         </div>
         <button
           onClick={toggleVerification}
-          className={`px-4 py-2 rounded font-medium transition ${verificationRequired
+          className={`px-4 py-2 rounded font-medium transition ${\
+          verificationRequired
               ? "bg-green-600 hover:bg-green-700 text-white"
               : "bg-red-600 hover:bg-red-700 text-white"
-            }`}
+          }`}
         >
           {verificationRequired ? "Turn OFF" : "Turn ON"}
         </button>
@@ -237,6 +240,8 @@ function AdminDashboard() {
     medium_lc: "LeetCode Medium",
     badges_lc: "LeetCode Badges",
     contests_lc: "LeetCode Contests",
+    repos_gh: "GitHub Repositories",
+    contributions_gh: "GitHub Contributions",
   };
 
   useEffect(() => {
@@ -651,10 +656,11 @@ function AdminDashboard() {
                       ].map((item) => (
                         <li key={item.key}>
                           <button
-                            className={`w-full text-left px-3 py-2 rounded transition ${userMgmtTab === item.key
+                            className={`w-full text-left px-3 py-2 
+                            rounded transition ${userMgmtTab === item.key
                                 ? "bg-blue-600 text-white"
                                 : "hover:bg-blue-100"
-                              }`}
+                            }`}
                             onClick={() => setUserMgmtTab(item.key)}
                           >
                             {item.label}
