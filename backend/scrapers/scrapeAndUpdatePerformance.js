@@ -12,6 +12,15 @@ const toNumber = (value) => {
 };
 
 async function scrapeAndUpdatePerformance(student_id, platform, username) {
+  const sanitizedUsername =
+    username === null || username === undefined
+      ? ""
+      : String(username).trim();
+
+  if (!sanitizedUsername) {
+    throw new Error(`Invalid ${platform} username`);
+  }
+
   let performanceData = null;
   let attempts = 0;
   const maxAttempts = 2; // Reduced from 5 for faster manual refresh
@@ -22,7 +31,7 @@ async function scrapeAndUpdatePerformance(student_id, platform, username) {
       attempts++;
       if (platform === "leetcode") {
         performanceData = await scrapeLeetCodeProfile(
-          `https://leetcode.com/u/${username}`
+          `https://leetcode.com/u/${sanitizedUsername}`
         );
         if (performanceData) {
           await db.query(
@@ -63,7 +72,7 @@ async function scrapeAndUpdatePerformance(student_id, platform, username) {
         }
       } else if (platform === "codechef") {
         performanceData = await scrapeCodeChefProfile(
-          `https://www.codechef.com/users/${username}`
+          `https://www.codechef.com/users/${sanitizedUsername}`
         );
         if (performanceData) {
           await db.query(
@@ -103,7 +112,7 @@ async function scrapeAndUpdatePerformance(student_id, platform, username) {
         }
       } else if (platform === "geeksforgeeks") {
         performanceData = await scrapeGeeksForGeeksProfile(
-          `https://www.geeksforgeeks.org/profile/${username}`
+          `https://www.geeksforgeeks.org/profile/${sanitizedUsername}`
         );
         if (performanceData) {
           await db.query(
@@ -143,7 +152,7 @@ async function scrapeAndUpdatePerformance(student_id, platform, username) {
         }
       } else if (platform === "hackerrank") {
         performanceData = await scrapeHackerRankProfile(
-          `https://www.hackerrank.com/profile/${username}`
+          `https://www.hackerrank.com/profile/${sanitizedUsername}`
         );
         if (performanceData) {
           await db.query(
@@ -181,7 +190,7 @@ async function scrapeAndUpdatePerformance(student_id, platform, username) {
         }
       } else if (platform === "github") {
         performanceData = await scrapeGitHubProfile(
-          `https://github.com/${username}`
+          `https://github.com/${sanitizedUsername}`
         );
         if (performanceData) {
           await db.query(

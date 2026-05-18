@@ -24,6 +24,7 @@ import {
   UserResetPasswordModal,
 } from "../../components/Modals";
 import AchievementModal from "../../components/modals/AchievementModal";
+import UpdateProfileModal from "../../components/modals/UpdateProfileModal";
 import SectionLeaderboard from "../../components/SectionLeaderboard";
 import OverallLeaderboard from "../../components/OverallLeaderboard";
 import { formatName, formatDepartment, formatSection } from "../../utils/textFormatter";
@@ -32,6 +33,7 @@ const StudentDashboard = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [editProfile, setEditprofile] = useState(false);
   const [changepassword, setChangepassword] = useState(false);
+  const [showUpdateProfileModal, setShowUpdateProfileModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showAchievementModal, setShowAchievementModal] = useState(false);
   const [achievements, setAchievements] = useState([]);
@@ -177,6 +179,13 @@ const StudentDashboard = () => {
           <UserResetPasswordModal
             user={currentUser}
             onClose={() => setChangepassword(false)}
+          />
+        )}
+        {showUpdateProfileModal && (
+          <UpdateProfileModal
+            user={currentUser}
+            onSuccess={() => checkAuth()}
+            onClose={() => setShowUpdateProfileModal(false)}
           />
         )}
         {showAchievementModal && (
@@ -544,9 +553,15 @@ const StudentDashboard = () => {
                     <h3 className="text-xl font-bold text-gray-900">
                       Connected Profiles
                     </h3>
+                    <button
+                      onClick={() => setShowUpdateProfileModal(true)}
+                      className="text-sm px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                    >
+                      Manage Connections
+                    </button>
                   </div>
                   <p className="text-sm text-gray-500 mb-4">
-                    Coding profile links are locked after submission to maintain data consistency.
+                    Update your coding platform profile links at any time using the "Manage Connections" button above.
                   </p>
                   <div className="space-y-4">
                     {[

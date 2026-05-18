@@ -151,6 +151,17 @@ router.post("/register", async (req, res) => {
     codechef,
   } = req.body.formData;
 
+  const normalizeProfileId = (value) => {
+    if (value === null || value === undefined) return null;
+    const normalized = String(value).trim();
+    return normalized.length > 0 ? normalized : null;
+  };
+
+  const normalizedLeetcode = normalizeProfileId(leetcode);
+  const normalizedHackerrank = normalizeProfileId(hackerrank);
+  const normalizedGeeksforgeeks = normalizeProfileId(geeksforgeeks);
+  const normalizedCodechef = normalizeProfileId(codechef);
+
   // Normalize student ID
   const cleanedStdId = normalizeUserId(rawStdId);
 
@@ -203,10 +214,10 @@ router.post("/register", async (req, res) => {
    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         cleanedStdId,
-        hackerrank || null,
-        leetcode || null,
-        codechef || null,
-        geeksforgeeks || null,
+        normalizedHackerrank,
+        normalizedLeetcode,
+        normalizedCodechef,
+        normalizedGeeksforgeeks,
         "accepted", // hackerrank_status
         "accepted", // leetcode_status
         "accepted", // codechef_status
@@ -228,17 +239,17 @@ router.post("/register", async (req, res) => {
     await sendNewRegistrationMail(email, name, cleanedStdId, cleanedStdId);
 
     // After inserting into student_coding_profiles table:
-    if (hackerrank) {
-      scrapeAndUpdatePerformance(cleanedStdId, "hackerrank", hackerrank);
+    if (normalizedHackerrank) {
+      scrapeAndUpdatePerformance(cleanedStdId, "hackerrank", normalizedHackerrank);
     }
-    if (leetcode) {
-      scrapeAndUpdatePerformance(cleanedStdId, "leetcode", leetcode);
+    if (normalizedLeetcode) {
+      scrapeAndUpdatePerformance(cleanedStdId, "leetcode", normalizedLeetcode);
     }
-    if (codechef) {
-      scrapeAndUpdatePerformance(cleanedStdId, "codechef", codechef);
+    if (normalizedCodechef) {
+      scrapeAndUpdatePerformance(cleanedStdId, "codechef", normalizedCodechef);
     }
-    if (geeksforgeeks) {
-      scrapeAndUpdatePerformance(cleanedStdId, "geeksforgeeks", geeksforgeeks);
+    if (normalizedGeeksforgeeks) {
+      scrapeAndUpdatePerformance(cleanedStdId, "geeksforgeeks", normalizedGeeksforgeeks);
     }
     // Send email with login details
     await connection.commit();

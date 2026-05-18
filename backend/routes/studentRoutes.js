@@ -234,6 +234,18 @@ router.post("/coding-profile", async (req, res) => {
   } = req.body;
   logger.info(`Submitting coding profiles: userId=${userId}`);
   try {
+    const normalizeProfileId = (value) => {
+      if (value === null || value === undefined) return value;
+      const normalized = String(value).trim();
+      return normalized.length > 0 ? normalized : null;
+    };
+
+    const normalizedLeetcode = normalizeProfileId(leetcode_id);
+    const normalizedCodechef = normalizeProfileId(codechef_id);
+    const normalizedGeeksforgeeks = normalizeProfileId(geeksforgeeks_id);
+    const normalizedHackerrank = normalizeProfileId(hackerrank_id);
+    const normalizedGithub = normalizeProfileId(github_id);
+
     const platformKeys = [
       "leetcode_id",
       "codechef_id",
@@ -266,22 +278,6 @@ router.post("/coding-profile", async (req, res) => {
       [userId]
     );
 
-    if (existing.length > 0) {
-      const existingRow = existing[0];
-      const hasExistingProfileData = platformKeys.some((key) => {
-        const value = existingRow[key];
-        return value !== null && value !== undefined && String(value).trim() !== "";
-      });
-
-      // Keep profile links immutable once the student has submitted any profile.
-      if (hasExistingProfileData) {
-        return res.status(403).json({
-          message:
-            "Coding profiles are locked after initial submission. Please contact admin for changes.",
-        });
-      }
-    }
-
     // Build dynamic update fields
     const fields = [];
     const values = [];
@@ -293,9 +289,9 @@ router.post("/coding-profile", async (req, res) => {
         `leetcode_status = '${status}'`,
         `leetcode_verified = ${verified}`
       );
-      values.push(leetcode_id);
-      if (leetcode_id && !verificationRequired)
-        scrapeTasks.push({ platform: "leetcode", username: leetcode_id });
+      values.push(normalizedLeetcode);
+      if (normalizedLeetcode && !verificationRequired)
+        scrapeTasks.push({ platform: "leetcode", username: normalizedLeetcode });
     }
     if (codechef_id !== undefined) {
       fields.push(
@@ -303,9 +299,9 @@ router.post("/coding-profile", async (req, res) => {
         `codechef_status = '${status}'`,
         `codechef_verified = ${verified}`
       );
-      values.push(codechef_id);
-      if (codechef_id && !verificationRequired)
-        scrapeTasks.push({ platform: "codechef", username: codechef_id });
+      values.push(normalizedCodechef);
+      if (normalizedCodechef && !verificationRequired)
+        scrapeTasks.push({ platform: "codechef", username: normalizedCodechef });
     }
     if (geeksforgeeks_id !== undefined) {
       fields.push(
@@ -313,11 +309,11 @@ router.post("/coding-profile", async (req, res) => {
         `geeksforgeeks_status = '${status}'`,
         `geeksforgeeks_verified = ${verified}`
       );
-      values.push(geeksforgeeks_id);
-      if (geeksforgeeks_id && !verificationRequired)
+      values.push(normalizedGeeksforgeeks);
+      if (normalizedGeeksforgeeks && !verificationRequired)
         scrapeTasks.push({
           platform: "geeksforgeeks",
-          username: geeksforgeeks_id,
+          username: normalizedGeeksforgeeks,
         });
     }
     if (hackerrank_id !== undefined) {
@@ -326,9 +322,9 @@ router.post("/coding-profile", async (req, res) => {
         `hackerrank_status = '${status}'`,
         `hackerrank_verified = ${verified}`
       );
-      values.push(hackerrank_id);
-      if (hackerrank_id && !verificationRequired)
-        scrapeTasks.push({ platform: "hackerrank", username: hackerrank_id });
+      values.push(normalizedHackerrank);
+      if (normalizedHackerrank && !verificationRequired)
+        scrapeTasks.push({ platform: "hackerrank", username: normalizedHackerrank });
     }
     if (github_id !== undefined) {
       fields.push(
@@ -336,9 +332,9 @@ router.post("/coding-profile", async (req, res) => {
         `github_status = '${status}'`,
         `github_verified = ${verified}`
       );
-      values.push(github_id);
-      if (github_id && !verificationRequired)
-        scrapeTasks.push({ platform: "github", username: github_id });
+      values.push(normalizedGithub);
+      if (normalizedGithub && !verificationRequired)
+        scrapeTasks.push({ platform: "github", username: normalizedGithub });
     }
 
     if (existing.length > 0) {
@@ -363,19 +359,19 @@ router.post("/coding-profile", async (req, res) => {
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           userId,
-          leetcode_id || null,
+          normalizedLeetcode || null,
           status,
           verified,
-          codechef_id || null,
+          normalizedCodechef || null,
           status,
           verified,
-          geeksforgeeks_id || null,
+          normalizedGeeksforgeeks || null,
           status,
           verified,
-          hackerrank_id || null,
+          normalizedHackerrank || null,
           status,
           verified,
-          github_id || null,
+          normalizedGithub || null,
           status,
           verified,
         ]

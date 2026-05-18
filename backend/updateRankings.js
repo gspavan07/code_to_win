@@ -36,6 +36,8 @@ async function updateAllRankings() {
             return `CASE WHEN COALESCE(cp.geeksforgeeks_status, '') = 'accepted' THEN p.${metric} ELSE 0 END`;
           if (metric.includes("_hr"))
             return `CASE WHEN COALESCE(cp.hackerrank_status, '') = 'accepted' THEN p.${metric} ELSE 0 END`;
+          if (metric.includes("_gh"))
+            return `CASE WHEN COALESCE(cp.github_status, '') = 'accepted' THEN p.${metric} ELSE 0 END`;
           return match;
         })} AS score
       FROM student_profiles sp
