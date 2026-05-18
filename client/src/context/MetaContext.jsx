@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 
 const MetaContext = createContext();
 
@@ -30,7 +30,7 @@ export function MetaProvider({ children }) {
     return [...new Set([...canonicalYears, ...parsedYears])].sort((a, b) => a - b);
   };
 
-  const fetchMeta = async () => {
+  const fetchMeta = useCallback(async () => {
     try {
       const [deptsRes, yearsRes, sectionsRes] = await Promise.all([
         fetch("/api/meta/depts"),
@@ -55,11 +55,11 @@ export function MetaProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchMeta();
-  }, []);
+  }, [fetchMeta]);
 
   return (
     <MetaContext.Provider
