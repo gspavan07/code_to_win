@@ -7,6 +7,7 @@ import React, {
   useEffect,
   useMemo,
 } from "react";
+import { apiUrl } from "../utils/api";
 const AuthContext = createContext();
 
 export function useAuth() {
@@ -21,7 +22,7 @@ export function AuthProvider({ children }) {
   const fetchProfileSafe = async (role, userId) => {
     try {
       const profileRes = await fetch(
-        `/api/${role}/profile?userId=${encodeURIComponent(userId)}`
+        apiUrl(`/api/${role}/profile?userId=${encodeURIComponent(userId)}`)
       );
 
       if (!profileRes.ok) {
@@ -42,7 +43,7 @@ export function AuthProvider({ children }) {
     try {
       const token = localStorage.getItem("authToken");
       if (token) {
-        const response = await fetch(`/api/auth/validate`, {
+        const response = await fetch(apiUrl(`/api/auth/validate`), {
           method: "GET",
           headers: {
             Authorization: token,
@@ -90,7 +91,7 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (userId, password, role) => {
     try {
-      const response = await fetch(`/api/auth/login`, {
+      const response = await fetch(apiUrl(`/api/auth/login`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, password, role }),

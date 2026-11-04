@@ -835,10 +835,42 @@ router.post("/check-score", async (req, res) => {
   }
 });
 
+// GET /api/management/promotion-candidates?dept=CSE&year=3
+const getPromotionCandidates = async (req, res) => {
+  const { dept, year } = req.query;
+  logger.info(`Promotion candidates request: dept=${dept}, year=${year}`);
+
+  if (!dept || !year) {
+    return res
+      .status(400)
+      .json({ message: "Department and Year are required" });
+  }
+
+  try {
+    const [students] = await db.query(
+      `SELECT sp.student_id, sp.name, sp.section, sp.year, sp.dept_code
+       FROM student_profiles sp
+       WHERE sp.status = 'active' AND sp.dept_code = ? AND sp.year = ?
+       ORDER BY sp.section, sp.student_id`,
+      [dept, year]
+    );
+
+    res.json(students);
+  } catch (err) {
+    logger.error(`Error fetching promotion candidates: ${err.message}`);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+router.get("/promotion-candidates", getPromotionCandidates);
+router.get("/management/promotion-candidates", getPromotionCandidates);
+
 // POST /api/management/promote-batch
-router.post("/promote-batch", async (req, res) => {
-  const { dept, fromYear } = req.body;
-  logger.info(`Bulk promotion request: dept=${dept}, fromYear=${fromYear}`);
+const promoteBatch = async (req, res) => {
+  const { dept, fromYear, studentIds = [] } = req.body;
+  logger.info(
+    `Bulk promotion request: dept=${dept}, fromYear=${fromYear}, previewCount=${studentIds.length}`
+  );
 
   if (!dept || !fromYear) {
     return res
@@ -846,16 +878,40 @@ router.post("/promote-batch", async (req, res) => {
       .json({ message: "Department and Year are required" });
   }
 
+  if (!Array.isArray(studentIds)) {
+    return res.status(400).json({ message: "studentIds must be an array" });
+  }
+
+  if (studentIds.some((id) => typeof id !== "string" || !id.trim())) {
+    return res.status(400).json({ message: "Invalid studentIds provided" });
+  }
+
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
 
-    const [result] = await connection.query(
-      `UPDATE student_profiles 
-       SET year = year + 1 
-       WHERE dept_code = ? AND year = ? AND status = 'active'`,
-      [dept, fromYear]
-    );
+    let result;
+    if (studentIds.length > 0) {
+      const placeholders = studentIds.map(() => "?").join(",");
+      const queryParams = [dept, fromYear, ...studentIds];
+
+      [result] = await connection.query(
+        `UPDATE student_profiles
+         SET year = year + 1
+         WHERE dept_code = ?
+           AND year = ?
+           AND status = 'active'
+           AND student_id IN (${placeholders})`,
+        queryParams
+      );
+    } else {
+      [result] = await connection.query(
+        `UPDATE student_profiles
+         SET year = year + 1
+         WHERE dept_code = ? AND year = ? AND status = 'active'`,
+        [dept, fromYear]
+      );
+    }
 
     await connection.commit();
     logger.info(
@@ -872,10 +928,13 @@ router.post("/promote-batch", async (req, res) => {
   } finally {
     connection.release();
   }
-});
+};
+
+router.post("/promote-batch", promoteBatch);
+router.post("/management/promote-batch", promoteBatch);
 
 // POST /api/management/graduate-batch
-router.post("/graduate-batch", async (req, res) => {
+const graduateBatch = async (req, res) => {
   const { dept } = req.body;
   logger.info(`Bulk graduation request: dept=${dept}`);
 
@@ -908,6 +967,9 @@ router.post("/graduate-batch", async (req, res) => {
   } finally {
     connection.release();
   }
-});
+};
+
+router.post("/graduate-batch", graduateBatch);
+router.post("/management/graduate-batch", graduateBatch);
 
 module.exports = router;

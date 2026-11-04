@@ -19,20 +19,27 @@ const LifecycleManagement = ({ fixedDept = "" }) => {
   const [previewStudents, setPreviewStudents] = useState([]);
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
   const [showPreview, setShowPreview] = useState(null); // 'promote' or 'graduate'
+  const [promotionPreviewContext, setPromotionPreviewContext] = useState({
+    dept: "",
+    fromYear: "",
+  });
 
   const handleDeptChange = (val) => {
     setSelectedDept(val);
     setPreviewStudents([]);
     setShowPreview(null);
+    setPromotionPreviewContext({ dept: "", fromYear: "" });
   };
 
   const handleYearChange = (val) => {
     setPromoteFromYear(val);
     setPreviewStudents([]);
     setShowPreview(null);
+    setPromotionPreviewContext({ dept: "", fromYear: "" });
   };
 
-  const handlePreview = async (type) => {
+  const handlePreview = async (type, options = {}) => {
+    const { keepStatus = false } = options;
     const year = type === "promote" ? promoteFromYear : "4";
     if (!selectedDept || !year) {
       alert("Please select both department and year.");
@@ -40,13 +47,26 @@ const LifecycleManagement = ({ fixedDept = "" }) => {
     }
 
     setIsPreviewLoading(true);
-    setStatus(null);
+    if (!keepStatus) {
+      setStatus(null);
+    }
     try {
-      const { data } = await axios.get("/api/hod/students", {
+      const endpoint =
+        type === "promote"
+          ? "/api/management/promotion-candidates"
+          : "/api/hod/students";
+      const { data } = await axios.get(endpoint, {
         params: { dept: selectedDept, year: year },
       });
       setPreviewStudents(data);
       setShowPreview(type);
+
+      if (type === "promote") {
+        setPromotionPreviewContext({
+          dept: selectedDept,
+          fromYear: String(promoteFromYear),
+        });
+      }
     } catch (err) {
       console.error("Error fetching preview students:", err);
       setStatus({ type: "error", message: "Failed to fetch student preview" });
@@ -58,6 +78,21 @@ const LifecycleManagement = ({ fixedDept = "" }) => {
   const handlePromote = async () => {
     if (!selectedDept || !promoteFromYear) {
       alert("Please select both department and year.");
+      return;
+    }
+
+    const isPromotionPreviewCurrent =
+      showPreview === "promote" &&
+      promotionPreviewContext.dept === selectedDept &&
+      promotionPreviewContext.fromYear === String(promoteFromYear);
+
+    if (!isPromotionPreviewCurrent) {
+      alert("Please preview the selected department and year before promoting.");
+      return;
+    }
+
+    if (previewStudents.length === 0) {
+      alert("No students found for promotion in the current preview.");
       return;
     }
 
@@ -79,10 +114,10 @@ const LifecycleManagement = ({ fixedDept = "" }) => {
       const res = await axios.post("/api/management/promote-batch", {
         dept: selectedDept,
         fromYear: promoteFromYear,
+        studentIds: previewStudents.map((student) => student.student_id),
       });
       setStatus({ type: "success", message: res.data.message });
-      setPreviewStudents([]);
-      setShowPreview(null);
+      await handlePreview("promote", { keepStatus: true });
     } catch (err) {
       setStatus({
         type: "error",
@@ -170,6 +205,11 @@ const LifecycleManagement = ({ fixedDept = "" }) => {
     </div>
   );
 
+  const isPromotionPreviewCurrent =
+    showPreview === "promote" &&
+    promotionPreviewContext.dept === selectedDept &&
+    promotionPreviewContext.fromYear === String(promoteFromYear);
+
   return (
     <div className="space-y-8 p-6 max-w-4xl mx-auto">
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
@@ -250,7 +290,8 @@ const LifecycleManagement = ({ fixedDept = "" }) => {
               loading ||
               !selectedDept ||
               !promoteFromYear ||
-              (showPreview === "promote" && previewStudents.length === 0)
+              !isPromotionPreviewCurrent ||
+              previewStudents.length === 0
             }
             className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-100"
           >

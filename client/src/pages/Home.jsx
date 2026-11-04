@@ -3,6 +3,7 @@ import Login from "./Login";
 import Footer from "../components/Footer";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { apiUrl } from "../utils/api";
 
 const RankBadge = ({ rank }) => {
   if (rank === 1)
@@ -22,7 +23,7 @@ function Home() {
     try {
       setLoading(true);
       const limit = 10;
-      const url = `/api/ranking/overall?limit=${limit}&page=1`;
+      const url = apiUrl(`/api/ranking/overall?limit=${limit}&page=1`);
 
       const response = await fetch(url, {
         method: "GET",

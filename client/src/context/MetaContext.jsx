@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { apiUrl } from "../utils/api";
 
 const MetaContext = createContext();
 
@@ -33,9 +34,9 @@ export function MetaProvider({ children }) {
   const fetchMeta = useCallback(async () => {
     try {
       const [deptsRes, yearsRes, sectionsRes] = await Promise.all([
-        fetch("/api/meta/depts"),
-        fetch("/api/meta/years"),
-        fetch("/api/meta/sections"),
+        fetch(apiUrl("/api/meta/depts")),
+        fetch(apiUrl("/api/meta/years")),
+        fetch(apiUrl("/api/meta/sections")),
       ]);
 
       const [deptsData, yearsData, sectionsData] = await Promise.all([

@@ -451,6 +451,7 @@ cd mobile && npm run lint
 ## 🛠️ Common Troubleshooting
 
 - **Proxy/API mismatch**: ensure backend port matches `client/vite.config.js` and mobile `API_URL`
+- **Browser login shows HTML-as-JSON errors**: the client defaults to backend port `5000`; set `VITE_API_BASE_URL` only if your deployment uses a different backend host or port
 - **Auth issues**: verify `JWT_SECRET` and token header formatting
 - **Scraping gaps**: check platform username validity and scraper logs
 - **DB errors**: verify MySQL credentials and schema migration state
