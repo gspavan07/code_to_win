@@ -5,6 +5,8 @@ import LoadingSpinner from "./common/LoadingSpinner";
 import { useAuth } from "./context/AuthContext";
 import CheckYourScore from "./pages/CheckYourScore";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
@@ -61,6 +63,9 @@ const App = () => {
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/rank" element={<RankingTable />} />
             <Route path="/checkscore" element={<CheckYourScore />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+
 
             {/* Protected routes - Student */}
             <Route

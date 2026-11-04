@@ -63,6 +63,33 @@ const sendNewRegistrationMail = async (email, name, userId, password) => {
   }
 };
 
+const sendForgotPasswordOTP = async (email, otp) => {
+  const mailOptions = {
+    from: "codetracker.info@gmail.com",
+    to: email,
+    subject: "Password Reset OTP - Code Tracker",
+    html: `
+      <h2>Password Reset Request</h2>
+      <p>Dear User,</p>
+      <p>Your OTP for resetting your password is:</p>
+      <h1 style="letter-spacing: 2px;">${otp}</h1>
+      <p>This OTP is valid for <b>10 minutes</b>.</p>
+      <p>If you did not request this, please ignore this email.</p>
+      <p>— Code Tracker Team</p>
+    `,
+  };
+
+  try {
+    const transporter = getNextTransporter();
+    await transporter.sendMail(mailOptions);
+    logger.info(`Forgot password OTP sent to ${email}`);
+    return true;
+  } catch (error) {
+    logger.error(`Failed to send email to ${email}: ${error.message}`);
+    return false;
+  }
+}
+
 // Login a user
 router.post("/login", async (req, res) => {
   const { userId: rawUserId, password, role } = req.body;
@@ -376,5 +403,61 @@ router.put("/update-password", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
+router.post("/forgot-password", async (req, res) => {
+  const { user_id } = req.body;
+  try {
+    const [users] = await db.execute("SELECT * FROM users WHERE user_id = ?",
+      [user_id,]
+    );
+    if (users.length === 0) {
+      logger.warn(`Forgot password: user not found for user_id: ${user_id}`);
+      return res.status(400).json({ message: "User not found" });
+    }
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    await db.execute("INSERT INTO password_reset_otps (user_id, otp, expires_at) VALUES (?, ?, ?)", [
+      user_id,
+      otp,
+      expiresAt,
+    ]);
+    const email = users[0].email;
+    await sendForgotPasswordOTP(email, otp);
+    logger.info(`Forgot password request for email: ${email}`);
+    res.json({ message: `Password reset email sent to ${email} successfully` });
+  } catch (error) {
+    logger.error(`Forgot Password Error for user_id=${user_id}: ${error.message}`);
+    res.status(500).json({ message: "Server error" });
+  }
+})
+
+router.post("/reset-password-otp", async (req, res) => {
+  const { user_id, otp, newPassword } = req.body;
+  try {
+    const [rows] = await db.execute("SELECT * FROM password_reset_otps WHERE user_id = ? AND otp = ? AND used = 0 AND expires_at > NOW()", [
+      user_id,
+      otp,
+    ]);
+    if (rows.length === 0) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await db.execute("UPDATE users SET password = ? WHERE user_id = ?", [
+      hashedPassword,
+      user_id
+    ]);
+    await db.execute("UPDATE password_reset_otps SET used = 1 WHERE user_id = ? AND otp = ?", [
+      user_id,
+      otp
+    ]);
+    await db.execute("DELETE FROM password_reset_otps WHERE user_id = ?", [
+      user_id
+    ]);
+    res.json({ message: "Password reset successfully. Please login with new password" });
+  } catch (error) {
+    logger.error(`Reset Password OTP Error for user_id=${user_id}: ${error.message}`);
+    res.status(500).json({ message: "Server error" });
+  }
+})
 
 module.exports = router;
